@@ -1,0 +1,82 @@
+/Users/danielperrut/criativododo
+├── 00-origem
+├── 01-governanca
+│   └── CLAUDE.md
+├── 02-documentacao
+│   ├── docs
+│   └── README.md
+├── 03-especificacoes
+├── 04-skills
+├── 05-branding
+├── 06-scripts
+├── 07-auditorias
+├── 08-manifestos
+├── 09-referencias
+├── 10-knowledge-base
+│   ├── Arquitetura
+│   ├── Branding
+│   ├── Deploy
+│   ├── Governanca
+│   ├── Historico
+│   ├── Produto
+│   └── Workspace
+├── 99-logs
+│   ├── _workspace.txt
+│   ├── adrs.txt
+│   ├── arquitetura.txt
+│   ├── ARQUIVOS_COM_NOME_REPETIDO.txt
+│   ├── CATEGORIAS_CONTAGEM.txt
+│   ├── deployment.txt
+│   ├── design.txt
+│   ├── documentacao.txt
+│   ├── estrutura.txt
+│   ├── fonts.txt
+│   ├── governanca.txt
+│   ├── handoff.txt
+│   ├── history.txt
+│   ├── infrastructure.txt
+│   ├── inventario-completo.txt
+│   ├── KNOWLEDGE_BASE_INDEX.txt
+│   ├── KNOWLEDGE_BASE_SUMMARY.txt
+│   ├── KNOWLEDGE_INDEX.md
+│   ├── knowledge-index.tar.gz
+│   ├── knowledge.txt
+│   ├── markdown.txt
+│   ├── pdfs.txt
+│   ├── planning.txt
+│   ├── product.txt
+│   ├── release.txt
+│   ├── RESUMO_DOCUMENTACAO.txt
+│   ├── specs.txt
+│   ├── svg.txt
+│   └── TODOS_OS_ARQUIVOS.txt
+├── agents
+│   └── README.md
+├── assets
+│   └── README.md
+├── design-system
+│   └── README.md
+├── docs
+│   ├── architecture
+│   ├── branding
+│   ├── CATALOG.md
+│   ├── deployment
+│   ├── governance
+│   ├── history
+│   ├── product
+│   ├── PROJECT_TREE.txt
+│   ├── README.md
+│   └── workspace
+├── logs
+│   └── README.md
+├── playbooks
+│   └── README.md
+├── prompts
+│   └── README.md
+├── README.md
+├── scripts
+│   └── README.md
+└── tools
+    └── README.md
+
+37 directories, 43 files

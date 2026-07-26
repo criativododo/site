@@ -1,0 +1,8 @@
+================================================
+planning
+================================================
+/Users/danielperrut/criativododo/02-documentacao/docs/planning/BACKLOG_FUNCIONAL_V2_6.md
+/Users/danielperrut/criativododo/02-documentacao/docs/planning/CONSOLIDACAO_REGRAS_CRITICAS_P0_TEAR_V2.md
+/Users/danielperrut/criativododo/02-documentacao/docs/planning/ELA_INFLUENCIA_ENTREGA_1_ANALISE_ESTRATEGICA.md
+/Users/danielperrut/criativododo/02-documentacao/docs/planning/ELA_INFLUENCIA_ENTREGA_2_PLANO_EXECUTIVO.md
+/Users/danielperrut/criativododo/02-documentacao/docs/planning/PLANO_MESTRE_ELA_INFLUENCIA.md

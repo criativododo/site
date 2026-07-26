@@ -1,0 +1,4 @@
+================================================
+infrastructure
+================================================
+/Users/danielperrut/criativododo/02-documentacao/docs/infrastructure/INFRAESTRUTURA.md

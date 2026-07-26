@@ -1,0 +1,11 @@
+================================================
+adrs
+================================================
+/Users/danielperrut/criativododo/02-documentacao/docs/adrs/ADR-003-linguagem-ubiqua-do-dominio.md
+/Users/danielperrut/criativododo/02-documentacao/docs/adrs/ADR-012-renome-ativacao-fluxo-logistico.md
+/Users/danielperrut/criativododo/02-documentacao/docs/adrs/ADR-015-frontend-servido-pelo-laravel.md
+/Users/danielperrut/criativododo/02-documentacao/docs/adrs/ADR-016-composer-no-ci-deploy-manual.md
+/Users/danielperrut/criativododo/02-documentacao/docs/adrs/ADR-017-oauth-conta-dedicada-google-drive.md
+/Users/danielperrut/criativododo/02-documentacao/docs/adrs/ADR-018-congelamento-de-participacao-trava-simples.md
+/Users/danielperrut/criativododo/02-documentacao/docs/adrs/ADR-019-design-system-dodo-como-ssot-visual.md
+/Users/danielperrut/criativododo/02-documentacao/docs/adrs/ADR-020-dodo-como-nome-oficial-do-projeto.md

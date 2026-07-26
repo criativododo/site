@@ -1,0 +1,4 @@
+================================================
+governanca
+================================================
+/Users/danielperrut/criativododo/02-documentacao/docs/governanca/GOVERNANCA_DO_PROJETO.md

@@ -1,0 +1,2 @@
+/Users/danielperrut/criativododo/02-documentacao/docs/design/manual/assets/fonts/ElmsSans.ttf
+/Users/danielperrut/criativododo/02-documentacao/docs/design/manual/assets/fonts/WorkSans.ttf
