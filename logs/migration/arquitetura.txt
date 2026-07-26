@@ -1,7 +1,0 @@
-================================================
-arquitetura
-================================================
-/Users/danielperrut/criativododo/02-documentacao/docs/arquitetura/01-mineracao-do-legado.md
-/Users/danielperrut/criativododo/02-documentacao/docs/arquitetura/02-arquitetura-alvo.md
-/Users/danielperrut/criativododo/02-documentacao/docs/arquitetura/03-plano-mestre-de-implementacao.md
-/Users/danielperrut/criativododo/02-documentacao/docs/arquitetura/README.md

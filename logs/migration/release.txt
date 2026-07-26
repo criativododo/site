@@ -1,6 +1,0 @@
-================================================
-release
-================================================
-/Users/danielperrut/criativododo/02-documentacao/docs/release/GATE_FINAL_GO_LIVE.md
-/Users/danielperrut/criativododo/02-documentacao/docs/release/TEAR_V2.5_GO_LIVE_CHECKLIST.md
-/Users/danielperrut/criativododo/02-documentacao/docs/release/TEAR_V2.5_RELEASE_READINESS.md

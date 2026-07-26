@@ -1,6 +1,0 @@
-================================================
-history
-================================================
-/Users/danielperrut/criativododo/02-documentacao/docs/history/CONTRATO_SOBERANO.md
-/Users/danielperrut/criativododo/02-documentacao/docs/history/PLANILHA_TEAR_2.0_MAPA.md
-/Users/danielperrut/criativododo/02-documentacao/docs/history/TEAR_V2_OFICIAL.xlsx

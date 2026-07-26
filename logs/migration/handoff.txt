@@ -1,4 +1,0 @@
-================================================
-handoff
-================================================
-/Users/danielperrut/criativododo/02-documentacao/docs/handoff/README.md
