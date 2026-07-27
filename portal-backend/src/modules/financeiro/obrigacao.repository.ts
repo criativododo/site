@@ -42,6 +42,10 @@ export class ObrigacaoRepositorioEmMemoria {
     this.obrigacoes = obrigacoes;
   }
 
+  async listarTodas(): Promise<ObrigacaoFinanceira[]> {
+    return this.obrigacoes;
+  }
+
   async listarPorParceira(parceiraId: string): Promise<ObrigacaoFinanceira[]> {
     return this.obrigacoes.filter((obrigacao) => obrigacao.parceiraId === parceiraId);
   }

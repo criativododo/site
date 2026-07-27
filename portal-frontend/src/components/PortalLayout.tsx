@@ -53,7 +53,11 @@ export function PortalLayout() {
 	const { sessao, logout } = useSession();
 	const itensNav =
 		sessao?.papelAtor === "ADMINISTRADOR"
-			? [...navItems, { to: "/admin", label: "Moderação" }]
+			? [
+					{ to: "/admin/dashboard", label: "Dashboard" },
+					...navItems,
+					{ to: "/admin", label: "Moderação" },
+				]
 			: navItems;
 
 	return (

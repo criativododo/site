@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { PortalLayout } from "./components/PortalLayout";
 import { RotaProtegida } from "./components/RotaProtegida";
 import { AdminPage } from "./pages/Admin";
+import { AdminDashboardPage } from "./pages/AdminDashboard";
 import { FinanceiroPage } from "./pages/Financeiro";
 import { LoginPage } from "./pages/Login";
 import { PendenciasPage } from "./pages/Pendencias";
@@ -22,6 +23,7 @@ function App() {
 				<Route path="/pendencias" element={<PendenciasPage />} />
 				<Route path="/financeiro" element={<FinanceiroPage />} />
 				<Route path="/perfil" element={<PerfilPage />} />
+				<Route path="/admin/dashboard" element={<AdminDashboardPage />} />
 				<Route path="/admin" element={<AdminPage />} />
 			</Route>
 

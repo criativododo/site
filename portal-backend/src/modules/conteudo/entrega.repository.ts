@@ -54,6 +54,10 @@ export class EntregaRepositorioEmMemoria {
     this.entregas = entregas;
   }
 
+  async listarTodas(): Promise<Entrega[]> {
+    return this.entregas;
+  }
+
   async listarPorParceira(parceiraId: string): Promise<Entrega[]> {
     return this.entregas.filter((entrega) => entrega.parceiraId === parceiraId);
   }

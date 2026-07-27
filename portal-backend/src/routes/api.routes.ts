@@ -3,6 +3,7 @@ import { registrarAuditoria } from "../middleware/auditoria.js";
 import { bloquearParceiraIdDeCliente, parceiraDaSessao } from "../middleware/isolamento.js";
 import { requireAdmin, requireAuth, requireContaAtiva } from "../middleware/requireAuth.js";
 import { conteudoRoutes } from "../modules/conteudo/conteudo.routes.js";
+import { dashboardRoutes } from "../modules/dashboard/dashboard.routes.js";
 import { financeiroRoutes } from "../modules/financeiro/financeiro.routes.js";
 import { adminRoutes } from "../modules/identidade/admin.routes.js";
 import { lgpdAdminRoutes, lgpdRoutes } from "../modules/lgpd/lgpd.routes.js";
@@ -41,6 +42,9 @@ apiRoutes.use("/admin", adminRoutes);
 
 /** Backoffice administrativo — Gestão de Parceiras (SPEC-001/SPEC-002). */
 apiRoutes.use("/admin/parceiras", requireAdmin, parceiraRoutes);
+
+/** Backoffice administrativo — Dashboard (painel operacional, agregação só leitura). */
+apiRoutes.use("/admin/dashboard", requireAdmin, dashboardRoutes);
 
 /** LGPD (ADR-010) — direitos do titular: acesso/portabilidade e processo de expurgo. */
 apiRoutes.use("/portal/lgpd", lgpdRoutes);
