@@ -10,6 +10,7 @@ function entrega(overrides: Partial<Entrega> = {}): Entrega {
     formato: "Reel",
     estado: "AGUARDANDO_MATERIAL",
     dataEntrega: "2026-07-10",
+    materialEnviado: null,
     ...overrides,
   };
 }

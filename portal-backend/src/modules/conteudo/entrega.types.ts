@@ -18,6 +18,8 @@ export interface Entrega {
   estado: EstadoEntrega;
   /** Data prevista de entrega do material (espelhada do Briefing, SPEC-009 — não implementada aqui). */
   dataEntrega: string;
+  /** LinkDoMaterial (SPEC-012 §6.1): referência ao arquivo enviado. Nulo até o upload (UC-027.03). */
+  materialEnviado: string | null;
 }
 
 /** ItemDePendencia (SPEC-027 §6.1): projeção de leitura da Entrega para o Portal. */

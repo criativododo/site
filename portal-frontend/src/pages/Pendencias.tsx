@@ -48,6 +48,65 @@ function formatarData(dataEntrega: string): string {
   return `${dia}/${mes}/${ano}`;
 }
 
+function EnviarMaterial({
+  entregaId,
+  aoEnviarComSucesso,
+}: {
+  entregaId: string;
+  aoEnviarComSucesso: (item: ItemDePendencia) => void;
+}) {
+  const [arquivo, setArquivo] = useState<File | null>(null);
+  const [enviando, setEnviando] = useState(false);
+  const [erro, setErro] = useState<string | null>(null);
+
+  async function enviar() {
+    if (!arquivo) return;
+    setEnviando(true);
+    setErro(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("arquivo", arquivo);
+      const resposta = await apiFetch<{ entrega: ItemDePendencia }>(
+        `/api/portal/entregas/${entregaId}/material`,
+        { method: "POST", body: formData },
+      );
+      aoEnviarComSucesso(resposta.entrega);
+      setArquivo(null);
+    } catch (erroCapturado) {
+      setErro(
+        erroCapturado instanceof ApiError
+          ? erroCapturado.message
+          : "Não foi possível enviar o material.",
+      );
+    } finally {
+      setEnviando(false);
+    }
+  }
+
+  return (
+    <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 8 }}>
+      <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+        <input
+          type="file"
+          onChange={(evento) => setArquivo(evento.target.files?.[0] ?? null)}
+          disabled={enviando}
+        />
+        <button
+          type="button"
+          className="btn-primary"
+          disabled={!arquivo || enviando}
+          onClick={() => void enviar()}
+          style={{ height: 36, padding: "0 20px", fontSize: 13 }}
+        >
+          {enviando ? "Enviando..." : "Enviar material"}
+        </button>
+      </div>
+      {erro && <p style={{ fontSize: 13, color: "var(--color-cherry)" }}>{erro}</p>}
+    </div>
+  );
+}
+
 function BriefingDoItem({ entregaId }: { entregaId: string }) {
   const [resposta, setResposta] = useState<RespostaBriefing | null>(null);
   const [erro, setErro] = useState<string | null>(null);
@@ -136,6 +195,17 @@ export function PendenciasPage() {
     };
   }, []);
 
+  function atualizarItem(itemAtualizado: ItemDePendencia) {
+    setResposta((atual) =>
+      atual
+        ? {
+            ...atual,
+            itens: atual.itens.map((item) => (item.id === itemAtualizado.id ? itemAtualizado : item)),
+          }
+        : atual,
+    );
+  }
+
   return (
     <section>
       <h1 className="title-editorial" style={{ fontSize: 28, marginBottom: 16 }}>
@@ -195,6 +265,9 @@ export function PendenciasPage() {
                 {aberto && (
                   <div style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid rgba(27, 23, 23, 0.1)" }}>
                     <BriefingDoItem entregaId={item.id} />
+                    {item.estado === "AGUARDANDO_MATERIAL" && (
+                      <EnviarMaterial entregaId={item.id} aoEnviarComSucesso={atualizarItem} />
+                    )}
                   </div>
                 )}
               </li>

@@ -23,6 +23,7 @@ function seedInicial(): Entrega[] {
       formato: "Reel",
       estado: "AGUARDANDO_MATERIAL",
       dataEntrega: `${mes}-10`,
+      materialEnviado: null,
     },
     {
       id: "entrega-seed-2",
@@ -31,6 +32,7 @@ function seedInicial(): Entrega[] {
       formato: "Carrossel",
       estado: "AGUARDANDO_MATERIAL",
       dataEntrega: `${mes}-05`,
+      materialEnviado: null,
     },
     {
       id: "entrega-seed-3",
@@ -39,6 +41,7 @@ function seedInicial(): Entrega[] {
       formato: "Stories1",
       estado: "EM_REVISAO",
       dataEntrega: `${mes}-15`,
+      materialEnviado: null,
     },
   ];
 }
@@ -59,6 +62,19 @@ export class EntregaRepositorioEmMemoria {
 
   async buscarPorId(id: string): Promise<Entrega | null> {
     return this.entregas.find((entrega) => entrega.id === id) ?? null;
+  }
+
+  /**
+   * Substitui a Entrega pelo seu id. Persistência pura — a regra de qual transição é válida
+   * (RN-02/CT-03) é responsabilidade do service (conteudo.service.ts), não deste repositório.
+   */
+  async atualizar(entregaAtualizada: Entrega): Promise<Entrega> {
+    const indice = this.entregas.findIndex((entrega) => entrega.id === entregaAtualizada.id);
+    if (indice === -1) {
+      throw new Error(`Entrega inexistente para atualização: ${entregaAtualizada.id}`);
+    }
+    this.entregas[indice] = entregaAtualizada;
+    return entregaAtualizada;
   }
 }
 

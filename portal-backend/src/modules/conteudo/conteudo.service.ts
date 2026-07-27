@@ -3,6 +3,7 @@ import type { BlocoBriefing } from "../briefing/briefing.types.js";
 import { competenciaCorrente } from "./competencia.js";
 import { entregaRepositorio } from "./entrega.repository.js";
 import type { Entrega, ItemDePendencia } from "./entrega.types.js";
+import { armazenamentoDeMaterial } from "./material.storage.js";
 
 /** UC-027.01: projeta Entregas em ItemDePendencia, em ordem cronológica por data de entrega. */
 export function projetarPendencias(entregas: Entrega[]): ItemDePendencia[] {
@@ -53,4 +54,39 @@ export async function obterBriefingDaEntrega(
   );
 
   return { entrega: projetarPendencias([entrega])[0], briefing };
+}
+
+export type ResultadoEnvioMaterial =
+  | { ok: true; entrega: ItemDePendencia }
+  | { ok: false; motivo: "NAO_ENCONTRADA" | "ESTADO_INVALIDO" };
+
+/**
+ * UC-027.03 · Enviar material. RN-02 (SPEC-027)/RN-03 (SPEC-012): só transiciona
+ * `AguardandoMaterial → EmRevisao` após a gravação do arquivo ser confirmada (PC-03: falha no
+ * upload não deve alterar o estado — por isso a gravação acontece antes de qualquer mutação
+ * de estado). CT-03 (SPEC-012): transição fora de `AGUARDANDO_MATERIAL` é inválida.
+ */
+export async function enviarMaterial(
+  parceiraId: string,
+  entregaId: string,
+  arquivo: { buffer: Buffer; nomeOriginal: string },
+): Promise<ResultadoEnvioMaterial> {
+  const entrega = await entregaRepositorio.buscarPorId(entregaId);
+  if (!entrega || entrega.parceiraId !== parceiraId) {
+    return { ok: false, motivo: "NAO_ENCONTRADA" };
+  }
+
+  if (entrega.estado !== "AGUARDANDO_MATERIAL") {
+    return { ok: false, motivo: "ESTADO_INVALIDO" };
+  }
+
+  const referenciaArquivo = await armazenamentoDeMaterial.salvar(entregaId, arquivo);
+
+  const atualizada = await entregaRepositorio.atualizar({
+    ...entrega,
+    estado: "EM_REVISAO",
+    materialEnviado: referenciaArquivo,
+  });
+
+  return { ok: true, entrega: projetarPendencias([atualizada])[0] };
 }

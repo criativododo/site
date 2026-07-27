@@ -15,11 +15,15 @@ export class ApiError extends Error {
  * o isolamento por Parceira é resolvido pelo backend a partir da sessão, nunca pelo cliente).
  */
 export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
+  // FormData define seu próprio Content-Type (com boundary) — o navegador precisa calculá-lo,
+  // nunca fixá-lo aqui, senão o multipart chega malformado ao backend.
+  const ehFormData = init?.body instanceof FormData;
+
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...init,
     credentials: "include",
     headers: {
-      "Content-Type": "application/json",
+      ...(ehFormData ? {} : { "Content-Type": "application/json" }),
       ...init?.headers,
     },
   });
