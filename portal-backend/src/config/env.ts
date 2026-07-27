@@ -8,10 +8,12 @@ function obrigatoria(nome: string): string {
   return valor;
 }
 
+const isProduction = process.env.NODE_ENV === "production";
+
 export const env = {
   port: Number(process.env.PORT ?? 4000),
   nodeEnv: process.env.NODE_ENV ?? "development",
-  isProduction: process.env.NODE_ENV === "production",
+  isProduction,
   frontendUrl: process.env.FRONTEND_URL ?? "http://localhost:5173",
 
   sessionSecret: obrigatoria("SESSION_SECRET"),
@@ -34,9 +36,12 @@ export const env = {
    * `parceiraId` para exercitar EPIC 2/3/4. Se configurado, o primeiro login com este e-mail
    * nasce já ACTIVE e vinculado a este `parceiraId` fixo — só para viabilizar QA manual do
    * Portal antes do fluxo real existir. Vazio por padrão (inerte); nunca usar em produção real.
+   *
+   * Travado em produção no próprio código (não só por convenção de `.env`): mesmo que a
+   * variável fique setada por engano, `isProduction` força os campos a string vazia.
    */
   parceiraSeed: {
-    email: (process.env.PARCEIRA_SEED_EMAIL ?? "").trim().toLowerCase(),
-    id: process.env.PARCEIRA_SEED_ID ?? "",
+    email: isProduction ? "" : (process.env.PARCEIRA_SEED_EMAIL ?? "").trim().toLowerCase(),
+    id: isProduction ? "" : (process.env.PARCEIRA_SEED_ID ?? ""),
   },
 };
