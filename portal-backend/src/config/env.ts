@@ -15,6 +15,10 @@ export const env = {
   nodeEnv: process.env.NODE_ENV ?? "development",
   isProduction,
   frontendUrl: process.env.FRONTEND_URL ?? "http://localhost:5173",
+  frontendUrls: (process.env.FRONTEND_URLS ?? "http://localhost:5173,http://127.0.0.1:5173")
+    .split(",")
+    .map((url) => url.trim())
+    .filter(Boolean),
 
   sessionSecret: obrigatoria("SESSION_SECRET"),
 

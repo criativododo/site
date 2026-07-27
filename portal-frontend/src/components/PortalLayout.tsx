@@ -13,43 +13,33 @@ export function PortalLayout() {
   const itensNav = sessao?.papelAtor === "ADMINISTRADOR" ? [...navItems, { to: "/admin", label: "Moderação" }] : navItems;
 
   return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-      <header
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          padding: "24px 40px",
-          borderBottom: "1px solid rgba(27, 23, 23, 0.1)",
-        }}
-      >
-        <img src={logoPrincipal} alt="Criativo DODÔ" style={{ width: 96 }} />
+    <div className="portal-shell">
+      <header className="portal-header">
+        <div className="portal-header-content container">
+          <img className="portal-logo" src={logoPrincipal} alt="Criativo DODÔ" />
 
-        <nav style={{ display: "flex", gap: 24 }}>
+          <nav className="portal-nav" aria-label="Navegação principal">
           {itensNav.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
-              className="nav-link"
-              style={({ isActive }) => ({
-                fontWeight: isActive ? 700 : 600,
-                color: "var(--color-cherry)",
-              })}
+              className={({ isActive }) => `portal-nav-link${isActive ? " is-active" : ""}`}
             >
               {item.label}
             </NavLink>
           ))}
-        </nav>
+          </nav>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          <span style={{ fontSize: 14 }}>{sessao?.nome}</span>
-          <button type="button" className="btn-primary" onClick={() => void logout()}>
-            Sair
-          </button>
+          <div className="portal-account">
+            <span className="portal-account-name">{sessao?.nome}</span>
+            <button type="button" className="btn-primary" onClick={() => void logout()}>
+              Sair
+            </button>
+          </div>
         </div>
       </header>
 
-      <main className="container" style={{ flex: 1, padding: "60px 40px" }}>
+      <main className="portal-content container">
         <Outlet />
       </main>
     </div>

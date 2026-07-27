@@ -30,22 +30,52 @@ interface RespostaBriefing {
 }
 
 const LABEL_FORMATO: Record<Formato, string> = {
-  Reel: "Reel",
-  Carrossel: "Carrossel",
-  Stories1: "Stories 1",
-  Stories2: "Stories 2",
+  Reel: "reel",
+  Carrossel: "carrossel",
+  Stories1: "stories 1",
+  Stories2: "stories 2",
 };
 
 const LABEL_ESTADO: Record<EstadoEntrega, string> = {
-  AGUARDANDO_MATERIAL: "Aguardando material",
-  EM_REVISAO: "Em revisão",
-  APROVADO: "Aprovado",
-  PUBLICADO: "Publicado",
+  AGUARDANDO_MATERIAL: "aguardando material",
+  EM_REVISAO: "em revisão",
+  APROVADO: "aprovado",
+  PUBLICADO: "publicado",
 };
 
 function formatarData(dataEntrega: string): string {
   const [ano, mes, dia] = dataEntrega.split("-");
   return `${dia}/${mes}/${ano}`;
+}
+
+function formatarCompetencia(mesReferencia: string): string {
+  const [ano, mes] = mesReferencia.split("-");
+  const nomes = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
+  return `${nomes[Number(mes) - 1]} de ${ano}`;
+}
+
+function entregaAtrasada(item: ItemDePendencia): boolean {
+  return item.estado === "AGUARDANDO_MATERIAL" && new Date(`${item.dataEntrega}T23:59:59`).getTime() < Date.now();
+}
+
+function prioridade(item: ItemDePendencia): number {
+  if (entregaAtrasada(item)) return 0;
+  if (item.estado === "AGUARDANDO_MATERIAL") return 1;
+  if (item.estado === "EM_REVISAO") return 2;
+  if (item.estado === "APROVADO") return 3;
+  return 4;
+}
+
+function textoPrazo(item: ItemDePendencia): string {
+  if (entregaAtrasada(item)) return `atrasada desde ${formatarData(item.dataEntrega)}`;
+  if (item.estado === "AGUARDANDO_MATERIAL") return `enviar até ${formatarData(item.dataEntrega)}`;
+  return `prazo ${formatarData(item.dataEntrega)}`;
+}
+
+function acaoDisponivel(item: ItemDePendencia): string | null {
+  if (item.estado === "AGUARDANDO_MATERIAL") return "enviar material";
+  if (item.estado === "EM_REVISAO") return "aguardar aprovação";
+  return null;
 }
 
 function EnviarMaterial({
@@ -85,8 +115,8 @@ function EnviarMaterial({
   }
 
   return (
-    <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 8 }}>
-      <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+    <div className="pendencia-upload">
+      <div className="pendencia-upload-controls">
         <input
           type="file"
           onChange={(evento) => setArquivo(evento.target.files?.[0] ?? null)}
@@ -94,15 +124,15 @@ function EnviarMaterial({
         />
         <button
           type="button"
-          className="btn-primary"
+          className="btn-primary pendencia-submit"
           disabled={!arquivo || enviando}
           onClick={() => void enviar()}
           style={{ height: 36, padding: "0 20px", fontSize: 13 }}
         >
-          {enviando ? "Enviando..." : "Enviar material"}
+          {enviando ? "enviando..." : "enviar material"}
         </button>
       </div>
-      {erro && <p style={{ fontSize: 13, color: "var(--color-cherry)" }}>{erro}</p>}
+      {erro && <p className="pendencia-feedback">{erro}</p>}
     </div>
   );
 }
@@ -133,28 +163,28 @@ function BriefingDoItem({ entregaId }: { entregaId: string }) {
   }, [entregaId]);
 
   if (carregando) {
-    return <p style={{ fontSize: 14 }}>Carregando briefing...</p>;
+    return <p className="pendencia-feedback">carregando briefing...</p>;
   }
 
   if (erro) {
-    return <p style={{ fontSize: 14, color: "var(--color-cherry)" }}>{erro}</p>;
+    return <p className="pendencia-feedback">{erro}</p>;
   }
 
   if (!resposta?.briefing) {
-    return <p style={{ fontSize: 14 }}>Briefing ainda não publicado para esta Entrega.</p>;
+    return <p className="pendencia-feedback">briefing ainda não publicado para esta entrega.</p>;
   }
 
   const { look, dataEntrega, dataPostagem, orientacao } = resposta.briefing;
 
   return (
-    <dl style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: "6px 16px", fontSize: 14 }}>
-      <dt style={{ fontWeight: 700 }}>Look</dt>
+    <dl className="pendencia-briefing">
+      <dt>look</dt>
       <dd>{look}</dd>
-      <dt style={{ fontWeight: 700 }}>Data de entrega</dt>
+      <dt>data de entrega</dt>
       <dd>{formatarData(dataEntrega)}</dd>
-      <dt style={{ fontWeight: 700 }}>Data de postagem</dt>
+      <dt>data de postagem</dt>
       <dd>{formatarData(dataPostagem)}</dd>
-      <dt style={{ fontWeight: 700 }}>Orientação</dt>
+      <dt>orientação</dt>
       <dd>{orientacao}</dd>
     </dl>
   );
@@ -206,64 +236,64 @@ export function PendenciasPage() {
     );
   }
 
-  return (
-    <section>
-      <h1 className="title-editorial" style={{ fontSize: 28, marginBottom: 16 }}>
-        Pendências do mês
-      </h1>
+  const itensOrdenados = resposta ? [...resposta.itens].sort((a, b) => prioridade(a) - prioridade(b)) : [];
 
-      {carregando && <p style={{ fontSize: 15 }}>Carregando...</p>}
+  return (
+    <section className="portal-page pendencias-page">
+      <p className="portal-eyebrow">conteúdo mensal</p>
+      <h1 className="title-editorial portal-page-title">
+        suas entregas
+      </h1>
+      <p className="portal-page-intro">
+        {resposta ? `acompanhe o que precisa acontecer em ${formatarCompetencia(resposta.mesReferencia)}.` : "acompanhe seus conteúdos, prazos e materiais do mês."}
+      </p>
+
+      {carregando && <p className="portal-page-feedback">carregando suas entregas...</p>}
 
       {!carregando && erro && (
-        <p style={{ fontSize: 15, color: "var(--color-cherry)" }}>{erro}</p>
+        <p className="portal-page-feedback is-error">{erro}</p>
       )}
 
       {!carregando && !erro && resposta && resposta.itens.length === 0 && (
-        <p style={{ fontSize: 15 }}>Sem pendências nesta competência ({resposta.mesReferencia}).</p>
+        <p className="portal-page-feedback">não há entregas pendentes em {formatarCompetencia(resposta.mesReferencia)}.</p>
       )}
 
-      {!carregando && !erro && resposta && resposta.itens.length > 0 && (
-        <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: 12 }}>
-          {resposta.itens.map((item) => {
+      {!carregando && !erro && resposta && itensOrdenados.length > 0 && (
+        <>
+        <p className="pendencias-summary">{itensOrdenados.length} {itensOrdenados.length === 1 ? "entrega para acompanhar" : "entregas para acompanhar"}</p>
+        <ul className="pendencias-list">
+          {itensOrdenados.map((item) => {
             const aberto = itemAberto === item.id;
+            const atrasada = entregaAtrasada(item);
+            const acao = acaoDisponivel(item);
             return (
-              <li
-                key={item.id}
-                style={{
-                  padding: "16px 20px",
-                  border: "1px solid rgba(27, 23, 23, 0.1)",
-                  borderRadius: 12,
-                }}
-              >
+              <li key={item.id} className={`pendencia-item pendencia-${item.estado.toLowerCase()}${atrasada ? " is-overdue" : ""}${aberto ? " is-open" : ""}`}>
                 <button
                   type="button"
                   onClick={() => setItemAberto(aberto ? null : item.id)}
-                  style={{
-                    width: "100%",
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    background: "none",
-                    border: "none",
-                    padding: 0,
-                    textAlign: "left",
-                  }}
+                  className="pendencia-trigger"
+                  aria-expanded={aberto}
                 >
                   <div>
-                    <strong style={{ fontFamily: "var(--font-display)" }}>
+                    <strong className="pendencia-format">
                       {LABEL_FORMATO[item.formato]}
                     </strong>
-                    <p style={{ fontSize: 14, opacity: 0.8 }}>
-                      Entrega prevista em {formatarData(item.dataEntrega)}
+                    <p className="pendencia-date">
+                      {textoPrazo(item)}
                     </p>
                   </div>
-                  <span style={{ fontSize: 14, fontWeight: 600, color: "var(--color-cherry)" }}>
-                    {LABEL_ESTADO[item.estado]}
-                  </span>
+                  <div className="pendencia-status">
+                    <span className="pendencia-status-badge">
+                      <span className="pendencia-status-icon" aria-hidden="true">{atrasada ? "!" : item.estado === "AGUARDANDO_MATERIAL" ? "↑" : item.estado === "EM_REVISAO" ? "·" : "✓"}</span>
+                      {LABEL_ESTADO[item.estado]}
+                    </span>
+                    {acao && <span className="pendencia-next-action">{acao}</span>}
+                    <span className="pendencia-icon" aria-hidden="true">↓</span>
+                  </div>
                 </button>
 
                 {aberto && (
-                  <div style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid rgba(27, 23, 23, 0.1)" }}>
+                  <div className="pendencia-details">
                     <BriefingDoItem entregaId={item.id} />
                     {item.estado === "AGUARDANDO_MATERIAL" && (
                       <EnviarMaterial entregaId={item.id} aoEnviarComSucesso={atualizarItem} />
@@ -274,6 +304,7 @@ export function PendenciasPage() {
             );
           })}
         </ul>
+        </>
       )}
     </section>
   );

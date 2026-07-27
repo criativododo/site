@@ -6,7 +6,13 @@ export function LoginPage() {
   const { sessao, carregando, login } = useSession();
 
   if (carregando) {
-    return null;
+    return (
+      <main className="portal-login portal-login-loading" aria-live="polite">
+        <img className="portal-login-logo" src={logoPrincipal} alt="criativo dodô" />
+        <span className="portal-login-loader" aria-hidden="true" />
+        <p>verificando seu acesso…</p>
+      </main>
+    );
   }
 
   if (sessao?.estadoConta === "ACTIVE") {
@@ -14,46 +20,49 @@ export function LoginPage() {
   }
 
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: 32,
-        textAlign: "center",
-        padding: "0 24px",
-      }}
-    >
-      <img src={logoPrincipal} alt="Criativo DODÔ" style={{ width: 160 }} />
+    <main className="portal-login">
+      <header className="portal-login-header">
+        <img className="portal-login-logo" src={logoPrincipal} alt="criativo dodô" />
+        <span>portal da parceira</span>
+      </header>
 
-      <div style={{ maxWidth: 380 }}>
-        <h1 className="title-editorial" style={{ fontSize: 28, marginBottom: 12 }}>
-          Portal da Parceira
-        </h1>
-        <p style={{ fontSize: 15, lineHeight: 1.6 }}>
-          Acompanhe suas pendências de conteúdo, financeiro e perfil.
-        </p>
-      </div>
+      <section className="portal-login-content" aria-labelledby="portal-login-title">
+        {!sessao && (
+          <>
+            <p className="portal-login-overline">acesso da parceira</p>
+            <h1 id="portal-login-title" className="portal-login-title">bem-vinda de volta.</h1>
+            <p className="portal-login-description">
+              entre com a conta google cadastrada para acompanhar conteúdos, pagamentos e seu perfil.
+            </p>
+            <button type="button" className="portal-login-button" onClick={login}>
+              continuar com google <span aria-hidden="true">→</span>
+            </button>
+            <p className="portal-login-security">seu acesso é protegido pela sua conta google.</p>
+          </>
+        )}
 
-      {sessao?.estadoConta === "PENDING" && (
-        <p style={{ fontSize: 14, color: "var(--color-cherry)" }}>
-          Seu acesso foi solicitado e está aguardando aprovação da equipe.
-        </p>
-      )}
+        {sessao?.estadoConta === "PENDING" && (
+          <>
+            <p className="portal-login-overline">cadastro recebido</p>
+            <h1 id="portal-login-title" className="portal-login-title">seu acesso está em análise.</h1>
+            <p className="portal-login-description">
+              assim que a equipe aprovar seu cadastro, você poderá entrar por aqui com a mesma conta google.
+            </p>
+          </>
+        )}
 
-      {(sessao?.estadoConta === "INACTIVE" || sessao?.estadoConta === "REJECTED") && (
-        <p style={{ fontSize: 14, color: "var(--color-cherry)" }}>
-          Seu acesso não está disponível no momento. Fale com a equipe Criativo DODÔ.
-        </p>
-      )}
+        {(sessao?.estadoConta === "INACTIVE" || sessao?.estadoConta === "REJECTED") && (
+          <>
+            <p className="portal-login-overline">acesso indisponível</p>
+            <h1 id="portal-login-title" className="portal-login-title">não foi possível liberar seu acesso.</h1>
+            <p className="portal-login-description">
+              fale com a equipe criativo dodô para confirmar os dados do seu cadastro.
+            </p>
+          </>
+        )}
+      </section>
 
-      {!sessao && (
-        <button type="button" className="btn-primary" onClick={login}>
-          Entrar com Google
-        </button>
-      )}
+      <footer className="portal-login-footer">precisa de ajuda? fale com a equipe criativo dodô.</footer>
     </main>
   );
 }
