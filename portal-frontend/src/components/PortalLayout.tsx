@@ -1,5 +1,6 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { Link, NavLink, Outlet } from "react-router-dom";
 import logoPrincipal from "../assets/brand/principal.svg";
+import { PageHeaderProvider, usePageHeaderSlots } from "../lib/pageHeader";
 import { useSession } from "../lib/session";
 
 const navItems = [
@@ -7,6 +8,46 @@ const navItems = [
 	{ to: "/financeiro", label: "Financeiro" },
 	{ to: "/perfil", label: "Perfil" },
 ];
+
+function PortalMain() {
+	const { breadcrumb, acoes } = usePageHeaderSlots();
+	const temCabecalho = breadcrumb.length > 0 || acoes !== null;
+
+	return (
+		<div className="portal-main">
+			{temCabecalho && (
+				<header className="portal-main-header container">
+					<div className="portal-breadcrumb-slot">
+						{breadcrumb.length > 0 && (
+							<nav
+								className="portal-breadcrumb"
+								aria-label="Trilha de navegação"
+							>
+								{breadcrumb.map((item, indice) => (
+									<span key={item.to ?? item.label}>
+										{item.to ? (
+											<Link to={item.to}>{item.label}</Link>
+										) : (
+											<span>{item.label}</span>
+										)}
+										{indice < breadcrumb.length - 1 && (
+											<span aria-hidden="true"> / </span>
+										)}
+									</span>
+								))}
+							</nav>
+						)}
+					</div>
+					{acoes && <div className="portal-context-actions">{acoes}</div>}
+				</header>
+			)}
+
+			<main className="portal-content container">
+				<Outlet />
+			</main>
+		</div>
+	);
+}
 
 export function PortalLayout() {
 	const { sessao, logout } = useSession();
@@ -17,15 +58,17 @@ export function PortalLayout() {
 
 	return (
 		<div className="portal-shell">
-			<header className="portal-header">
-				<div className="portal-header-content container">
-					<img
-						className="portal-logo"
-						src={logoPrincipal}
-						alt="Criativo DODÔ"
-					/>
+			<aside className="portal-sidebar">
+				<div className="portal-sidebar-top">
+					<Link to="/pendencias" className="portal-logo-link">
+						<img
+							className="portal-logo"
+							src={logoPrincipal}
+							alt="Criativo DODÔ"
+						/>
+					</Link>
 
-					<nav className="portal-nav" aria-label="Navegação principal">
+					<nav className="portal-sidebar-nav" aria-label="Navegação principal">
 						{itensNav.map((item) => (
 							<NavLink
 								key={item.to}
@@ -38,23 +81,23 @@ export function PortalLayout() {
 							</NavLink>
 						))}
 					</nav>
-
-					<div className="portal-account">
-						<span className="portal-account-name">{sessao?.nome}</span>
-						<button
-							type="button"
-							className="btn-primary"
-							onClick={() => void logout()}
-						>
-							Sair
-						</button>
-					</div>
 				</div>
-			</header>
 
-			<main className="portal-content container">
-				<Outlet />
-			</main>
+				<div className="portal-sidebar-user">
+					<span className="portal-sidebar-user-name">{sessao?.nome}</span>
+					<button
+						type="button"
+						className="btn-primary"
+						onClick={() => void logout()}
+					>
+						Sair
+					</button>
+				</div>
+			</aside>
+
+			<PageHeaderProvider>
+				<PortalMain />
+			</PageHeaderProvider>
 		</div>
 	);
 }
