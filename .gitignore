@@ -1,1 +1,41 @@
+# macOS
+.DS_Store
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Build
+dist/
+build/
+coverage/
+
+# Vite
+.vite/
+
+# Cache
+.cache/
+.tmp/
+temp/
+
+# IDE
+.vscode/
+.idea/
+
+# Auditorias
+.audit-portal/
 architecture-report.txt
+
+# Logs
+*.log
+
+# OS
+Thumbs.db
