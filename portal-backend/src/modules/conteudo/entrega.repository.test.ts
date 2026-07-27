@@ -11,6 +11,8 @@ function entrega(overrides: Partial<Entrega> = {}): Entrega {
     estado: "AGUARDANDO_MATERIAL",
     dataEntrega: "2026-07-10",
     materialEnviado: null,
+    dataCriacao: "2026-07-01T00:00:00.000Z",
+    dataAtualizacao: "2026-07-01T00:00:00.000Z",
     ...overrides,
   };
 }
@@ -58,5 +60,35 @@ describe("EntregaRepositorioEmMemoria.listarPorParceira (UC-030.03)", () => {
 
     const resultado = await repo.listarPorParceira("parceira-1");
     expect(new Set(resultado.map((item) => item.id))).toEqual(new Set(["julho", "junho"]));
+  });
+});
+
+describe("EntregaRepositorioEmMemoria.criar (Backoffice)", () => {
+  it("adiciona a Entrega e a torna visível para as demais consultas", async () => {
+    const repo = new EntregaRepositorioEmMemoria([]);
+    const nova = entrega({ id: "nova" });
+
+    const criada = await repo.criar(nova);
+
+    expect(criada).toEqual(nova);
+    expect(await repo.buscarPorId("nova")).toEqual(nova);
+    expect(await repo.listarTodas()).toEqual([nova]);
+  });
+});
+
+describe("EntregaRepositorioEmMemoria.atualizar", () => {
+  it("carimba dataAtualizacao mesmo quando o chamador não a informa", async () => {
+    const original = entrega({ id: "e1", dataAtualizacao: "2026-07-01T00:00:00.000Z" });
+    const repo = new EntregaRepositorioEmMemoria([original]);
+
+    const atualizada = await repo.atualizar({ ...original, estado: "EM_REVISAO" });
+
+    expect(atualizada.estado).toBe("EM_REVISAO");
+    expect(atualizada.dataAtualizacao).not.toBe("2026-07-01T00:00:00.000Z");
+  });
+
+  it("lança erro ao tentar atualizar Entrega inexistente", async () => {
+    const repo = new EntregaRepositorioEmMemoria([]);
+    await expect(repo.atualizar(entrega({ id: "nao-existe" }))).rejects.toThrow();
   });
 });

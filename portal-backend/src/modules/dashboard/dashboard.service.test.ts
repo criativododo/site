@@ -38,6 +38,8 @@ function entrega(overrides: Partial<Entrega> = {}): Entrega {
     estado: "AGUARDANDO_MATERIAL",
     dataEntrega: "2026-07-10",
     materialEnviado: null,
+    dataCriacao: "2026-07-01T00:00:00.000Z",
+    dataAtualizacao: "2026-07-01T00:00:00.000Z",
     ...overrides,
   };
 }

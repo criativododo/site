@@ -1,8 +1,10 @@
+import { randomUUID } from "node:crypto";
 import { briefingRepositorio } from "../briefing/briefing.repository.js";
 import type { BlocoBriefing } from "../briefing/briefing.types.js";
+import { parceiraRepositorio } from "../parceira/parceira.repository.js";
 import { competenciaCorrente } from "./competencia.js";
 import { entregaRepositorio } from "./entrega.repository.js";
-import type { Entrega, ItemDePendencia } from "./entrega.types.js";
+import type { Entrega, FormatoEntrega, ItemDePendencia } from "./entrega.types.js";
 import { armazenamentoDeMaterial } from "./material.storage.js";
 
 /** UC-027.01: projeta Entregas em ItemDePendencia, em ordem cronológica por data de entrega. */
@@ -89,4 +91,87 @@ export async function enviarMaterial(
   });
 
   return { ok: true, entrega: projetarPendencias([atualizada])[0] };
+}
+
+/** Backoffice administrativo — leitura irrestrita de todas as Entregas (Administrador vê tudo). */
+export async function listarTodasEntregas(): Promise<Entrega[]> {
+  return entregaRepositorio.listarTodas();
+}
+
+const FORMATOS_VALIDOS: FormatoEntrega[] = ["Reel", "Carrossel", "Stories1", "Stories2"];
+const REGEX_MES_REFERENCIA = /^\d{4}-(0[1-9]|1[0-2])$/;
+const REGEX_DATA_ENTREGA = /^\d{4}-\d{2}-\d{2}$/;
+
+export interface DadosNovaEntrega {
+  parceiraId: string;
+  mesReferencia: string;
+  formato: FormatoEntrega;
+  dataEntrega: string;
+}
+
+export type MotivoRejeicaoNovaEntrega =
+  | "FORMATO_INVALIDO"
+  | "MES_REFERENCIA_INVALIDO"
+  | "DATA_ENTREGA_INVALIDA"
+  | "PARCEIRA_INEXISTENTE"
+  | "PARCEIRA_INATIVA";
+
+type MotivoFormato = Extract<
+  MotivoRejeicaoNovaEntrega,
+  "FORMATO_INVALIDO" | "MES_REFERENCIA_INVALIDO" | "DATA_ENTREGA_INVALIDA"
+>;
+
+/** Validação pura de forma (sem consultar repositório) — reaproveitável e testável isoladamente. */
+export function validarFormaDaNovaEntrega(
+  dados: DadosNovaEntrega,
+): { ok: true } | { ok: false; motivo: MotivoFormato } {
+  if (!FORMATOS_VALIDOS.includes(dados.formato)) {
+    return { ok: false, motivo: "FORMATO_INVALIDO" };
+  }
+  if (!REGEX_MES_REFERENCIA.test(dados.mesReferencia)) {
+    return { ok: false, motivo: "MES_REFERENCIA_INVALIDO" };
+  }
+  if (!REGEX_DATA_ENTREGA.test(dados.dataEntrega)) {
+    return { ok: false, motivo: "DATA_ENTREGA_INVALIDA" };
+  }
+  return { ok: true };
+}
+
+export type ResultadoNovaEntrega = { ok: true; entrega: Entrega } | { ok: false; motivo: MotivoRejeicaoNovaEntrega };
+
+/**
+ * Criação administrativa de Entrega (Backoffice, preparação para CRUD completo — só
+ * GET/POST nesta entrega). Nasce sempre `AGUARDANDO_MATERIAL`/`materialEnviado: null`,
+ * independente do que for enviado — mesma disciplina de RN-01 do módulo Parceira (nunca
+ * confiar em estado vindo do cliente). Exige Parceira existente e `ATIVA` (lacuna apontada em
+ * `docs/handoff/HANDOFF_CODEX_BACKOFFICE.md` §3 — até aqui nenhum módulo validava o vínculo).
+ */
+export async function criarEntregaAdministrativa(dados: DadosNovaEntrega): Promise<ResultadoNovaEntrega> {
+  const validacaoDeForma = validarFormaDaNovaEntrega(dados);
+  if (!validacaoDeForma.ok) {
+    return validacaoDeForma;
+  }
+
+  const parceira = await parceiraRepositorio.buscarPorId(dados.parceiraId);
+  if (!parceira) {
+    return { ok: false, motivo: "PARCEIRA_INEXISTENTE" };
+  }
+  if (parceira.status !== "ATIVA") {
+    return { ok: false, motivo: "PARCEIRA_INATIVA" };
+  }
+
+  const agora = new Date().toISOString();
+  const entrega: Entrega = {
+    id: randomUUID(),
+    parceiraId: dados.parceiraId,
+    mesReferencia: dados.mesReferencia,
+    formato: dados.formato,
+    estado: "AGUARDANDO_MATERIAL",
+    dataEntrega: dados.dataEntrega,
+    materialEnviado: null,
+    dataCriacao: agora,
+    dataAtualizacao: agora,
+  };
+
+  return { ok: true, entrega: await entregaRepositorio.criar(entrega) };
 }

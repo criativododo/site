@@ -14,8 +14,10 @@ function seedInicial(): BlocoBriefing[] {
   }
 
   const mes = competenciaCorrente();
+  const agora = new Date().toISOString();
   return [
     {
+      id: "briefing-seed-1",
       parceiraId: env.parceiraSeed.id,
       mesReferencia: mes,
       formato: "Reel",
@@ -23,8 +25,11 @@ function seedInicial(): BlocoBriefing[] {
       dataEntrega: `${mes}-10`,
       dataPostagem: `${mes}-20`,
       orientacao: "Reel de unboxing, tom leve, até 30s.",
+      dataCriacao: agora,
+      dataAtualizacao: agora,
     },
     {
+      id: "briefing-seed-2",
       parceiraId: env.parceiraSeed.id,
       mesReferencia: mes,
       formato: "Carrossel",
@@ -32,8 +37,11 @@ function seedInicial(): BlocoBriefing[] {
       dataEntrega: `${mes}-05`,
       dataPostagem: `${mes}-18`,
       orientacao: "Carrossel de 5 fotos mostrando o produto em uso.",
+      dataCriacao: agora,
+      dataAtualizacao: agora,
     },
     {
+      id: "briefing-seed-3",
       parceiraId: env.parceiraSeed.id,
       mesReferencia: mes,
       formato: "Stories1",
@@ -41,6 +49,8 @@ function seedInicial(): BlocoBriefing[] {
       dataEntrega: `${mes}-15`,
       dataPostagem: `${mes}-22`,
       orientacao: "Stories de bastidor, sem roteiro fixo.",
+      dataCriacao: agora,
+      dataAtualizacao: agora,
     },
   ];
 }
@@ -66,6 +76,41 @@ export class BriefingRepositorioEmMemoria {
           bloco.formato === formato,
       ) ?? null
     );
+  }
+
+  /** Backoffice — leitura irrestrita de todos os Blocos (Administrador vê tudo). */
+  async listarTodos(): Promise<BlocoBriefing[]> {
+    return this.blocos;
+  }
+
+  async buscarPorId(id: string): Promise<BlocoBriefing | null> {
+    return this.blocos.find((bloco) => bloco.id === id) ?? null;
+  }
+
+  /** Criação administrativa. Persistência pura — unicidade por chave natural é responsabilidade do service. */
+  async criar(bloco: BlocoBriefing): Promise<BlocoBriefing> {
+    this.blocos.push(bloco);
+    return bloco;
+  }
+
+  /** Carimba `dataAtualizacao` aqui, mesma disciplina de entrega.repository.ts::atualizar. */
+  async atualizar(blocoAtualizado: BlocoBriefing): Promise<BlocoBriefing> {
+    const indice = this.blocos.findIndex((bloco) => bloco.id === blocoAtualizado.id);
+    if (indice === -1) {
+      throw new Error(`Bloco de Briefing inexistente para atualização: ${blocoAtualizado.id}`);
+    }
+    const atualizado: BlocoBriefing = { ...blocoAtualizado, dataAtualizacao: new Date().toISOString() };
+    this.blocos[indice] = atualizado;
+    return atualizado;
+  }
+
+  /** Remoção administrativa (RN de "quando permitido" é responsabilidade do service). */
+  async remover(id: string): Promise<void> {
+    const indice = this.blocos.findIndex((bloco) => bloco.id === id);
+    if (indice === -1) {
+      throw new Error(`Bloco de Briefing inexistente para remoção: ${id}`);
+    }
+    this.blocos.splice(indice, 1);
   }
 }
 

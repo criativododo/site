@@ -20,6 +20,9 @@ export interface Entrega {
   dataEntrega: string;
   /** LinkDoMaterial (SPEC-012 §6.1): referência ao arquivo enviado. Nulo até o upload (UC-027.03). */
   materialEnviado: string | null;
+  /** Auditoria mínima (ISO 8601) — preparação para o CRUD administrativo completo (criação/edição/exclusão). */
+  dataCriacao: string;
+  dataAtualizacao: string;
 }
 
 /** ItemDePendencia (SPEC-027 §6.1): projeção de leitura da Entrega para o Portal. */

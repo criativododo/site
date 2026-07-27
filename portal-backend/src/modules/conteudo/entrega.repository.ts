@@ -15,6 +15,7 @@ function seedInicial(): Entrega[] {
   }
 
   const mes = competenciaCorrente();
+  const agora = new Date().toISOString();
   return [
     {
       id: "entrega-seed-1",
@@ -24,6 +25,8 @@ function seedInicial(): Entrega[] {
       estado: "AGUARDANDO_MATERIAL",
       dataEntrega: `${mes}-10`,
       materialEnviado: null,
+      dataCriacao: agora,
+      dataAtualizacao: agora,
     },
     {
       id: "entrega-seed-2",
@@ -33,6 +36,8 @@ function seedInicial(): Entrega[] {
       estado: "AGUARDANDO_MATERIAL",
       dataEntrega: `${mes}-05`,
       materialEnviado: null,
+      dataCriacao: agora,
+      dataAtualizacao: agora,
     },
     {
       id: "entrega-seed-3",
@@ -42,6 +47,8 @@ function seedInicial(): Entrega[] {
       estado: "EM_REVISAO",
       dataEntrega: `${mes}-15`,
       materialEnviado: null,
+      dataCriacao: agora,
+      dataAtualizacao: agora,
     },
   ];
 }
@@ -72,16 +79,28 @@ export class EntregaRepositorioEmMemoria {
   }
 
   /**
+   * Criação administrativa (Backoffice). Persistência pura — validação de Parceira/formato é
+   * responsabilidade do service (conteudo.service.ts::criarEntregaAdministrativa).
+   */
+  async criar(entrega: Entrega): Promise<Entrega> {
+    this.entregas.push(entrega);
+    return entrega;
+  }
+
+  /**
    * Substitui a Entrega pelo seu id. Persistência pura — a regra de qual transição é válida
    * (RN-02/CT-03) é responsabilidade do service (conteudo.service.ts), não deste repositório.
+   * `dataAtualizacao` é carimbada aqui (analogia a `updated_at` de banco) para que nenhum
+   * chamador precise lembrar de tocar o timestamp manualmente.
    */
   async atualizar(entregaAtualizada: Entrega): Promise<Entrega> {
     const indice = this.entregas.findIndex((entrega) => entrega.id === entregaAtualizada.id);
     if (indice === -1) {
       throw new Error(`Entrega inexistente para atualização: ${entregaAtualizada.id}`);
     }
-    this.entregas[indice] = entregaAtualizada;
-    return entregaAtualizada;
+    const atualizada: Entrega = { ...entregaAtualizada, dataAtualizacao: new Date().toISOString() };
+    this.entregas[indice] = atualizada;
+    return atualizada;
   }
 }
 

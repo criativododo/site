@@ -13,6 +13,9 @@ pnpm-debug.log*
 .env.*
 !.env.example
 
+# Credenciais OAuth baixadas do Google Cloud Console (nunca devem ser commitadas)
+client_secret_*.json
+
 # Build
 dist/
 build/

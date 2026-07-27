@@ -56,6 +56,8 @@ export function PortalLayout() {
 			? [
 					{ to: "/admin/dashboard", label: "Dashboard" },
 					{ to: "/admin/parceiras", label: "Parceiras" },
+					{ to: "/admin/entregas", label: "Entregas" },
+					{ to: "/admin/briefings", label: "Briefings" },
 					...navItems,
 					{ to: "/admin", label: "Moderação" },
 				]
