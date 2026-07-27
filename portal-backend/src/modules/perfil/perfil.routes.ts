@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { parceiraDaSessao } from "../../middleware/isolamento.js";
-import { atualizarContato, obterPerfil } from "./perfil.service.js";
+import { atualizarContato, atualizarEndereco, obterPerfil } from "./perfil.service.js";
 
 export const perfilRoutes = Router();
 
@@ -32,4 +32,23 @@ perfilRoutes.patch("/contato", async (req, res) => {
   }
 
   res.json(resultado.perfil);
+});
+
+/** UC-032.03 · Editar endereço por CEP. RN-02: falha do CEP não impede salvar (degradável). */
+perfilRoutes.patch("/endereco", async (req, res) => {
+  const parceiraId = parceiraDaSessao(req);
+  const { cep, numero, complemento } = req.body ?? {};
+
+  const resultado = await atualizarEndereco(parceiraId, {
+    cep: typeof cep === "string" ? cep : "",
+    numero: typeof numero === "string" ? numero : "",
+    complemento: typeof complemento === "string" ? complemento : "",
+  });
+
+  if (!resultado.ok) {
+    res.status(404).json({ error: "Perfil não encontrado." });
+    return;
+  }
+
+  res.json({ perfil: resultado.perfil, cepResolvido: resultado.cepResolvido });
 });

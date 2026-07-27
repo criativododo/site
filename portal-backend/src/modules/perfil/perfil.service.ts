@@ -1,5 +1,6 @@
+import { resolvedorDeCep, type DadosDeEndereco } from "./cep.resolver.js";
 import { perfilRepositorio } from "./perfil.repository.js";
-import type { PerfilParceira } from "./perfil.types.js";
+import type { Endereco, PerfilParceira } from "./perfil.types.js";
 
 /** UC-032.01 · Ver perfil (RN-03: só o próprio perfil — garantido por `parceiraId` vir da sessão). */
 export async function obterPerfil(parceiraId: string): Promise<PerfilParceira | null> {
@@ -41,4 +42,46 @@ export async function atualizarContato(
   };
 
   return { ok: true, perfil: await perfilRepositorio.atualizar(atualizado) };
+}
+
+/**
+ * RN-01: recompõe rua/bairro/cidade/uf a partir do CEP resolvido. RN-02 (degradável): se o
+ * CEP não resolver, cep/número/complemento são salvos do mesmo jeito — rua/bairro/cidade/uf
+ * mantêm o valor anterior (ou vazio, se nunca houve endereço), nunca bloqueiam o salvamento.
+ */
+export function montarEndereco(
+  dados: { cep: string; numero: string; complemento: string },
+  dadosResolvidos: DadosDeEndereco | null,
+  enderecoAnterior: Endereco | null,
+): Endereco {
+  return {
+    cep: dados.cep,
+    numero: dados.numero,
+    complemento: dados.complemento,
+    rua: dadosResolvidos?.rua ?? enderecoAnterior?.rua ?? "",
+    bairro: dadosResolvidos?.bairro ?? enderecoAnterior?.bairro ?? "",
+    cidade: dadosResolvidos?.cidade ?? enderecoAnterior?.cidade ?? "",
+    uf: dadosResolvidos?.uf ?? enderecoAnterior?.uf ?? "",
+  };
+}
+
+export type ResultadoAtualizarEndereco =
+  | { ok: true; perfil: PerfilParceira; cepResolvido: boolean }
+  | { ok: false; motivo: "PERFIL_NAO_ENCONTRADO" };
+
+/** UC-032.03 · Editar endereço por CEP. */
+export async function atualizarEndereco(
+  parceiraId: string,
+  dados: { cep: string; numero: string; complemento: string },
+): Promise<ResultadoAtualizarEndereco> {
+  const perfilAtual = await perfilRepositorio.buscarPorParceira(parceiraId);
+  if (!perfilAtual) {
+    return { ok: false, motivo: "PERFIL_NAO_ENCONTRADO" };
+  }
+
+  const dadosResolvidos = await resolvedorDeCep.resolver(dados.cep);
+  const endereco = montarEndereco(dados, dadosResolvidos, perfilAtual.endereco);
+  const atualizado = await perfilRepositorio.atualizar({ ...perfilAtual, endereco });
+
+  return { ok: true, perfil: atualizado, cepResolvido: dadosResolvidos !== null };
 }

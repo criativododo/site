@@ -84,6 +84,81 @@ function EditarContato({
   );
 }
 
+function EditarEndereco({
+  perfil,
+  aoSalvarComSucesso,
+}: {
+  perfil: PerfilParceira;
+  aoSalvarComSucesso: (perfil: PerfilParceira) => void;
+}) {
+  const [cep, setCep] = useState(perfil.endereco?.cep ?? "");
+  const [numero, setNumero] = useState(perfil.endereco?.numero ?? "");
+  const [complemento, setComplemento] = useState(perfil.endereco?.complemento ?? "");
+  const [salvando, setSalvando] = useState(false);
+  const [aviso, setAviso] = useState<string | null>(null);
+
+  async function salvar() {
+    setSalvando(true);
+    setAviso(null);
+
+    try {
+      const resposta = await apiFetch<{ perfil: PerfilParceira; cepResolvido: boolean }>(
+        "/api/portal/perfil/endereco",
+        { method: "PATCH", body: JSON.stringify({ cep, numero, complemento }) },
+      );
+      aoSalvarComSucesso(resposta.perfil);
+      if (!resposta.cepResolvido) {
+        setAviso("CEP não encontrado — número e complemento foram salvos mesmo assim.");
+      }
+    } catch (erroCapturado) {
+      setAviso(erroCapturado instanceof ApiError ? erroCapturado.message : "Não foi possível salvar.");
+    } finally {
+      setSalvando(false);
+    }
+  }
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 12, maxWidth: 360, marginTop: 24 }}>
+      <label style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 13, fontWeight: 700 }}>
+        CEP
+        <input
+          value={cep}
+          onChange={(evento) => setCep(evento.target.value)}
+          style={{ height: 40, borderRadius: 8, border: "1px solid rgba(27, 23, 23, 0.2)", padding: "0 12px", fontSize: 14, fontWeight: 400 }}
+        />
+      </label>
+      <label style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 13, fontWeight: 700 }}>
+        Número
+        <input
+          value={numero}
+          onChange={(evento) => setNumero(evento.target.value)}
+          style={{ height: 40, borderRadius: 8, border: "1px solid rgba(27, 23, 23, 0.2)", padding: "0 12px", fontSize: 14, fontWeight: 400 }}
+        />
+      </label>
+      <label style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 13, fontWeight: 700 }}>
+        Complemento
+        <input
+          value={complemento}
+          onChange={(evento) => setComplemento(evento.target.value)}
+          style={{ height: 40, borderRadius: 8, border: "1px solid rgba(27, 23, 23, 0.2)", padding: "0 12px", fontSize: 14, fontWeight: 400 }}
+        />
+      </label>
+
+      {aviso && <p style={{ fontSize: 13, color: "var(--color-cherry)" }}>{aviso}</p>}
+
+      <button
+        type="button"
+        className="btn-primary"
+        disabled={salvando}
+        onClick={() => void salvar()}
+        style={{ alignSelf: "flex-start", height: 40, padding: "0 24px", fontSize: 14 }}
+      >
+        {salvando ? "Salvando..." : "Salvar endereço"}
+      </button>
+    </div>
+  );
+}
+
 export function PerfilPage() {
   const [perfil, setPerfil] = useState<PerfilParceira | null>(null);
   const [erro, setErro] = useState<string | null>(null);
@@ -137,6 +212,7 @@ export function PerfilPage() {
           </dl>
 
           <EditarContato perfil={perfil} aoSalvarComSucesso={setPerfil} />
+          <EditarEndereco perfil={perfil} aoSalvarComSucesso={setPerfil} />
         </>
       )}
     </section>
