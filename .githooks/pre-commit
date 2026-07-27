@@ -1,0 +1,11 @@
+#!/bin/sh
+
+echo "🔍 Executando verificações..."
+
+cd portal-frontend || exit 1
+
+npm run lint || exit 1
+npx tsc --noEmit || exit 1
+npm run build || exit 1
+
+echo "✅ Tudo aprovado."
