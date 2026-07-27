@@ -1,11 +1,12 @@
 import { Router } from "express";
 import { registrarAuditoria } from "../middleware/auditoria.js";
 import { bloquearParceiraIdDeCliente, parceiraDaSessao } from "../middleware/isolamento.js";
-import { requireAuth, requireContaAtiva } from "../middleware/requireAuth.js";
+import { requireAdmin, requireAuth, requireContaAtiva } from "../middleware/requireAuth.js";
 import { conteudoRoutes } from "../modules/conteudo/conteudo.routes.js";
 import { financeiroRoutes } from "../modules/financeiro/financeiro.routes.js";
 import { adminRoutes } from "../modules/identidade/admin.routes.js";
 import { lgpdAdminRoutes, lgpdRoutes } from "../modules/lgpd/lgpd.routes.js";
+import { parceiraRoutes } from "../modules/parceira/parceira.routes.js";
 import { perfilRoutes } from "../modules/perfil/perfil.routes.js";
 
 export const apiRoutes = Router();
@@ -37,6 +38,9 @@ apiRoutes.use("/portal/perfil", perfilRoutes);
 
 /** EPIC 5, Feature 5.3 — Moderação administrativa (SPEC-035 Cap. 5.4/5.5, RN-04). */
 apiRoutes.use("/admin", adminRoutes);
+
+/** Backoffice administrativo — Gestão de Parceiras (SPEC-001/SPEC-002). */
+apiRoutes.use("/admin/parceiras", requireAdmin, parceiraRoutes);
 
 /** LGPD (ADR-010) — direitos do titular: acesso/portabilidade e processo de expurgo. */
 apiRoutes.use("/portal/lgpd", lgpdRoutes);
