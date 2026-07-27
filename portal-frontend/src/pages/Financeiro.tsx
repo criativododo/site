@@ -176,33 +176,39 @@ function HistoricoDoPeriodo({ mesReferencia }: { mesReferencia: string }) {
 			)}
 
 			{historico.entregas.length > 0 && (
-				<ul className="portal-list" style={{ marginBottom: 16 }}>
-					{historico.entregas.map((entrega) => (
-						<li key={entrega.id} className="portal-list-row">
-							<span className="portal-list-row-title">
-								{LABEL_FORMATO[entrega.formato]}
-							</span>
-							<span className="portal-list-row-status">
-								{LABEL_ESTADO_ENTREGA[entrega.estado]}
-							</span>
-						</li>
-					))}
-				</ul>
+				<>
+					<p className="portal-list-row-meta">conteúdos entregues</p>
+					<ul className="portal-list" style={{ marginBottom: 16 }}>
+						{historico.entregas.map((entrega) => (
+							<li key={entrega.id} className="portal-list-row">
+								<span className="portal-list-row-title">
+									{LABEL_FORMATO[entrega.formato]}
+								</span>
+								<span className="portal-list-row-status">
+									{LABEL_ESTADO_ENTREGA[entrega.estado]}
+								</span>
+							</li>
+						))}
+					</ul>
+				</>
 			)}
 
 			{historico.obrigacoes.length > 0 && (
-				<ul className="portal-list">
-					{historico.obrigacoes.map((obrigacao) => (
-						<li key={obrigacao.id} className="portal-list-row">
-							<span className="portal-list-row-title">
-								{formatadorMoeda.format(obrigacao.valor)}
-							</span>
-							<span className="portal-list-row-status">
-								{LABEL_ESTADO_OBRIGACAO[obrigacao.estado]}
-							</span>
-						</li>
-					))}
-				</ul>
+				<>
+					<p className="portal-list-row-meta">pagamentos</p>
+					<ul className="portal-list">
+						{historico.obrigacoes.map((obrigacao) => (
+							<li key={obrigacao.id} className="portal-list-row">
+								<span className="portal-list-row-title">
+									{formatadorMoeda.format(obrigacao.valor)}
+								</span>
+								<span className="portal-list-row-status">
+									{LABEL_ESTADO_OBRIGACAO[obrigacao.estado]}
+								</span>
+							</li>
+						))}
+					</ul>
+				</>
 			)}
 		</div>
 	);
