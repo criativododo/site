@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { parceiraDaSessao } from "../../middleware/isolamento.js";
-import { listarPeriodosComAtividade } from "./financeiro.service.js";
+import { listarPeriodosComAtividade, obterResumoFinanceiro } from "./financeiro.service.js";
 
 export const financeiroRoutes = Router();
 
@@ -9,4 +9,17 @@ financeiroRoutes.get("/periodos", async (req, res) => {
   const parceiraId = parceiraDaSessao(req);
   const periodos = await listarPeriodosComAtividade(parceiraId);
   res.json({ periodos });
+});
+
+/** UC-030.01 · Ver financeiro do período. PF-02: período sem atividade da Parceira → 404. */
+financeiroRoutes.get("/:mesReferencia/resumo", async (req, res) => {
+  const parceiraId = parceiraDaSessao(req);
+  const resumo = await obterResumoFinanceiro(parceiraId, req.params.mesReferencia);
+
+  if (!resumo) {
+    res.status(404).json({ error: "Período inexistente para esta Parceira." });
+    return;
+  }
+
+  res.json(resumo);
 });

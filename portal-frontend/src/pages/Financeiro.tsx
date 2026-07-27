@@ -1,6 +1,71 @@
 import { useEffect, useState } from "react";
 import { apiFetch, ApiError } from "../lib/api";
 
+interface ResumoFinanceiro {
+  mesReferencia: string;
+  previsto: number;
+  pago: number;
+}
+
+const formatadorMoeda = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
+
+function ResumoDoPeriodo({ mesReferencia }: { mesReferencia: string }) {
+  const [resumo, setResumo] = useState<ResumoFinanceiro | null>(null);
+  const [erro, setErro] = useState<string | null>(null);
+  const [carregando, setCarregando] = useState(true);
+
+  useEffect(() => {
+    let ativo = true;
+    setCarregando(true);
+    setErro(null);
+
+    apiFetch<ResumoFinanceiro>(`/api/portal/financeiro/${mesReferencia}/resumo`)
+      .then((dados) => ativo && setResumo(dados))
+      .catch((erroCapturado) => {
+        if (!ativo) return;
+        setErro(
+          erroCapturado instanceof ApiError
+            ? erroCapturado.message
+            : "Não foi possível carregar o financeiro do período.",
+        );
+      })
+      .finally(() => ativo && setCarregando(false));
+
+    return () => {
+      ativo = false;
+    };
+  }, [mesReferencia]);
+
+  if (carregando) {
+    return <p style={{ fontSize: 15 }}>Carregando financeiro...</p>;
+  }
+
+  if (erro) {
+    return <p style={{ fontSize: 15, color: "var(--color-cherry)" }}>{erro}</p>;
+  }
+
+  if (!resumo) {
+    return null;
+  }
+
+  return (
+    <div style={{ display: "flex", gap: 24, marginBottom: 24 }}>
+      <div style={{ padding: "16px 20px", border: "1px solid rgba(27, 23, 23, 0.1)", borderRadius: 12 }}>
+        <span style={{ fontSize: 13, opacity: 0.8 }}>Total previsto</span>
+        <p style={{ fontFamily: "var(--font-display)", fontSize: 22, fontWeight: 700 }}>
+          {formatadorMoeda.format(resumo.previsto)}
+        </p>
+      </div>
+      <div style={{ padding: "16px 20px", border: "1px solid rgba(27, 23, 23, 0.1)", borderRadius: 12 }}>
+        <span style={{ fontSize: 13, opacity: 0.8 }}>Total pago</span>
+        <p style={{ fontFamily: "var(--font-display)", fontSize: 22, fontWeight: 700, color: "var(--color-cherry)" }}>
+          {formatadorMoeda.format(resumo.pago)}
+        </p>
+      </div>
+    </div>
+  );
+}
+
 function labelPeriodo(mesReferencia: string): string {
   const [ano, mes] = mesReferencia.split("-");
   const nomes = [
@@ -89,7 +154,7 @@ export function FinanceiroPage() {
             </select>
           </label>
 
-          {periodoSelecionado && <p style={{ fontSize: 15 }}>Exibindo {labelPeriodo(periodoSelecionado)}.</p>}
+          {periodoSelecionado && <ResumoDoPeriodo mesReferencia={periodoSelecionado} />}
         </>
       )}
     </section>
