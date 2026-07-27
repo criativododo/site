@@ -4,6 +4,7 @@ import { bloquearParceiraIdDeCliente, parceiraDaSessao } from "../middleware/iso
 import { requireAuth, requireContaAtiva } from "../middleware/requireAuth.js";
 import { conteudoRoutes } from "../modules/conteudo/conteudo.routes.js";
 import { financeiroRoutes } from "../modules/financeiro/financeiro.routes.js";
+import { perfilRoutes } from "../modules/perfil/perfil.routes.js";
 
 export const apiRoutes = Router();
 
@@ -28,3 +29,6 @@ apiRoutes.use("/portal", conteudoRoutes);
 
 /** EPIC 3 — Financeiro e Histórico (SPEC-030). */
 apiRoutes.use("/portal/financeiro", financeiroRoutes);
+
+/** EPIC 4 — Perfil (SPEC-032). */
+apiRoutes.use("/portal/perfil", perfilRoutes);
