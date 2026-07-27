@@ -47,3 +47,16 @@ describe("EntregaRepositorioEmMemoria.buscarPorId (UC-027.02)", () => {
     expect(await repo.buscarPorId("nao-existe")).toBeNull();
   });
 });
+
+describe("EntregaRepositorioEmMemoria.listarPorParceira (UC-030.03)", () => {
+  it("lista Entregas da Parceira em todas as competências, ignorando outras Parceiras", async () => {
+    const repo = new EntregaRepositorioEmMemoria([
+      entrega({ id: "julho", parceiraId: "parceira-1", mesReferencia: "2026-07" }),
+      entrega({ id: "junho", parceiraId: "parceira-1", mesReferencia: "2026-06" }),
+      entrega({ id: "de-outra", parceiraId: "parceira-2", mesReferencia: "2026-07" }),
+    ]);
+
+    const resultado = await repo.listarPorParceira("parceira-1");
+    expect(new Set(resultado.map((item) => item.id))).toEqual(new Set(["julho", "junho"]));
+  });
+});

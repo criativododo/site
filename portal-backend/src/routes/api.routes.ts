@@ -3,6 +3,7 @@ import { registrarAuditoria } from "../middleware/auditoria.js";
 import { bloquearParceiraIdDeCliente, parceiraDaSessao } from "../middleware/isolamento.js";
 import { requireAuth, requireContaAtiva } from "../middleware/requireAuth.js";
 import { conteudoRoutes } from "../modules/conteudo/conteudo.routes.js";
+import { financeiroRoutes } from "../modules/financeiro/financeiro.routes.js";
 
 export const apiRoutes = Router();
 
@@ -24,3 +25,6 @@ apiRoutes.get("/fundacao/whoami", (req, res) => {
 
 /** EPIC 2 — Conteúdo e Pendências (SPEC-027). */
 apiRoutes.use("/portal", conteudoRoutes);
+
+/** EPIC 3 — Financeiro e Histórico (SPEC-030). */
+apiRoutes.use("/portal/financeiro", financeiroRoutes);

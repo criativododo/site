@@ -54,10 +54,13 @@ export class EntregaRepositorioEmMemoria {
     this.entregas = entregas;
   }
 
+  async listarPorParceira(parceiraId: string): Promise<Entrega[]> {
+    return this.entregas.filter((entrega) => entrega.parceiraId === parceiraId);
+  }
+
   async listarPorParceiraECompetencia(parceiraId: string, mesReferencia: string): Promise<Entrega[]> {
-    return this.entregas.filter(
-      (entrega) => entrega.parceiraId === parceiraId && entrega.mesReferencia === mesReferencia,
-    );
+    const daParceira = await this.listarPorParceira(parceiraId);
+    return daParceira.filter((entrega) => entrega.mesReferencia === mesReferencia);
   }
 
   async buscarPorId(id: string): Promise<Entrega | null> {
