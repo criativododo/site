@@ -1,285 +1,454 @@
 import { useEffect, useState } from "react";
-import { apiFetch, ApiError } from "../lib/api";
+import { ApiError, apiFetch } from "../lib/api";
 
 interface Endereco {
-  cep: string;
-  rua: string;
-  bairro: string;
-  cidade: string;
-  uf: string;
-  numero: string;
-  complemento: string;
+	cep: string;
+	rua: string;
+	bairro: string;
+	cidade: string;
+	uf: string;
+	numero: string;
+	complemento: string;
 }
 
 interface PerfilParceira {
-  parceiraId: string;
-  pix: string;
-  email: string;
-  endereco: Endereco | null;
+	parceiraId: string;
+	pix: string;
+	email: string;
+	endereco: Endereco | null;
 }
 
 function EditarContato({
-  perfil,
-  aoSalvarComSucesso,
+	perfil,
+	aoSalvarComSucesso,
 }: {
-  perfil: PerfilParceira;
-  aoSalvarComSucesso: (perfil: PerfilParceira) => void;
+	perfil: PerfilParceira;
+	aoSalvarComSucesso: (perfil: PerfilParceira) => void;
 }) {
-  const [pix, setPix] = useState(perfil.pix);
-  const [email, setEmail] = useState(perfil.email);
-  const [salvando, setSalvando] = useState(false);
-  const [erro, setErro] = useState<string | null>(null);
+	const [pix, setPix] = useState(perfil.pix);
+	const [email, setEmail] = useState(perfil.email);
+	const [salvando, setSalvando] = useState(false);
+	const [erro, setErro] = useState<string | null>(null);
 
-  async function salvar() {
-    setSalvando(true);
-    setErro(null);
+	async function salvar() {
+		setSalvando(true);
+		setErro(null);
 
-    try {
-      const atualizado = await apiFetch<PerfilParceira>("/api/portal/perfil/contato", {
-        method: "PATCH",
-        body: JSON.stringify({ pix, email }),
-      });
-      aoSalvarComSucesso(atualizado);
-    } catch (erroCapturado) {
-      setErro(
-        erroCapturado instanceof ApiError ? erroCapturado.message : "Não foi possível salvar.",
-      );
-    } finally {
-      setSalvando(false);
-    }
-  }
+		try {
+			const atualizado = await apiFetch<PerfilParceira>(
+				"/api/portal/perfil/contato",
+				{
+					method: "PATCH",
+					body: JSON.stringify({ pix, email }),
+				},
+			);
+			aoSalvarComSucesso(atualizado);
+		} catch (erroCapturado) {
+			setErro(
+				erroCapturado instanceof ApiError
+					? erroCapturado.message
+					: "Não foi possível salvar.",
+			);
+		} finally {
+			setSalvando(false);
+		}
+	}
 
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 12, maxWidth: 360, marginTop: 24 }}>
-      <label style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 13, fontWeight: 700 }}>
-        PIX
-        <input
-          value={pix}
-          onChange={(evento) => setPix(evento.target.value)}
-          style={{ height: 40, borderRadius: 8, border: "1px solid rgba(27, 23, 23, 0.2)", padding: "0 12px", fontSize: 14, fontWeight: 400 }}
-        />
-      </label>
-      <label style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 13, fontWeight: 700 }}>
-        E-mail
-        <input
-          type="email"
-          value={email}
-          onChange={(evento) => setEmail(evento.target.value)}
-          style={{ height: 40, borderRadius: 8, border: "1px solid rgba(27, 23, 23, 0.2)", padding: "0 12px", fontSize: 14, fontWeight: 400 }}
-        />
-      </label>
+	return (
+		<div
+			style={{
+				display: "flex",
+				flexDirection: "column",
+				gap: 12,
+				maxWidth: 360,
+				marginTop: 24,
+			}}
+		>
+			<label
+				style={{
+					display: "flex",
+					flexDirection: "column",
+					gap: 6,
+					fontSize: 13,
+					fontWeight: 700,
+				}}
+			>
+				PIX
+				<input
+					value={pix}
+					onChange={(evento) => setPix(evento.target.value)}
+					style={{
+						height: 40,
+						borderRadius: 8,
+						border: "1px solid rgba(27, 23, 23, 0.2)",
+						padding: "0 12px",
+						fontSize: 14,
+						fontWeight: 400,
+					}}
+				/>
+			</label>
+			<label
+				style={{
+					display: "flex",
+					flexDirection: "column",
+					gap: 6,
+					fontSize: 13,
+					fontWeight: 700,
+				}}
+			>
+				E-mail
+				<input
+					type="email"
+					value={email}
+					onChange={(evento) => setEmail(evento.target.value)}
+					style={{
+						height: 40,
+						borderRadius: 8,
+						border: "1px solid rgba(27, 23, 23, 0.2)",
+						padding: "0 12px",
+						fontSize: 14,
+						fontWeight: 400,
+					}}
+				/>
+			</label>
 
-      {erro && <p style={{ fontSize: 13, color: "var(--color-cherry)" }}>{erro}</p>}
+			{erro && (
+				<p style={{ fontSize: 13, color: "var(--color-cherry)" }}>{erro}</p>
+			)}
 
-      <button
-        type="button"
-        className="btn-primary"
-        disabled={salvando}
-        onClick={() => void salvar()}
-        style={{ alignSelf: "flex-start", height: 40, padding: "0 24px", fontSize: 14 }}
-      >
-        {salvando ? "Salvando..." : "Salvar"}
-      </button>
-    </div>
-  );
+			<button
+				type="button"
+				className="btn-primary"
+				disabled={salvando}
+				onClick={() => void salvar()}
+				style={{
+					alignSelf: "flex-start",
+					height: 40,
+					padding: "0 24px",
+					fontSize: 14,
+				}}
+			>
+				{salvando ? "Salvando..." : "Salvar"}
+			</button>
+		</div>
+	);
 }
 
 function EditarEndereco({
-  perfil,
-  aoSalvarComSucesso,
+	perfil,
+	aoSalvarComSucesso,
 }: {
-  perfil: PerfilParceira;
-  aoSalvarComSucesso: (perfil: PerfilParceira) => void;
+	perfil: PerfilParceira;
+	aoSalvarComSucesso: (perfil: PerfilParceira) => void;
 }) {
-  const [cep, setCep] = useState(perfil.endereco?.cep ?? "");
-  const [numero, setNumero] = useState(perfil.endereco?.numero ?? "");
-  const [complemento, setComplemento] = useState(perfil.endereco?.complemento ?? "");
-  const [salvando, setSalvando] = useState(false);
-  const [aviso, setAviso] = useState<string | null>(null);
+	const [cep, setCep] = useState(perfil.endereco?.cep ?? "");
+	const [numero, setNumero] = useState(perfil.endereco?.numero ?? "");
+	const [complemento, setComplemento] = useState(
+		perfil.endereco?.complemento ?? "",
+	);
+	const [salvando, setSalvando] = useState(false);
+	const [aviso, setAviso] = useState<string | null>(null);
 
-  async function salvar() {
-    setSalvando(true);
-    setAviso(null);
+	async function salvar() {
+		setSalvando(true);
+		setAviso(null);
 
-    try {
-      const resposta = await apiFetch<{ perfil: PerfilParceira; cepResolvido: boolean }>(
-        "/api/portal/perfil/endereco",
-        { method: "PATCH", body: JSON.stringify({ cep, numero, complemento }) },
-      );
-      aoSalvarComSucesso(resposta.perfil);
-      if (!resposta.cepResolvido) {
-        setAviso("CEP não encontrado — número e complemento foram salvos mesmo assim.");
-      }
-    } catch (erroCapturado) {
-      setAviso(erroCapturado instanceof ApiError ? erroCapturado.message : "Não foi possível salvar.");
-    } finally {
-      setSalvando(false);
-    }
-  }
+		try {
+			const resposta = await apiFetch<{
+				perfil: PerfilParceira;
+				cepResolvido: boolean;
+			}>("/api/portal/perfil/endereco", {
+				method: "PATCH",
+				body: JSON.stringify({ cep, numero, complemento }),
+			});
+			aoSalvarComSucesso(resposta.perfil);
+			if (!resposta.cepResolvido) {
+				setAviso(
+					"CEP não encontrado — número e complemento foram salvos mesmo assim.",
+				);
+			}
+		} catch (erroCapturado) {
+			setAviso(
+				erroCapturado instanceof ApiError
+					? erroCapturado.message
+					: "Não foi possível salvar.",
+			);
+		} finally {
+			setSalvando(false);
+		}
+	}
 
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 12, maxWidth: 360, marginTop: 24 }}>
-      <label style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 13, fontWeight: 700 }}>
-        CEP
-        <input
-          value={cep}
-          onChange={(evento) => setCep(evento.target.value)}
-          style={{ height: 40, borderRadius: 8, border: "1px solid rgba(27, 23, 23, 0.2)", padding: "0 12px", fontSize: 14, fontWeight: 400 }}
-        />
-      </label>
-      <label style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 13, fontWeight: 700 }}>
-        Número
-        <input
-          value={numero}
-          onChange={(evento) => setNumero(evento.target.value)}
-          style={{ height: 40, borderRadius: 8, border: "1px solid rgba(27, 23, 23, 0.2)", padding: "0 12px", fontSize: 14, fontWeight: 400 }}
-        />
-      </label>
-      <label style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 13, fontWeight: 700 }}>
-        Complemento
-        <input
-          value={complemento}
-          onChange={(evento) => setComplemento(evento.target.value)}
-          style={{ height: 40, borderRadius: 8, border: "1px solid rgba(27, 23, 23, 0.2)", padding: "0 12px", fontSize: 14, fontWeight: 400 }}
-        />
-      </label>
+	return (
+		<div
+			style={{
+				display: "flex",
+				flexDirection: "column",
+				gap: 12,
+				maxWidth: 360,
+				marginTop: 24,
+			}}
+		>
+			<label
+				style={{
+					display: "flex",
+					flexDirection: "column",
+					gap: 6,
+					fontSize: 13,
+					fontWeight: 700,
+				}}
+			>
+				CEP
+				<input
+					value={cep}
+					onChange={(evento) => setCep(evento.target.value)}
+					style={{
+						height: 40,
+						borderRadius: 8,
+						border: "1px solid rgba(27, 23, 23, 0.2)",
+						padding: "0 12px",
+						fontSize: 14,
+						fontWeight: 400,
+					}}
+				/>
+			</label>
+			<label
+				style={{
+					display: "flex",
+					flexDirection: "column",
+					gap: 6,
+					fontSize: 13,
+					fontWeight: 700,
+				}}
+			>
+				Número
+				<input
+					value={numero}
+					onChange={(evento) => setNumero(evento.target.value)}
+					style={{
+						height: 40,
+						borderRadius: 8,
+						border: "1px solid rgba(27, 23, 23, 0.2)",
+						padding: "0 12px",
+						fontSize: 14,
+						fontWeight: 400,
+					}}
+				/>
+			</label>
+			<label
+				style={{
+					display: "flex",
+					flexDirection: "column",
+					gap: 6,
+					fontSize: 13,
+					fontWeight: 700,
+				}}
+			>
+				Complemento
+				<input
+					value={complemento}
+					onChange={(evento) => setComplemento(evento.target.value)}
+					style={{
+						height: 40,
+						borderRadius: 8,
+						border: "1px solid rgba(27, 23, 23, 0.2)",
+						padding: "0 12px",
+						fontSize: 14,
+						fontWeight: 400,
+					}}
+				/>
+			</label>
 
-      {aviso && <p style={{ fontSize: 13, color: "var(--color-cherry)" }}>{aviso}</p>}
+			{aviso && (
+				<p style={{ fontSize: 13, color: "var(--color-cherry)" }}>{aviso}</p>
+			)}
 
-      <button
-        type="button"
-        className="btn-primary"
-        disabled={salvando}
-        onClick={() => void salvar()}
-        style={{ alignSelf: "flex-start", height: 40, padding: "0 24px", fontSize: 14 }}
-      >
-        {salvando ? "Salvando..." : "Salvar endereço"}
-      </button>
-    </div>
-  );
+			<button
+				type="button"
+				className="btn-primary"
+				disabled={salvando}
+				onClick={() => void salvar()}
+				style={{
+					alignSelf: "flex-start",
+					height: 40,
+					padding: "0 24px",
+					fontSize: 14,
+				}}
+			>
+				{salvando ? "Salvando..." : "Salvar endereço"}
+			</button>
+		</div>
+	);
 }
 
 function MeusDadosLgpd() {
-  const [aviso, setAviso] = useState<string | null>(null);
-  const [processando, setProcessando] = useState(false);
+	const [aviso, setAviso] = useState<string | null>(null);
+	const [processando, setProcessando] = useState(false);
 
-  async function exportar() {
-    setProcessando(true);
-    setAviso(null);
-    try {
-      const dados = await apiFetch<unknown>("/api/portal/lgpd/exportar");
-      const blob = new Blob([JSON.stringify(dados, null, 2)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = "meus-dados-dodo.json";
-      link.click();
-      URL.revokeObjectURL(url);
-    } catch (erroCapturado) {
-      setAviso(erroCapturado instanceof ApiError ? erroCapturado.message : "Não foi possível exportar.");
-    } finally {
-      setProcessando(false);
-    }
-  }
+	async function exportar() {
+		setProcessando(true);
+		setAviso(null);
+		try {
+			const dados = await apiFetch<unknown>("/api/portal/lgpd/exportar");
+			const blob = new Blob([JSON.stringify(dados, null, 2)], {
+				type: "application/json",
+			});
+			const url = URL.createObjectURL(blob);
+			const link = document.createElement("a");
+			link.href = url;
+			link.download = "meus-dados-dodo.json";
+			link.click();
+			URL.revokeObjectURL(url);
+		} catch (erroCapturado) {
+			setAviso(
+				erroCapturado instanceof ApiError
+					? erroCapturado.message
+					: "Não foi possível exportar.",
+			);
+		} finally {
+			setProcessando(false);
+		}
+	}
 
-  async function solicitarExclusao() {
-    setProcessando(true);
-    setAviso(null);
-    try {
-      await apiFetch("/api/portal/lgpd/exclusao", { method: "POST" });
-      setAviso("Pedido de exclusão registrado. A equipe avaliará e retornará sobre a decisão.");
-    } catch (erroCapturado) {
-      setAviso(erroCapturado instanceof ApiError ? erroCapturado.message : "Não foi possível registrar o pedido.");
-    } finally {
-      setProcessando(false);
-    }
-  }
+	async function solicitarExclusao() {
+		setProcessando(true);
+		setAviso(null);
+		try {
+			await apiFetch("/api/portal/lgpd/exclusao", { method: "POST" });
+			setAviso(
+				"Pedido de exclusão registrado. A equipe avaliará e retornará sobre a decisão.",
+			);
+		} catch (erroCapturado) {
+			setAviso(
+				erroCapturado instanceof ApiError
+					? erroCapturado.message
+					: "Não foi possível registrar o pedido.",
+			);
+		} finally {
+			setProcessando(false);
+		}
+	}
 
-  return (
-    <div style={{ marginTop: 32, paddingTop: 24, borderTop: "1px solid rgba(27, 23, 23, 0.1)", maxWidth: 360 }}>
-      <h2 className="title-editorial" style={{ fontSize: 16, marginBottom: 12 }}>
-        Meus dados (LGPD)
-      </h2>
-      <div style={{ display: "flex", gap: 12 }}>
-        <button
-          type="button"
-          disabled={processando}
-          onClick={() => void exportar()}
-          style={{ height: 36, padding: "0 16px", fontSize: 13, borderRadius: 24, border: "1px solid rgba(27, 23, 23, 0.2)", background: "none" }}
-        >
-          Baixar meus dados
-        </button>
-        <button
-          type="button"
-          disabled={processando}
-          onClick={() => void solicitarExclusao()}
-          style={{ height: 36, padding: "0 16px", fontSize: 13, borderRadius: 24, border: "1px solid var(--color-cherry)", background: "none", color: "var(--color-cherry)" }}
-        >
-          Solicitar exclusão de conta
-        </button>
-      </div>
-      {aviso && <p style={{ fontSize: 13, marginTop: 8 }}>{aviso}</p>}
-    </div>
-  );
+	return (
+		<div
+			style={{
+				marginTop: 32,
+				paddingTop: 24,
+				borderTop: "1px solid rgba(27, 23, 23, 0.1)",
+				maxWidth: 360,
+			}}
+		>
+			<h2
+				className="title-editorial"
+				style={{ fontSize: 16, marginBottom: 12 }}
+			>
+				Meus dados (LGPD)
+			</h2>
+			<div style={{ display: "flex", gap: 12 }}>
+				<button
+					type="button"
+					disabled={processando}
+					onClick={() => void exportar()}
+					style={{
+						height: 36,
+						padding: "0 16px",
+						fontSize: 13,
+						borderRadius: 24,
+						border: "1px solid rgba(27, 23, 23, 0.2)",
+						background: "none",
+					}}
+				>
+					Baixar meus dados
+				</button>
+				<button
+					type="button"
+					disabled={processando}
+					onClick={() => void solicitarExclusao()}
+					style={{
+						height: 36,
+						padding: "0 16px",
+						fontSize: 13,
+						borderRadius: 24,
+						border: "1px solid var(--color-cherry)",
+						background: "none",
+						color: "var(--color-cherry)",
+					}}
+				>
+					Solicitar exclusão de conta
+				</button>
+			</div>
+			{aviso && <p style={{ fontSize: 13, marginTop: 8 }}>{aviso}</p>}
+		</div>
+	);
 }
 
 export function PerfilPage() {
-  const [perfil, setPerfil] = useState<PerfilParceira | null>(null);
-  const [erro, setErro] = useState<string | null>(null);
-  const [carregando, setCarregando] = useState(true);
+	const [perfil, setPerfil] = useState<PerfilParceira | null>(null);
+	const [erro, setErro] = useState<string | null>(null);
+	const [carregando, setCarregando] = useState(true);
 
-  useEffect(() => {
-    let ativo = true;
+	useEffect(() => {
+		let ativo = true;
 
-    apiFetch<PerfilParceira>("/api/portal/perfil/")
-      .then((dados) => ativo && setPerfil(dados))
-      .catch((erroCapturado) => {
-        if (!ativo) return;
-        setErro(
-          erroCapturado instanceof ApiError
-            ? erroCapturado.message
-            : "Não foi possível carregar o perfil.",
-        );
-      })
-      .finally(() => ativo && setCarregando(false));
+		apiFetch<PerfilParceira>("/api/portal/perfil/")
+			.then((dados) => ativo && setPerfil(dados))
+			.catch((erroCapturado) => {
+				if (!ativo) return;
+				setErro(
+					erroCapturado instanceof ApiError
+						? erroCapturado.message
+						: "Não foi possível carregar o perfil.",
+				);
+			})
+			.finally(() => ativo && setCarregando(false));
 
-    return () => {
-      ativo = false;
-    };
-  }, []);
+		return () => {
+			ativo = false;
+		};
+	}, []);
 
-  return (
-    <section>
-      <h1 className="title-editorial" style={{ fontSize: 28, marginBottom: 16 }}>
-        Perfil
-      </h1>
+	return (
+		<section>
+			<h1
+				className="title-editorial"
+				style={{ fontSize: 28, marginBottom: 16 }}
+			>
+				Perfil
+			</h1>
 
-      {carregando && <p style={{ fontSize: 15 }}>Carregando...</p>}
+			{carregando && <p style={{ fontSize: 15 }}>Carregando...</p>}
 
-      {!carregando && erro && (
-        <p style={{ fontSize: 15, color: "var(--color-cherry)" }}>{erro}</p>
-      )}
+			{!carregando && erro && (
+				<p style={{ fontSize: 15, color: "var(--color-cherry)" }}>{erro}</p>
+			)}
 
-      {!carregando && !erro && perfil && (
-        <>
-          <dl style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: "10px 20px", fontSize: 15, maxWidth: 480 }}>
-            <dt style={{ fontWeight: 700 }}>PIX</dt>
-            <dd>{perfil.pix}</dd>
-            <dt style={{ fontWeight: 700 }}>E-mail</dt>
-            <dd>{perfil.email}</dd>
-            <dt style={{ fontWeight: 700 }}>Endereço</dt>
-            <dd>
-              {perfil.endereco
-                ? `${perfil.endereco.rua}, ${perfil.endereco.numero} — ${perfil.endereco.bairro}, ${perfil.endereco.cidade}/${perfil.endereco.uf}`
-                : "Não informado"}
-            </dd>
-          </dl>
+			{!carregando && !erro && perfil && (
+				<>
+					<dl
+						style={{
+							display: "grid",
+							gridTemplateColumns: "auto 1fr",
+							gap: "10px 20px",
+							fontSize: 15,
+							maxWidth: 480,
+						}}
+					>
+						<dt style={{ fontWeight: 700 }}>PIX</dt>
+						<dd>{perfil.pix}</dd>
+						<dt style={{ fontWeight: 700 }}>E-mail</dt>
+						<dd>{perfil.email}</dd>
+						<dt style={{ fontWeight: 700 }}>Endereço</dt>
+						<dd>
+							{perfil.endereco
+								? `${perfil.endereco.rua}, ${perfil.endereco.numero} — ${perfil.endereco.bairro}, ${perfil.endereco.cidade}/${perfil.endereco.uf}`
+								: "Não informado"}
+						</dd>
+					</dl>
 
-          <EditarContato perfil={perfil} aoSalvarComSucesso={setPerfil} />
-          <EditarEndereco perfil={perfil} aoSalvarComSucesso={setPerfil} />
-          <MeusDadosLgpd />
-        </>
-      )}
-    </section>
-  );
+					<EditarContato perfil={perfil} aoSalvarComSucesso={setPerfil} />
+					<EditarEndereco perfil={perfil} aoSalvarComSucesso={setPerfil} />
+					<MeusDadosLgpd />
+				</>
+			)}
+		</section>
+	);
 }

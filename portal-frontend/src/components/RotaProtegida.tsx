@@ -1,5 +1,5 @@
-import { Navigate } from "react-router-dom";
 import type { ReactNode } from "react";
+import { Navigate } from "react-router-dom";
 import { useSession } from "../lib/session";
 
 /**
@@ -8,15 +8,15 @@ import { useSession } from "../lib/session";
  * ser tratada como controle de acesso de fato, só evita flash de conteúdo para sessão ausente.
  */
 export function RotaProtegida({ children }: { children: ReactNode }) {
-  const { sessao, carregando } = useSession();
+	const { sessao, carregando } = useSession();
 
-  if (carregando) {
-    return null;
-  }
+	if (carregando) {
+		return null;
+	}
 
-  if (!sessao || sessao.estadoConta !== "ACTIVE") {
-    return <Navigate to="/login" replace />;
-  }
+	if (!sessao || sessao.estadoConta !== "ACTIVE") {
+		return <Navigate to="/login" replace />;
+	}
 
-  return <>{children}</>;
+	return <>{children}</>;
 }

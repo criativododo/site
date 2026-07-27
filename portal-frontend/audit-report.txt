@@ -1,0 +1,968 @@
+===== AUDITORIA DODÔ =====
+
+## TypeScript
+
+## Oxlint
+
+> portal-frontend@0.0.0 lint
+> oxlint
+
+
+  ! react(only-export-components): Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components.
+    ,-[src/lib/session.tsx:76:17]
+ 75 | 
+ 76 | export function useSession(): SessionContextValue {
+    :                 ^^^^^^^^^^
+ 77 |   const context = useContext(SessionContext);
+    `----
+
+Found 1 warning and 0 errors.
+Finished in 18ms on 12 files with 103 rules using 10 threads.
+
+## Knip
+Unused devDependencies (1)
+@biomejs/biome  package.json:18:6
+Unused exported types (2)
+EstadoConta  type  src/lib/session.tsx:10:13
+PapelAtor    type  src/lib/session.tsx:12:13
+
+## Biome Check
+src/components/RotaProtegida.tsx:17:7 lint/complexity/useOptionalChain  FIXABLE  ━━━━━━━━━━
+
+  ! Change to an optional chain.
+  
+    15 │   }
+    16 │ 
+  > 17 │   if (!sessao || sessao.estadoConta !== "ACTIVE") {
+       │       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    18 │     return <Navigate to="/login" replace />;
+    19 │   }
+  
+  i Unsafe fix: Change to an optional chain.
+  
+    15 15 │     }
+    16 16 │   
+    17    │ - ··if·(!sessao·||·sessao.estadoConta·!==·"ACTIVE")·{
+       17 │ + ··if·(sessao?.estadoConta·!==·"ACTIVE")·{
+    18 18 │       return <Navigate to="/login" replace />;
+    19 19 │     }
+  
+
+src/index.css:7:22 lint/complexity/noImportantStyles  FIXABLE  ━━━━━━━━━━━━━━━━━
+
+  ! Avoid the use of the !important style.
+  
+    5 │   margin: 0;
+    6 │   padding: 0;
+  > 7 │   font-style: normal !important;
+      │                      ^^^^^^^^^^
+    8 │ }
+    9 │ 
+  
+  i This style reverses the cascade logic, and precedence is reversed. This could lead to having styles with higher specificity being overridden by styles with lower specificity.
+  
+  i Unsafe fix: Remove the style.
+  
+    7 │ ··font-style:·normal·!important;
+      │                     ----------- 
+
+src/main.tsx:8:12 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+  
+     6 │ import { SessionProvider } from "./lib/session";
+     7 │ 
+   > 8 │ createRoot(document.getElementById("root")!).render(
+       │            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     9 │   <StrictMode>
+    10 │     <BrowserRouter>
+  
+
+src/App.tsx:1:1 assist/source/organizeImports  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Sort these imports.
+  
+   > 1 │ import { Navigate, Route, Routes } from "react-router-dom";
+       │ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   > 2 │ import { LoginPage } from "./pages/Login";
+   > 3 │ import { PendenciasPage } from "./pages/Pendencias";
+   > 4 │ import { FinanceiroPage } from "./pages/Financeiro";
+   > 5 │ import { PerfilPage } from "./pages/Perfil";
+   > 6 │ import { AdminPage } from "./pages/Admin";
+   > 7 │ import { PortalLayout } from "./components/PortalLayout";
+   > 8 │ import { RotaProtegida } from "./components/RotaProtegida";
+       │ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     9 │ 
+    10 │ function App() {
+  
+  i Safe fix: Organize imports and exports (Biome)
+  
+     1  1 │   import { Navigate, Route, Routes } from "react-router-dom";
+     2    │ - import·{·LoginPage·}·from·"./pages/Login";
+     3    │ - import·{·PendenciasPage·}·from·"./pages/Pendencias";
+     4    │ - import·{·FinanceiroPage·}·from·"./pages/Financeiro";
+     5    │ - import·{·PerfilPage·}·from·"./pages/Perfil";
+     6    │ - import·{·AdminPage·}·from·"./pages/Admin";
+     7    │ - import·{·PortalLayout·}·from·"./components/PortalLayout";
+     8    │ - import·{·RotaProtegida·}·from·"./components/RotaProtegida";
+        2 │ + import·{·PortalLayout·}·from·"./components/PortalLayout";
+        3 │ + import·{·RotaProtegida·}·from·"./components/RotaProtegida";
+        4 │ + import·{·AdminPage·}·from·"./pages/Admin";
+        5 │ + import·{·FinanceiroPage·}·from·"./pages/Financeiro";
+        6 │ + import·{·LoginPage·}·from·"./pages/Login";
+        7 │ + import·{·PendenciasPage·}·from·"./pages/Pendencias";
+        8 │ + import·{·PerfilPage·}·from·"./pages/Perfil";
+     9  9 │   
+    10 10 │   function App() {
+  
+
+src/App.tsx format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+     9  9 │   
+    10 10 │   function App() {
+    11    │ - ··return·(
+    12    │ - ····<Routes>
+    13    │ - ······<Route·path="/login"·element={<LoginPage·/>}·/>
+       11 │ + → return·(
+       12 │ + → → <Routes>
+       13 │ + → → → <Route·path="/login"·element={<LoginPage·/>}·/>
+    14 14 │   
+    15    │ - ······<Route
+    16    │ - ········element={
+    17    │ - ··········<RotaProtegida>
+    18    │ - ············<PortalLayout·/>
+    19    │ - ··········</RotaProtegida>
+    20    │ - ········}
+    21    │ - ······>
+    22    │ - ········<Route·path="/pendencias"·element={<PendenciasPage·/>}·/>
+    23    │ - ········<Route·path="/financeiro"·element={<FinanceiroPage·/>}·/>
+    24    │ - ········<Route·path="/perfil"·element={<PerfilPage·/>}·/>
+    25    │ - ········<Route·path="/admin"·element={<AdminPage·/>}·/>
+    26    │ - ······</Route>
+       15 │ + → → → <Route
+       16 │ + → → → → element={
+       17 │ + → → → → → <RotaProtegida>
+       18 │ + → → → → → → <PortalLayout·/>
+       19 │ + → → → → → </RotaProtegida>
+       20 │ + → → → → }
+       21 │ + → → → >
+       22 │ + → → → → <Route·path="/pendencias"·element={<PendenciasPage·/>}·/>
+       23 │ + → → → → <Route·path="/financeiro"·element={<FinanceiroPage·/>}·/>
+       24 │ + → → → → <Route·path="/perfil"·element={<PerfilPage·/>}·/>
+       25 │ + → → → → <Route·path="/admin"·element={<AdminPage·/>}·/>
+       26 │ + → → → </Route>
+    27 27 │   
+    28    │ - ······<Route·path="/"·element={<Navigate·to="/pendencias"·replace·/>}·/>
+    29    │ - ······<Route·path="*"·element={<Navigate·to="/pendencias"·replace·/>}·/>
+    30    │ - ····</Routes>
+    31    │ - ··);
+       28 │ + → → → <Route·path="/"·element={<Navigate·to="/pendencias"·replace·/>}·/>
+       29 │ + → → → <Route·path="*"·element={<Navigate·to="/pendencias"·replace·/>}·/>
+       30 │ + → → </Routes>
+       31 │ + → );
+    32 32 │   }
+    33 33 │   
+  
+
+src/assets/brand/icon.svg:2:1 lint/a11y/noSvgWithoutTitle ━━━━━━━━━━━━━━━━━━━━━━
+
+  × Alternative text title element cannot be empty
+  
+     1 │ <?xml version="1.0" encoding="UTF-8"?>
+   > 2 │ <svg id="Camada_1" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 116.3 127.2">
+       │ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   > 3 │   <!-- Generator: Adobe Illustrator 30.6.0, SVG Export Plug-In . SVG Version: 2.1.4 Build 109)  -->
+   > 4 │   <defs>
+        ...
+  > 10 │   </defs>
+  > 11 │   <path class="st0" d="M54.4,127.2c-7.6,0-14.7-1.4-21.3-4-6.6-2.7-12.4-6.5-17.3-...
+  > 12 │   <path class="st0" d="M109.2,126.3c-1.3,0-2.4-.3-3.5-.9s-2-1.5-2.6-2.6-.9-2.3-.9-3.5c0-1.9.7-3.6,2.1-5s3.1-2.1,5-2.1,2.5.3,3.6.9,1.9,1.5,2.5,2.5c.6,1.1.9,2.3.9,3.6,0,1.9-.7,3.6-2.1,5s-3.1,2.1-5,2.1h0Z"/>
+  > 13 │ </svg>
+       │ ^^^^^^
+  
+  i For accessibility purposes, SVGs should have an alternative text, provided via title element. If the svg element has role="img", you should add the aria-label or aria-labelledby attribute.
+  
+
+src/assets/brand/principal-cherry.svg:2:1 lint/a11y/noSvgWithoutTitle ━━━━━━━━━━
+
+  × Alternative text title element cannot be empty
+  
+     1 │ <?xml version="1.0" encoding="UTF-8"?>
+   > 2 │ <svg id="Camada_2" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 507 193.8">
+       │ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   > 3 │   <!-- Generator: Adobe Illustrator 30.6.0, SVG Export Plug-In . SVG Version: 2.1.4 Build 109)  -->
+   > 4 │   <defs>
+        ...
+  > 30 │     </g>
+  > 31 │   </g>
+  > 32 │ </svg>
+       │ ^^^^^^
+    33 │ 
+  
+  i For accessibility purposes, SVGs should have an alternative text, provided via title element. If the svg element has role="img", you should add the aria-label or aria-labelledby attribute.
+  
+
+src/assets/brand/principal.svg:2:1 lint/a11y/noSvgWithoutTitle ━━━━━━━━━━━━━━━━━
+
+  × Alternative text title element cannot be empty
+  
+     1 │ <?xml version="1.0" encoding="UTF-8"?>
+   > 2 │ <svg id="Camada_2" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 507 193.8">
+       │ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   > 3 │   <!-- Generator: Adobe Illustrator 30.6.0, SVG Export Plug-In . SVG Version: 2.1.4 Build 109)  -->
+   > 4 │   <defs>
+        ...
+  > 30 │     </g>
+  > 31 │   </g>
+  > 32 │ </svg>
+       │ ^^^^^^
+    33 │ 
+  
+  i For accessibility purposes, SVGs should have an alternative text, provided via title element. If the svg element has role="img", you should add the aria-label or aria-labelledby attribute.
+  
+
+src/assets/brand/secundario.svg:2:1 lint/a11y/noSvgWithoutTitle ━━━━━━━━━━━━━━━━
+
+  × Alternative text title element cannot be empty
+  
+     1 │ <?xml version="1.0" encoding="UTF-8"?>
+   > 2 │ <svg id="Camada_1" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 123.5 133.6">
+       │ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   > 3 │   <!-- Generator: Adobe Illustrator 30.6.0, SVG Export Plug-In . SVG Version: 2.1.4 Build 109)  -->
+   > 4 │   <defs>
+        ...
+  > 14 │   <path class="st0" d="M120,104.9c0-4-.8-7.8-2.3-11.3-1.5-3.5-3.6-6.5-6.3-9.1-2....
+  > 15 │   <polygon class="st0" points="84.8 64.6 75.4 74.6 86.6 74.6 90.4 71.7 94.1 74.6 105.3 74.6 95.9 64.6 84.8 64.6"/>
+  > 16 │   <path class="st0" d="M123,127.4c-.3-.6-.8-1-1.4-1.4-.6-.3-1.2-.5-2-.5-1.1,0-2,.4-2.7,1.1-.8.8-1.1,1.7-1.1,2.7s.2,1.3.5,1.9c.3.6.8,1.1,1.4,1.4.6.3,1.2.5,1.9.5,1,0,2-.4,2.7-1.1.8-.8,1.1-1.7,1.1-2.7s-.2-1.4-.5-2Z"/>
+  > 17 │ </svg>
+       │ ^^^^^^
+  
+  i For accessibility purposes, SVGs should have an alternative text, provided via title element. If the svg element has role="img", you should add the aria-label or aria-labelledby attribute.
+  
+
+src/components/PortalLayout.tsx:1:1 assist/source/organizeImports  FIXABLE  ━━━━━━━━━━
+
+  × Sort these imports.
+  
+  > 1 │ import { NavLink, Outlet } from "react-router-dom";
+      │ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 2 │ import { useSession } from "../lib/session";
+  > 3 │ import logoPrincipal from "../assets/brand/principal.svg";
+      │ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    4 │ 
+    5 │ const navItems = [
+  
+  i Safe fix: Organize imports and exports (Biome)
+  
+     1  1 │   import { NavLink, Outlet } from "react-router-dom";
+     2    │ - import·{·useSession·}·from·"../lib/session";
+     3    │ - import·logoPrincipal·from·"../assets/brand/principal.svg";
+        2 │ + import·logoPrincipal·from·"../assets/brand/principal.svg";
+        3 │ + import·{·useSession·}·from·"../lib/session";
+     4  4 │   
+     5  5 │   const navItems = [
+  
+
+src/components/PortalLayout.tsx format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+     4  4 │   
+     5  5 │   const navItems = [
+     6    │ - ··{·to:·"/pendencias",·label:·"Pendências"·},
+     7    │ - ··{·to:·"/financeiro",·label:·"Financeiro"·},
+     8    │ - ··{·to:·"/perfil",·label:·"Perfil"·},
+        6 │ + → {·to:·"/pendencias",·label:·"Pendências"·},
+        7 │ + → {·to:·"/financeiro",·label:·"Financeiro"·},
+        8 │ + → {·to:·"/perfil",·label:·"Perfil"·},
+     9  9 │   ];
+    10 10 │   
+    11 11 │   export function PortalLayout() {
+    12    │ - ··const·{·sessao,·logout·}·=·useSession();
+    13    │ - ··const·itensNav·=·sessao?.papelAtor·===·"ADMINISTRADOR"·?·[...navItems,·{·to:·"/admin",·label:·"Moderação"·}]·:·navItems;
+       12 │ + → const·{·sessao,·logout·}·=·useSession();
+       13 │ + → const·itensNav·=
+       14 │ + → → sessao?.papelAtor·===·"ADMINISTRADOR"
+       15 │ + → → → ?·[...navItems,·{·to:·"/admin",·label:·"Moderação"·}]
+       16 │ + → → → :·navItems;
+    14 17 │   
+    15    │ - ··return·(
+    16    │ - ····<div·className="portal-shell">
+    17    │ - ······<header·className="portal-header">
+    18    │ - ········<div·className="portal-header-content·container">
+    19    │ - ··········<img·className="portal-logo"·src={logoPrincipal}·alt="Criativo·DODÔ"·/>
+       18 │ + → return·(
+       19 │ + → → <div·className="portal-shell">
+       20 │ + → → → <header·className="portal-header">
+       21 │ + → → → → <div·className="portal-header-content·container">
+       22 │ + → → → → → <img
+       23 │ + → → → → → → className="portal-logo"
+       24 │ + → → → → → → src={logoPrincipal}
+       25 │ + → → → → → → alt="Criativo·DODÔ"
+       26 │ + → → → → → />
+    20 27 │   
+    21    │ - ··········<nav·className="portal-nav"·aria-label="Navegação·principal">
+    22    │ - ··········{itensNav.map((item)·=>·(
+    23    │ - ············<NavLink
+    24    │ - ··············key={item.to}
+    25    │ - ··············to={item.to}
+    26    │ - ··············className={({·isActive·})·=>·`portal-nav-link${isActive·?·"·is-active"·:·""}`}
+    27    │ - ············>
+    28    │ - ··············{item.label}
+    29    │ - ············</NavLink>
+    30    │ - ··········))}
+    31    │ - ··········</nav>
+       28 │ + → → → → → <nav·className="portal-nav"·aria-label="Navegação·principal">
+       29 │ + → → → → → → {itensNav.map((item)·=>·(
+       30 │ + → → → → → → → <NavLink
+       31 │ + → → → → → → → → key={item.to}
+       32 │ + → → → → → → → → to={item.to}
+       33 │ + → → → → → → → → className={({·isActive·})·=>
+       34 │ + → → → → → → → → → `portal-nav-link${isActive·?·"·is-active"·:·""}`
+       35 │ + → → → → → → → → }
+       36 │ + → → → → → → → >
+       37 │ + → → → → → → → → {item.label}
+       38 │ + → → → → → → → </NavLink>
+       39 │ + → → → → → → ))}
+       40 │ + → → → → → </nav>
+    32 41 │   
+    33    │ - ··········<div·className="portal-account">
+    34    │ - ············<span·className="portal-account-name">{sessao?.nome}</span>
+    35    │ - ············<button·type="button"·className="btn-primary"·onClick={()·=>·void·logout()}>
+    36    │ - ··············Sair
+    37    │ - ············</button>
+    38    │ - ··········</div>
+    39    │ - ········</div>
+    40    │ - ······</header>
+       42 │ + → → → → → <div·className="portal-account">
+       43 │ + → → → → → → <span·className="portal-account-name">{sessao?.nome}</span>
+       44 │ + → → → → → → <button
+       45 │ + → → → → → → → type="button"
+       46 │ + → → → → → → → className="btn-primary"
+       47 │ + → → → → → → → onClick={()·=>·void·logout()}
+       48 │ + → → → → → → >
+       49 │ + → → → → → → → Sair
+       50 │ + → → → → → → </button>
+       51 │ + → → → → → </div>
+       52 │ + → → → → </div>
+       53 │ + → → → </header>
+    41 54 │   
+    42    │ - ······<main·className="portal-content·container">
+    43    │ - ········<Outlet·/>
+    44    │ - ······</main>
+    45    │ - ····</div>
+    46    │ - ··);
+       55 │ + → → → <main·className="portal-content·container">
+       56 │ + → → → → <Outlet·/>
+       57 │ + → → → </main>
+       58 │ + → → </div>
+       59 │ + → );
+    47 60 │   }
+    48 61 │   
+  
+
+src/components/RotaProtegida.tsx:1:1 assist/source/organizeImports  FIXABLE  ━━━━━━━━━━
+
+  × Sort these imports.
+  
+  > 1 │ import { Navigate } from "react-router-dom";
+      │ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 2 │ import type { ReactNode } from "react";
+      │ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    3 │ import { useSession } from "../lib/session";
+    4 │ 
+  
+  i Safe fix: Organize imports and exports (Biome)
+  
+     1    │ - import·{·Navigate·}·from·"react-router-dom";
+     2    │ - import·type·{·ReactNode·}·from·"react";
+        1 │ + import·type·{·ReactNode·}·from·"react";
+        2 │ + import·{·Navigate·}·from·"react-router-dom";
+     3  3 │   import { useSession } from "../lib/session";
+     4  4 │   
+  
+
+src/components/RotaProtegida.tsx format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+     9  9 │    */
+    10 10 │   export function RotaProtegida({ children }: { children: ReactNode }) {
+    11    │ - ··const·{·sessao,·carregando·}·=·useSession();
+       11 │ + → const·{·sessao,·carregando·}·=·useSession();
+    12 12 │   
+    13    │ - ··if·(carregando)·{
+    14    │ - ····return·null;
+    15    │ - ··}
+       13 │ + → if·(carregando)·{
+       14 │ + → → return·null;
+       15 │ + → }
+    16 16 │   
+    17    │ - ··if·(!sessao·||·sessao.estadoConta·!==·"ACTIVE")·{
+    18    │ - ····return·<Navigate·to="/login"·replace·/>;
+    19    │ - ··}
+       17 │ + → if·(!sessao·||·sessao.estadoConta·!==·"ACTIVE")·{
+       18 │ + → → return·<Navigate·to="/login"·replace·/>;
+       19 │ + → }
+    20 20 │   
+    21    │ - ··return·<>{children}</>;
+       21 │ + → return·<>{children}</>;
+    22 22 │   }
+    23 23 │   
+  
+
+src/index.css format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+      2   2 │   
+      3   3 │   * {
+      4     │ - ··box-sizing:·border-box;
+      5     │ - ··margin:·0;
+      6     │ - ··padding:·0;
+      7     │ - ··font-style:·normal·!important;
+          4 │ + → box-sizing:·border-box;
+          5 │ + → margin:·0;
+          6 │ + → padding:·0;
+          7 │ + → font-style:·normal·!important;
+      8   8 │   }
+      9   9 │   
+     10  10 │   html {
+     11     │ - ··scroll-behavior:·smooth;
+         11 │ + → scroll-behavior:·smooth;
+     12  12 │   }
+     13  13 │   
+     14  14 │   body {
+     15     │ - ··font-family:·var(--font-body);
+     16     │ - ··font-weight:·400;
+     17     │ - ··background:·var(--color-cotton);
+     18     │ - ··color:·var(--color-noir);
+     19     │ - ··-webkit-font-smoothing:·antialiased;
+     20     │ - ··min-height:·100vh;
+         15 │ + → font-family:·var(--font-body);
+         16 │ + → font-weight:·400;
+         17 │ + → background:·var(--color-cotton);
+         18 │ + → color:·var(--color-noir);
+         19 │ + → -webkit-font-smoothing:·antialiased;
+         20 │ + → min-height:·100vh;
+     21  21 │   }
+     22  22 │   
+     23  23 │   #root {
+     24     │ - ··min-height:·100vh;
+         24 │ + → min-height:·100vh;
+     25  25 │   }
+     26  26 │   
+     27  27 │   a {
+     28     │ - ··color:·inherit;
+     29     │ - ··text-decoration:·none;
+         28 │ + → color:·inherit;
+         29 │ + → text-decoration:·none;
+     30  30 │   }
+     31  31 │   
+     32  32 │   button {
+     33     │ - ··font-family:·inherit;
+     34     │ - ··cursor:·pointer;
+         33 │ + → font-family:·inherit;
+         34 │ + → cursor:·pointer;
+     35  35 │   }
+     36  36 │   
+     37  37 │   ::selection {
+     38     │ - ··background-color:·var(--color-cherry);
+     39     │ - ··color:·var(--color-cotton);
+         38 │ + → background-color:·var(--color-cherry);
+         39 │ + → color:·var(--color-cotton);
+     40  40 │   }
+     41  41 │   
+     42  42 │   .container {
+     43     │ - ··width:·100%;
+     44     │ - ··max-width:·1026px;
+     45     │ - ··margin:·0·auto;
+         43 │ + → width:·100%;
+         44 │ + → max-width:·1026px;
+         45 │ + → margin:·0·auto;
+     46  46 │   }
+     47  47 │   
+     48  48 │   .title-editorial {
+     49     │ - ··font-family:·var(--font-display);
+     50     │ - ··font-weight:·800;
+     51     │ - ··color:·var(--color-cherry);
+         49 │ + → font-family:·var(--font-display);
+         50 │ + → font-weight:·800;
+         51 │ + → color:·var(--color-cherry);
+     52  52 │   }
+     53  53 │   
+     54  54 │   .btn-primary {
+     55     │ - ··display:·inline-flex;
+     56     │ - ··justify-content:·center;
+     57     │ - ··align-items:·center;
+     58     │ - ··gap:·10px;
+     59     │ - ··height:·48px;
+     60     │ - ··padding:·0·28px;
+     61     │ - ··background:·var(--color-cherry);
+     62     │ - ··color:·var(--color-cotton);
+     63     │ - ··border:·1px·solid·var(--color-cherry);
+     64     │ - ··border-radius:·24px;
+     65     │ - ··font-size:·15px;
+     66     │ - ··font-weight:·700;
+     67     │ - ··font-family:·var(--font-display);
+     68     │ - ··transition:·background·0.4s·ease,·color·0.4s·ease;
+         55 │ + → display:·inline-flex;
+         56 │ + → justify-content:·center;
+         57 │ + → align-items:·center;
+         58 │ + → gap:·10px;
+         59 │ + → height:·48px;
+         60 │ + → padding:·0·28px;
+         61 │ + → background:·var(--color-cherry);
+         62 │ + → color:·var(--color-cotton);
+         63 │ + → border:·1px·solid·var(--color-cherry);
+         64 │ + → border-radius:·24px;
+         65 │ + → font-size:·15px;
+         66 │ + → font-weight:·700;
+         67 │ + → font-family:·var(--font-display);
+         68 │ + → transition:
+         69 │ + → → background·0.4s·ease,
+         70 │ + → → color·0.4s·ease;
+     69  71 │   }
+     70  72 │   
+     71  73 │   .btn-primary:hover {
+     72     │ - ··background:·transparent;
+     73     │ - ··color:·var(--color-cherry);
+         74 │ + → background:·transparent;
+         75 │ + → color:·var(--color-cherry);
+     74  76 │   }
+     75  77 │   
+    ······· │ 
+     78  80 │   input:focus-visible,
+     79  81 │   select:focus-visible {
+     80     │ - ··outline:·2px·solid·var(--color-cherry);
+     81     │ - ··outline-offset:·3px;
+         82 │ + → outline:·2px·solid·var(--color-cherry);
+         83 │ + → outline-offset:·3px;
+     82  84 │   }
+     83  85 │   
+     84  86 │   .btn-primary:disabled {
+     85     │ - ··opacity:·0.5;
+     86     │ - ··cursor:·not-allowed;
+         87 │ + → opacity:·0.5;
+         88 │ + → cursor:·not-allowed;
+     87  89 │   }
+     88  90 │   
+     89  91 │   .portal-shell {
+     90     │ - ··min-height:·100vh;
+     91     │ - ··display:·flex;
+     92     │ - ··flex-direction:·column;
+         92 │ + → min-height:·100vh;
+         93 │ + → display:·flex;
+         94 │ + → flex-direction:·column;
+     93  95 │   }
+     94  96 │   
+     95  97 │   .portal-header {
+     96     │ - ··border-bottom:·1px·solid·rgba(27,·23,·23,·0.1);
+         98 │ + → border-bottom:·1px·solid·rgba(27,·23,·23,·0.1);
+     97  99 │   }
+     98 100 │   
+     99 101 │   .portal-header-content {
+    100     │ - ··min-height:·96px;
+    101     │ - ··display:·grid;
+    102     │ - ··grid-template-columns:·115px·1fr·auto;
+    103     │ - ··align-items:·center;
+  591 more lines truncated
+  
+
+src/lib/api.ts format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+     1    │ - const·API_BASE_URL·=·import.meta.env.VITE_API_BASE_URL·??·"http://localhost:4000";
+        1 │ + const·API_BASE_URL·=
+        2 │ + → import.meta.env.VITE_API_BASE_URL·??·"http://localhost:4000";
+     2  3 │   
+     3  4 │   export class ApiError extends Error {
+     4    │ - ··status:·number;
+        5 │ + → status:·number;
+     5  6 │   
+     6    │ - ··constructor(status:·number,·message:·string)·{
+     7    │ - ····super(message);
+     8    │ - ····this.status·=·status;
+     9    │ - ··}
+        7 │ + → constructor(status:·number,·message:·string)·{
+        8 │ + → → super(message);
+        9 │ + → → this.status·=·status;
+       10 │ + → }
+    10 11 │   }
+    11 12 │   
+    ····· │ 
+    15 16 │    * o isolamento por Parceira é resolvido pelo backend a partir da sessão, nunca pelo cliente).
+    16 17 │    */
+    17    │ - export·async·function·apiFetch<T>(path:·string,·init?:·RequestInit):·Promise<T>·{
+    18    │ - ··//·FormData·define·seu·próprio·Content-Type·(com·boundary)·—·o·navegador·precisa·calculá-lo,
+    19    │ - ··//·nunca·fixá-lo·aqui,·senão·o·multipart·chega·malformado·ao·backend.
+    20    │ - ··const·ehFormData·=·init?.body·instanceof·FormData;
+       18 │ + export·async·function·apiFetch<T>(
+       19 │ + → path:·string,
+       20 │ + → init?:·RequestInit,
+       21 │ + ):·Promise<T>·{
+       22 │ + → //·FormData·define·seu·próprio·Content-Type·(com·boundary)·—·o·navegador·precisa·calculá-lo,
+       23 │ + → //·nunca·fixá-lo·aqui,·senão·o·multipart·chega·malformado·ao·backend.
+       24 │ + → const·ehFormData·=·init?.body·instanceof·FormData;
+    21 25 │   
+    22    │ - ··const·response·=·await·fetch(`${API_BASE_URL}${path}`,·{
+    23    │ - ····...init,
+    24    │ - ····credentials:·"include",
+    25    │ - ····headers:·{
+    26    │ - ······...(ehFormData·?·{}·:·{·"Content-Type":·"application/json"·}),
+    27    │ - ······...init?.headers,
+    28    │ - ····},
+    29    │ - ··});
+       26 │ + → const·response·=·await·fetch(`${API_BASE_URL}${path}`,·{
+       27 │ + → → ...init,
+       28 │ + → → credentials:·"include",
+       29 │ + → → headers:·{
+       30 │ + → → → ...(ehFormData·?·{}·:·{·"Content-Type":·"application/json"·}),
+       31 │ + → → → ...init?.headers,
+       32 │ + → → },
+       33 │ + → });
+    30 34 │   
+    31    │ - ··if·(!response.ok)·{
+    32    │ - ····const·body·=·await·response.json().catch(()·=>·({·error:·response.statusText·}));
+    33    │ - ····throw·new·ApiError(response.status,·body.error·??·response.statusText);
+    34    │ - ··}
+       35 │ + → if·(!response.ok)·{
+       36 │ + → → const·body·=·await·response
+       37 │ + → → → .json()
+       38 │ + → → → .catch(()·=>·({·error:·response.statusText·}));
+       39 │ + → → throw·new·ApiError(response.status,·body.error·??·response.statusText);
+       40 │ + → }
+    35 41 │   
+    36    │ - ··if·(response.status·===·204)·{
+    37    │ - ····return·undefined·as·T;
+    38    │ - ··}
+       42 │ + → if·(response.status·===·204)·{
+       43 │ + → → return·undefined·as·T;
+       44 │ + → }
+    39 45 │   
+    40    │ - ··return·response.json()·as·Promise<T>;
+       46 │ + → return·response.json()·as·Promise<T>;
+    41 47 │   }
+    42 48 │   
+  
+
+src/lib/session.tsx:1:1 assist/source/organizeImports  FIXABLE  ━━━━━━━━━━━━━━━━
+
+  × Some imports or exports are not organized.
+  
+  > 1 │ import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+      │ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  > 2 │ import { apiFetch, ApiError } from "./api";
+      │ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    3 │ 
+    4 │ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:4000";
+  
+  i Sort the imported names.
+  
+  > 1 │ import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+      │ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    2 │ import { apiFetch, ApiError } from "./api";
+    3 │ 
+  
+  i Sort the imported names.
+  
+    1 │ import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+  > 2 │ import { apiFetch, ApiError } from "./api";
+      │ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    3 │ 
+    4 │ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:4000";
+  
+  i Safe fix: Organize imports and exports (Biome)
+  
+     1    │ - import·{·createContext,·useContext,·useEffect,·useState,·type·ReactNode·}·from·"react";
+     2    │ - import·{·apiFetch,·ApiError·}·from·"./api";
+        1 │ + import·{·createContext,·type·ReactNode,·useContext,·useEffect,·useState·}·from·"react";
+        2 │ + import·{·ApiError,·apiFetch·}·from·"./api";
+     3  3 │   
+     4  4 │   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:4000";
+  
+
+src/lib/session.tsx:52:3 lint/correctness/useExhaustiveDependencies  FIXABLE  ━━━━━━━━━━
+
+  × This hook does not specify its dependency on carregarSessao.
+  
+    50 │   }
+    51 │ 
+  > 52 │   useEffect(() => {
+       │   ^^^^^^^^^
+    53 │     void carregarSessao();
+    54 │   }, []);
+  
+  i This dependency is being used here, but is not specified in the hook dependency list.
+  
+    52 │   useEffect(() => {
+  > 53 │     void carregarSessao();
+       │          ^^^^^^^^^^^^^^
+    54 │   }, []);
+    55 │ 
+  
+  i React relies on hook dependencies to determine when to re-compute Effects.
+    Failing to specify dependencies can result in Effects not updating correctly when state changes.
+    These "stale closures" are a common source of surprising bugs.
+  
+  i Either include it or remove the dependency array.
+  
+  i Unsafe fix: Add the missing dependency carregarSessao to the list.
+  
+    54 │ ··},·[carregarSessao]);
+       │       ++++++++++++++   
+
+src/lib/session.tsx format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+     1    │ - import·{·createContext,·useContext,·useEffect,·useState,·type·ReactNode·}·from·"react";
+        1 │ + import·{
+        2 │ + → createContext,
+        3 │ + → useContext,
+        4 │ + → useEffect,
+        5 │ + → useState,
+        6 │ + → type·ReactNode,
+        7 │ + }·from·"react";
+     2  8 │   import { apiFetch, ApiError } from "./api";
+     3  9 │   
+     4    │ - const·API_BASE_URL·=·import.meta.env.VITE_API_BASE_URL·??·"http://localhost:4000";
+       10 │ + const·API_BASE_URL·=
+       11 │ + → import.meta.env.VITE_API_BASE_URL·??·"http://localhost:4000";
+     5 12 │   
+     6 13 │   /**
+    ····· │ 
+    13 20 │   
+    14 21 │   export interface SessaoParceira {
+    15    │ - ··parceiraId:·string·|·null;
+    16    │ - ··nome:·string;
+    17    │ - ··email:·string;
+    18    │ - ··estadoConta:·EstadoConta;
+    19    │ - ··papelAtor:·PapelAtor;
+       22 │ + → parceiraId:·string·|·null;
+       23 │ + → nome:·string;
+       24 │ + → email:·string;
+       25 │ + → estadoConta:·EstadoConta;
+       26 │ + → papelAtor:·PapelAtor;
+    20 27 │   }
+    21 28 │   
+    22 29 │   interface SessionContextValue {
+    23    │ - ··sessao:·SessaoParceira·|·null;
+    24    │ - ··carregando:·boolean;
+    25    │ - ··login:·()·=>·void;
+    26    │ - ··logout:·()·=>·Promise<void>;
+    27    │ - ··recarregar:·()·=>·Promise<void>;
+       30 │ + → sessao:·SessaoParceira·|·null;
+       31 │ + → carregando:·boolean;
+       32 │ + → login:·()·=>·void;
+       33 │ + → logout:·()·=>·Promise<void>;
+       34 │ + → recarregar:·()·=>·Promise<void>;
+    28 35 │   }
+    29 36 │   
+    30    │ - const·SessionContext·=·createContext<SessionContextValue·|·undefined>(undefined);
+       37 │ + const·SessionContext·=·createContext<SessionContextValue·|·undefined>(
+       38 │ + → undefined,
+       39 │ + );
+    31 40 │   
+    32 41 │   export function SessionProvider({ children }: { children: ReactNode }) {
+    33    │ - ··const·[sessao,·setSessao]·=·useState<SessaoParceira·|·null>(null);
+    34    │ - ··const·[carregando,·setCarregando]·=·useState(true);
+       42 │ + → const·[sessao,·setSessao]·=·useState<SessaoParceira·|·null>(null);
+       43 │ + → const·[carregando,·setCarregando]·=·useState(true);
+    35 44 │   
+    36    │ - ··async·function·carregarSessao()·{
+    37    │ - ····setCarregando(true);
+    38    │ - ····try·{
+    39    │ - ······const·atual·=·await·apiFetch<SessaoParceira>("/auth/me");
+    40    │ - ······setSessao(atual);
+    41    │ - ····}·catch·(erro)·{
+    42    │ - ······if·(erro·instanceof·ApiError·&&·erro.status·===·401)·{
+    43    │ - ········setSessao(null);
+    44    │ - ······}·else·{
+    45    │ - ········throw·erro;
+    46    │ - ······}
+    47    │ - ····}·finally·{
+    48    │ - ······setCarregando(false);
+    49    │ - ····}
+    50    │ - ··}
+       45 │ + → async·function·carregarSessao()·{
+       46 │ + → → setCarregando(true);
+       47 │ + → → try·{
+       48 │ + → → → const·atual·=·await·apiFetch<SessaoParceira>("/auth/me");
+       49 │ + → → → setSessao(atual);
+       50 │ + → → }·catch·(erro)·{
+       51 │ + → → → if·(erro·instanceof·ApiError·&&·erro.status·===·401)·{
+       52 │ + → → → → setSessao(null);
+       53 │ + → → → }·else·{
+       54 │ + → → → → throw·erro;
+       55 │ + → → → }
+       56 │ + → → }·finally·{
+       57 │ + → → → setCarregando(false);
+       58 │ + → → }
+       59 │ + → }
+    51 60 │   
+    52    │ - ··useEffect(()·=>·{
+    53    │ - ····void·carregarSessao();
+    54    │ - ··},·[]);
+       61 │ + → useEffect(()·=>·{
+       62 │ + → → void·carregarSessao();
+       63 │ + → },·[]);
+    55 64 │   
+    56    │ - ··function·login()·{
+    57    │ - ····//·Authorization·Code·Flow·+·PKCE·(ADR-007)·começa·e·termina·no·backend;
+    58    │ - ····//·o·frontend·só·redireciona,·nunca·manipula·token·OIDC·diretamente.
+    59    │ - ····window.location.href·=·`${API_BASE_URL}/auth/google/login`;
+    60    │ - ··}
+       65 │ + → function·login()·{
+       66 │ + → → //·Authorization·Code·Flow·+·PKCE·(ADR-007)·começa·e·termina·no·backend;
+       67 │ + → → //·o·frontend·só·redireciona,·nunca·manipula·token·OIDC·diretamente.
+       68 │ + → → window.location.href·=·`${API_BASE_URL}/auth/google/login`;
+       69 │ + → }
+    61 70 │   
+    62    │ - ··async·function·logout()·{
+    63    │ - ····await·apiFetch("/auth/logout",·{·method:·"POST"·});
+    64    │ - ····setSessao(null);
+    65    │ - ··}
+       71 │ + → async·function·logout()·{
+       72 │ + → → await·apiFetch("/auth/logout",·{·method:·"POST"·});
+       73 │ + → → setSessao(null);
+       74 │ + → }
+    66 75 │   
+    67    │ - ··return·(
+    68    │ - ····<SessionContext.Provider
+    69    │ - ······value={{·sessao,·carregando,·login,·logout,·recarregar:·carregarSessao·}}
+    70    │ - ····>
+    71    │ - ······{children}
+    72    │ - ····</SessionContext.Provider>
+    73    │ - ··);
+       76 │ + → return·(
+       77 │ + → → <SessionContext.Provider
+       78 │ + → → → value={{·sessao,·carregando,·login,·logout,·recarregar:·carregarSessao·}}
+       79 │ + → → >
+       80 │ + → → → {children}
+       81 │ + → → </SessionContext.Provider>
+       82 │ + → );
+    74 83 │   }
+    75 84 │   
+    76 85 │   export function useSession(): SessionContextValue {
+    77    │ - ··const·context·=·useContext(SessionContext);
+    78    │ - ··if·(!context)·{
+    79    │ - ····throw·new·Error("useSession·precisa·estar·dentro·de·<SessionProvider>");
+    80    │ - ··}
+    81    │ - ··return·context;
+       86 │ + → const·context·=·useContext(SessionContext);
+       87 │ + → if·(!context)·{
+       88 │ + → → throw·new·Error("useSession·precisa·estar·dentro·de·<SessionProvider>");
+       89 │ + → }
+       90 │ + → return·context;
+    82 91 │   }
+    83 92 │   
+  
+
+src/main.tsx format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+     7  7 │   
+     8  8 │   createRoot(document.getElementById("root")!).render(
+     9    │ - ··<StrictMode>
+    10    │ - ····<BrowserRouter>
+    11    │ - ······<SessionProvider>
+    12    │ - ········<App·/>
+    13    │ - ······</SessionProvider>
+    14    │ - ····</BrowserRouter>
+    15    │ - ··</StrictMode>,
+        9 │ + → <StrictMode>
+       10 │ + → → <BrowserRouter>
+       11 │ + → → → <SessionProvider>
+       12 │ + → → → → <App·/>
+       13 │ + → → → </SessionProvider>
+       14 │ + → → </BrowserRouter>
+       15 │ + → </StrictMode>,
+    16 16 │   );
+    17 17 │   
+  
+
+src/styles/tokens.css format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+     6  6 │   
+     7  7 │   @font-face {
+     8    │ - ··font-family:·"Work·Sans";
+     9    │ - ··src:·url("/fonts/WorkSans.ttf")·format("truetype-variations");
+    10    │ - ··font-weight:·100·900;
+    11    │ - ··font-style:·normal;
+    12    │ - ··font-display:·swap;
+        8 │ + → font-family:·"Work·Sans";
+        9 │ + → src:·url("/fonts/WorkSans.ttf")·format("truetype-variations");
+       10 │ + → font-weight:·100·900;
+       11 │ + → font-style:·normal;
+       12 │ + → font-display:·swap;
+    13 13 │   }
+    14 14 │   
+    15 15 │   @font-face {
+    16    │ - ··font-family:·"Elms·Sans";
+    17    │ - ··src:·url("/fonts/ElmsSans.ttf")·format("truetype-variations");
+    18    │ - ··font-weight:·100·900;
+    19    │ - ··font-style:·normal;
+    20    │ - ··font-display:·swap;
+       16 │ + → font-family:·"Elms·Sans";
+       17 │ + → src:·url("/fonts/ElmsSans.ttf")·format("truetype-variations");
+       18 │ + → font-weight:·100·900;
+       19 │ + → font-style:·normal;
+       20 │ + → font-display:·swap;
+    21 21 │   }
+    22 22 │   
+    23 23 │   :root {
+    24    │ - ··--color-cotton:·#edebdd;
+    25    │ - ··--color-cherry:·#810100;
+    26    │ - ··--color-maroon:·#630000;
+    27    │ - ··--color-noir:·#1b1717;
+       24 │ + → --color-cotton:·#edebdd;
+       25 │ + → --color-cherry:·#810100;
+       26 │ + → --color-maroon:·#630000;
+       27 │ + → --color-noir:·#1b1717;
+    28 28 │   
+    29    │ - ··--font-display:·"Work·Sans",·sans-serif;
+    30    │ - ··--font-body:·"Elms·Sans",·sans-serif;
+       29 │ + → --font-display:·"Work·Sans",·sans-serif;
+       30 │ + → --font-body:·"Elms·Sans",·sans-serif;
+    31 31 │   
+    32    │ - ··--ease-editorial:·cubic-bezier(0.25,·1,·0.5,·1);
+       32 │ + → --ease-editorial:·cubic-bezier(0.25,·1,·0.5,·1);
+    33 33 │   }
+    34 34 │   
+  
+
+The number of diagnostics exceeds the limit allowed. Use --max-diagnostics to increase it.
+Diagnostics not shown: 12.
+Checked 17 files in 15ms. No fixes applied.
+Found 29 errors.
+Found 3 warnings.
+check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Some errors were emitted while running checks.
+  
+
+
+## Build
+
+> portal-frontend@0.0.0 build
+> tsc -b && vite build
+
+vite v8.1.5 building client environment for production...
+[2Ktransforming...✓ 34 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                       0.49 kB │ gzip:  0.32 kB
+dist/assets/principal-Kju5hatT.svg    5.70 kB │ gzip:  1.97 kB
+dist/assets/index-Dd3_xy5D.css        9.15 kB │ gzip:  2.43 kB
+dist/assets/index-CmvSQ8VO.js       258.72 kB │ gzip: 80.29 kB
+
+✓ built in 91ms
+
+===== FIM =====
