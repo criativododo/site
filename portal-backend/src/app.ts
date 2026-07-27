@@ -9,6 +9,14 @@ import { apiRoutes } from "./routes/api.routes.js";
 
 export const app = express();
 
+/**
+ * Necessário para que rate limiting e `req.ip` funcionem corretamente atrás de um proxy
+ * reverso (nginx, padrão já usado neste projeto — `knowledge/Deploy/INFRAESTRUTURA.md`).
+ * Sem isso, express-rate-limit erra ao ler X-Forwarded-For e todos os usuários compartilham
+ * o mesmo limite. Ajustar a contagem de hops quando a topologia real de produção for confirmada.
+ */
+app.set("trust proxy", 1);
+
 app.use(helmet());
 app.use(
   cors({
