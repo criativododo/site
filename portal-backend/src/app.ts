@@ -2,12 +2,14 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import express, { type NextFunction, type Request, type Response } from "express";
 import rateLimit from "express-rate-limit";
+import helmet from "helmet";
 import { env } from "./config/env.js";
 import { authRoutes } from "./modules/identidade/auth.routes.js";
 import { apiRoutes } from "./routes/api.routes.js";
 
 export const app = express();
 
+app.use(helmet());
 app.use(
   cors({
     origin: env.frontendUrl,
