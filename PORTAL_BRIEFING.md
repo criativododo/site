@@ -370,24 +370,27 @@ de raciocínio arquitetural, não como código herdável.
 
 ## 13. Pendências
 
-Antes de começar a implementação do Portal, os seguintes pontos **precisam de decisão
-explícita do responsável do projeto** — nenhum deve ser assumido:
+**Itens 1-6 resolvidos em 2026-07-26** — decisões do responsável do projeto, registradas em
+`knowledge/ARCHITECTURAL_DECISIONS.md` ADR-005 a ADR-010:
 
-1. **Stack e ponto de partida.** Recomeçar em Laravel + React (como o "Sistema B"
-   descrevia) reaproveitando só as regras de negócio documentadas, adotar outra stack, ou
-   integrar com um sistema legado que continue rodando em paralelo. Nada nas fontes lidas
-   resolve isso para o estado atual do projeto.
-2. **Reconciliação de vocabulário de domínio.** `Colaboração Mensal`/`Entrega`/`Obrigação
-   Financeira` (Contrato Soberano) vs. `Campanha`/`Participação`/`Pagamento` (Sistema B).
-3. **Modelo de autenticação da Parceira (Q-07 real).** Cupom+CNPJ, e-mail/senha, ou Google
-   OIDC — três descrições incompatíveis, nenhuma implementada no estado atual. SPEC-035
-   resolve apenas a integração arquitetural entre OIDC e sessão, não a escolha de mecanismo.
-4. **Escopo do ator "Marca".** Incluir desde o início (multi-tenant) ou manter single-tenant
-   — impacta profundamente o modelo de dados.
-5. **Gate de elegibilidade de pagamento.** Confirmar se "todas as Entregas Aprovadas (não
-   necessariamente Publicadas)" é de fato a regra desejada — dois documentos discordam.
-6. **LGPD (Q-09).** Nenhuma SPEC do Portal resolve retenção/expurgo de PII antes de expor
-   dados pessoais — precisa virar requisito de primeira classe, não débito herdado.
+1. ~~**Stack e ponto de partida.**~~ **Resolvido:** backend Node.js/TypeScript; frontend
+   React+Vite+TypeScript reaproveitando `app/`. Ver ADR-005.
+2. ~~**Reconciliação de vocabulário de domínio.**~~ **Resolvido:** Contrato Soberano
+   (`Colaboração Mensal`/`Entrega`/`Envio`/`Obrigação Financeira`) rege todo código novo. Ver
+   ADR-006.
+3. ~~**Modelo de autenticação da Parceira (Q-07 real).**~~ **Resolvido:** Google OIDC
+   federado, Authorization Code Flow + PKCE, fluxo `PENDING→ACTIVE` de SPEC-035. Ver ADR-007.
+4. ~~**Escopo do ator "Marca".**~~ **Resolvido:** fora do MVP; sistema single-tenant. Ver
+   ADR-008.
+5. ~~**Gate de elegibilidade de pagamento.**~~ **Resolvido:** todas as Entregas `Aprovado`;
+   `Publicado` não é pré-requisito. Ver ADR-009.
+6. ~~**LGPD (Q-09).**~~ **Resolvido:** política completa de Privacy by Design/Default (bases
+   legais, classificação de dados, menor privilégio, auditoria, direitos do titular, retenção
+   por categoria, processo de expurgo, backups). Ver ADR-010.
+
+Pendências que seguem em aberto — precisam de decisão explícita do responsável do projeto,
+nenhuma deve ser assumida:
+
 7. **Infraestrutura real de produção.** Domínio e hospedagem Locaweb existem, mas SSH
    bloqueado por incidente, PostgreSQL não confirmado tecnicamente, subdomínio configurado
    incompatível com backend isolado, banco de produção nunca criado. Ver

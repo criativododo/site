@@ -1,0 +1,33 @@
+/*
+ * Tokens visuais extraídos de app/src/index.css (Landing Page, fonte de verdade visual
+ * — ADR-001/ADR-004 em knowledge/ARCHITECTURAL_DECISIONS.md). Não redefinir cor/tipografia
+ * aqui sem antes checar app/src/index.css — em qualquer divergência, a Landing prevalece.
+ */
+
+@font-face {
+  font-family: "Work Sans";
+  src: url("/fonts/WorkSans.ttf") format("truetype-variations");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Elms Sans";
+  src: url("/fonts/ElmsSans.ttf") format("truetype-variations");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --color-cotton: #edebdd;
+  --color-cherry: #810100;
+  --color-maroon: #630000;
+  --color-noir: #1b1717;
+
+  --font-display: "Work Sans", sans-serif;
+  --font-body: "Elms Sans", sans-serif;
+
+  --ease-editorial: cubic-bezier(0.25, 1, 0.5, 1);
+}

@@ -16,8 +16,9 @@
 - **ADRs a respeitar:** `knowledge/ARCHITECTURAL_DECISIONS.md` (ADR-001 a ADR-004, série
   desta sessão) — sobrepõem, para fins visuais e de método, o que a série antiga
   (`knowledge/Arquitetura/ADR-*.md`) documentava para um sistema que não existe mais aqui.
-- **Antes de implementar qualquer coisa:** resolver as 6 decisões bloqueantes de `PORTAL_
-  BRIEFING.md` §13 (itens 1-6) — ver `PORTAL_BACKLOG.md` EPIC 0.
+- **EPIC 0 concluído em 2026-07-26:** as 6 decisões bloqueantes de `PORTAL_BRIEFING.md` §13
+  (itens 1-6) foram tomadas e registradas em `knowledge/ARCHITECTURAL_DECISIONS.md`
+  (ADR-005 a ADR-010) — ver §6 abaixo. O projeto está em **EPIC 1 (Fundação)**.
 
 ---
 
@@ -108,24 +109,25 @@ Duas séries de ADR coexistem neste projeto — não confundir:
 
 Ver `PORTAL_BRIEFING.md` §11 para a lista completa e o racional de cada uma.
 
-## 6. Decisões que AINDA precisam ser tomadas (não avance sem elas)
+## 6. Decisões do EPIC 0 — ✅ RESOLVIDAS em 2026-07-26
 
-Estas são bloqueantes — implementar sem decidir gera retrabalho estrutural depois:
+As 6 decisões bloqueantes abaixo foram tomadas pelo responsável do projeto e registradas em
+`knowledge/ARCHITECTURAL_DECISIONS.md` (ADR-005 a ADR-010). **EPIC 1 já pode começar.**
 
-1. **Stack do Portal.** Nenhuma stack de backend existe hoje. Recomeçar em Laravel+React
-   (como o Sistema B descrevia), adotar outra, ou integrar com legado — nada resolve isso.
-2. **Vocabulário de domínio.** Contrato Soberano (`Colaboração Mensal`/`Entrega`) vs. Sistema
-   B (`Campanha`/`Participação`) — escolher um antes de desenhar schema.
-3. **Modelo de autenticação da Parceira.** Cupom+CNPJ, e-mail/senha, ou Google OIDC — três
-   descrições incompatíveis, nenhuma implementada.
-4. **Escopo do ator Marca.** Multi-tenant desde o início, ou single-tenant como o PRD
-   original.
-5. **Gate de elegibilidade de pagamento.** Dois documentos discordam se já está decidido.
-6. **LGPD.** Retenção/expurgo de PII nunca formalizada — precisa virar requisito de primeira
-   classe antes do Portal expor dados pessoais.
+1. **Stack do Portal.** Backend Node.js/TypeScript; frontend React+Vite+TypeScript
+   reaproveitando `app/`. ADR-005.
+2. **Vocabulário de domínio.** Contrato Soberano (`Colaboração Mensal`/`Entrega`/`Envio`/
+   `Obrigação Financeira`) rege todo código novo. ADR-006.
+3. **Modelo de autenticação da Parceira.** Google OIDC federado (Authorization Code Flow +
+   PKCE), fluxo `PENDING→ACTIVE` de SPEC-035. ADR-007.
+4. **Escopo do ator Marca.** Fora do MVP; sistema single-tenant. ADR-008.
+5. **Gate de elegibilidade de pagamento.** Todas as Entregas `Aprovado`; `Publicado` não é
+   pré-requisito. ADR-009.
+6. **LGPD.** Política completa de Privacy by Design/Default registrada como requisito de
+   primeira classe desde o EPIC 1 (não mais débito herdado). ADR-010.
 
-Ver `PORTAL_BRIEFING.md` §13 para a lista completa (12 itens) e `PORTAL_BACKLOG.md` EPIC 0
-para como transformar essas decisões em tarefas concretas.
+Ver `PORTAL_BRIEFING.md` §13 (itens 7-12 seguem pendentes) e `PORTAL_BACKLOG.md` EPIC 0
+(marcado concluído) para o detalhamento.
 
 ## 7. Em que ordem construir o Portal
 
@@ -205,9 +207,9 @@ qualquer dúvida sobre qual documento manda sobre qual assunto. Resumo:
 
 ## 11. Plano de execução das primeiras semanas
 
-**Semana 1 — Decisões (EPIC 0).** Sessão de validação com o responsável do projeto para
-fechar os 6 itens do §6 acima. Produzir os ADRs correspondentes. Nenhum código de domínio é
-escrito nesta semana.
+**Semana 1 — Decisões (EPIC 0). ✅ Concluída em 2026-07-26.** Os 6 itens do §6 acima foram
+fechados com o responsável do projeto; ADRs correspondentes (ADR-005 a ADR-010) já
+registrados em `knowledge/ARCHITECTURAL_DECISIONS.md`.
 
 **Semana 2 — Fundação (EPIC 1).** Setup do backend/frontend escolhidos; conectar a
 identidade visual de `app/` ao frontend do Portal; implementar o mecanismo de autenticação

@@ -8,52 +8,40 @@
 
 ---
 
-## EPIC 0 — Decisões bloqueantes (pré-requisito de todo o resto)
+## EPIC 0 — Decisões bloqueantes (pré-requisito de todo o resto) — ✅ CONCLUÍDO 2026-07-26
 
 **Objetivo:** resolver as decisões de produto/arquitetura que mudam o formato do schema e
 da autenticação, para que nenhum código de domínio precise ser reescrito depois.
 **Prioridade:** P0 — bloqueia todos os demais épicos.
 **Dependências:** nenhuma (é o ponto de partida).
 
-### Feature 0.1 — Definição de stack
-- **História:** Como responsável do projeto, quero decidir a stack de backend/frontend do
-  Portal, para que a implementação tenha um ponto de partida técnico único.
-- **Tarefa técnica:** registrar a decisão (Laravel+React, outra stack, ou integração com
-  legado) em um ADR novo. **Critério de aceite:** ADR aprovado e commitado antes de qualquer
-  código de domínio ser escrito.
+Todas as 6 features abaixo foram decididas pelo responsável do projeto em 2026-07-26 e
+registradas em `knowledge/ARCHITECTURAL_DECISIONS.md` (ADR-005 a ADR-010). EPIC 1 pode
+prosseguir.
 
-### Feature 0.2 — Reconciliação de vocabulário de domínio
-- **História:** Como time de desenvolvimento, quero um único vocabulário de entidades
-  (Contrato Soberano vs. Sistema B), para que o schema não misture duas linguagens.
-- **Tarefa técnica:** decidir e registrar em ADR qual vocabulário rege o código novo (ver
-  recomendação em `PORTAL_ARQUITETURA.md` §8). **Critério de aceite:** ADR aprovado listando
-  o mapeamento de equivalência entre os dois vocabulários, para referência histórica.
+### Feature 0.1 — Definição de stack ✅
+- **Decisão:** backend Node.js/TypeScript; frontend React+Vite+TypeScript reaproveitando
+  `app/`. Ver ADR-005.
 
-### Feature 0.3 — Modelo de autenticação da Parceira
-- **História:** Como Parceira, quero um mecanismo de login definido, para acessar o Portal
-  com segurança.
-- **Tarefa técnica:** decidir entre os 3 modelos documentados (cupom+CNPJ, e-mail/senha,
-  Google OIDC) ou um quarto não documentado. **Critério de aceite:** ADR aprovado
-  especificando o mecanismo escolhido e o motivo da escolha.
+### Feature 0.2 — Reconciliação de vocabulário de domínio ✅
+- **Decisão:** vocabulário Contrato Soberano (`Colaboração Mensal`/`Entrega`/`Envio`/
+  `Obrigação Financeira`) rege todo código novo; Sistema B só para migração/compatibilidade
+  pontual. Ver ADR-006.
 
-### Feature 0.4 — Escopo do ator Marca
-- **História:** Como responsável do projeto, quero decidir se o Portal (e o sistema como um
-  todo) suporta múltiplas Marcas como tenants externos, para dimensionar o modelo de dados
-  corretamente desde o início.
-- **Critério de aceite:** decisão registrada — "Marca implementado no MVP" ou "Marca fora do
-  MVP, single-tenant".
+### Feature 0.3 — Modelo de autenticação da Parceira ✅
+- **Decisão:** Google OIDC federado, Authorization Code Flow + PKCE, fluxo `PENDING→ACTIVE`
+  de SPEC-035. Ver ADR-007.
 
-### Feature 0.5 — Gate de elegibilidade de pagamento
-- **História:** Como Administrador, quero uma regra única e não contraditória de quando um
-  pagamento pode ser liberado, para evitar liberações incorretas.
-- **Critério de aceite:** decisão registrada resolvendo a contradição entre Q-04 (Sistema A,
-  "já resolvida") e P0-1 (Sistema B, "em aberto").
+### Feature 0.4 — Escopo do ator Marca ✅
+- **Decisão:** Marca fora do MVP; sistema single-tenant. Ver ADR-008.
 
-### Feature 0.6 — LGPD (Q-09)
-- **História:** Como responsável pelo projeto, quero uma política de retenção/expurgo de
-  PII antes de o Portal expor qualquer dado pessoal.
-- **Critério de aceite:** política documentada (retenção, consentimento, direito ao
-  esquecimento) — não pode continuar como "débito herdado" antes do go-live do Portal.
+### Feature 0.5 — Gate de elegibilidade de pagamento ✅
+- **Decisão:** todas as Entregas `Aprovado`; `Publicado` não é pré-requisito. Ver ADR-009.
+
+### Feature 0.6 — LGPD (Q-09) ✅
+- **Decisão:** política completa de Privacy by Design/Default (bases legais, classificação
+  de dados, menor privilégio, auditoria, direitos do titular, retenção por categoria,
+  processo de expurgo, backups) — requisito de primeira classe desde o EPIC 1. Ver ADR-010.
 
 ---
 
