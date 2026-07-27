@@ -2,10 +2,23 @@
 
 echo "🔍 Executando verificações..."
 
-cd portal-frontend || exit 1
+(
+  cd app || exit 1
+  npm run lint || exit 1
+  npm run build || exit 1
+) || exit 1
 
-npm run lint || exit 1
-npx tsc --noEmit || exit 1
-npm run build || exit 1
+(
+  cd portal-frontend || exit 1
+  npm run lint || exit 1
+  npx tsc --noEmit || exit 1
+  npm run build || exit 1
+) || exit 1
+
+(
+  cd portal-backend || exit 1
+  npm run typecheck || exit 1
+  npm run build || exit 1
+) || exit 1
 
 echo "✅ Tudo aprovado."
