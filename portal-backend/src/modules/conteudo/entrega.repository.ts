@@ -56,6 +56,10 @@ export class EntregaRepositorioEmMemoria {
       (entrega) => entrega.parceiraId === parceiraId && entrega.mesReferencia === mesReferencia,
     );
   }
+
+  async buscarPorId(id: string): Promise<Entrega | null> {
+    return this.entregas.find((entrega) => entrega.id === id) ?? null;
+  }
 }
 
 export const entregaRepositorio = new EntregaRepositorioEmMemoria();

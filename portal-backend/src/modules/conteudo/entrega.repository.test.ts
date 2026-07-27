@@ -33,3 +33,16 @@ describe("EntregaRepositorioEmMemoria (RN-01, isolamento)", () => {
     expect(resultado).toEqual([]);
   });
 });
+
+describe("EntregaRepositorioEmMemoria.buscarPorId (UC-027.02)", () => {
+  it("encontra a Entrega pelo id, independente da Parceira", async () => {
+    const repo = new EntregaRepositorioEmMemoria([entrega({ id: "e1", parceiraId: "parceira-1" })]);
+    const encontrada = await repo.buscarPorId("e1");
+    expect(encontrada?.parceiraId).toBe("parceira-1");
+  });
+
+  it("retorna null para id inexistente", async () => {
+    const repo = new EntregaRepositorioEmMemoria([]);
+    expect(await repo.buscarPorId("nao-existe")).toBeNull();
+  });
+});

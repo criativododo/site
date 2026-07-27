@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { parceiraDaSessao } from "../../middleware/isolamento.js";
-import { listarPendencias } from "./conteudo.service.js";
+import { listarPendencias, obterBriefingDaEntrega } from "./conteudo.service.js";
 
 export const conteudoRoutes = Router();
 
@@ -12,5 +12,18 @@ export const conteudoRoutes = Router();
 conteudoRoutes.get("/pendencias", async (req, res) => {
   const parceiraId = parceiraDaSessao(req);
   const resultado = await listarPendencias(parceiraId);
+  res.json(resultado);
+});
+
+/** UC-027.02 · Ler briefing do item. PC-02: id de outra Parceira → 404 genérico (não revela existência). */
+conteudoRoutes.get("/entregas/:entregaId/briefing", async (req, res) => {
+  const parceiraId = parceiraDaSessao(req);
+  const resultado = await obterBriefingDaEntrega(parceiraId, req.params.entregaId);
+
+  if (!resultado) {
+    res.status(404).json({ error: "Entrega não encontrada." });
+    return;
+  }
+
   res.json(resultado);
 });
