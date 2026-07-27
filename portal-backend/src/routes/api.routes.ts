@@ -5,6 +5,7 @@ import { requireAuth, requireContaAtiva } from "../middleware/requireAuth.js";
 import { conteudoRoutes } from "../modules/conteudo/conteudo.routes.js";
 import { financeiroRoutes } from "../modules/financeiro/financeiro.routes.js";
 import { adminRoutes } from "../modules/identidade/admin.routes.js";
+import { lgpdAdminRoutes, lgpdRoutes } from "../modules/lgpd/lgpd.routes.js";
 import { perfilRoutes } from "../modules/perfil/perfil.routes.js";
 
 export const apiRoutes = Router();
@@ -36,3 +37,7 @@ apiRoutes.use("/portal/perfil", perfilRoutes);
 
 /** EPIC 5, Feature 5.3 — Moderação administrativa (SPEC-035 Cap. 5.4/5.5, RN-04). */
 apiRoutes.use("/admin", adminRoutes);
+
+/** LGPD (ADR-010) — direitos do titular: acesso/portabilidade e processo de expurgo. */
+apiRoutes.use("/portal/lgpd", lgpdRoutes);
+apiRoutes.use("/admin/lgpd", lgpdAdminRoutes);

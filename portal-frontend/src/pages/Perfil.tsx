@@ -159,6 +159,70 @@ function EditarEndereco({
   );
 }
 
+function MeusDadosLgpd() {
+  const [aviso, setAviso] = useState<string | null>(null);
+  const [processando, setProcessando] = useState(false);
+
+  async function exportar() {
+    setProcessando(true);
+    setAviso(null);
+    try {
+      const dados = await apiFetch<unknown>("/api/portal/lgpd/exportar");
+      const blob = new Blob([JSON.stringify(dados, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "meus-dados-dodo.json";
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch (erroCapturado) {
+      setAviso(erroCapturado instanceof ApiError ? erroCapturado.message : "Não foi possível exportar.");
+    } finally {
+      setProcessando(false);
+    }
+  }
+
+  async function solicitarExclusao() {
+    setProcessando(true);
+    setAviso(null);
+    try {
+      await apiFetch("/api/portal/lgpd/exclusao", { method: "POST" });
+      setAviso("Pedido de exclusão registrado. A equipe avaliará e retornará sobre a decisão.");
+    } catch (erroCapturado) {
+      setAviso(erroCapturado instanceof ApiError ? erroCapturado.message : "Não foi possível registrar o pedido.");
+    } finally {
+      setProcessando(false);
+    }
+  }
+
+  return (
+    <div style={{ marginTop: 32, paddingTop: 24, borderTop: "1px solid rgba(27, 23, 23, 0.1)", maxWidth: 360 }}>
+      <h2 className="title-editorial" style={{ fontSize: 16, marginBottom: 12 }}>
+        Meus dados (LGPD)
+      </h2>
+      <div style={{ display: "flex", gap: 12 }}>
+        <button
+          type="button"
+          disabled={processando}
+          onClick={() => void exportar()}
+          style={{ height: 36, padding: "0 16px", fontSize: 13, borderRadius: 24, border: "1px solid rgba(27, 23, 23, 0.2)", background: "none" }}
+        >
+          Baixar meus dados
+        </button>
+        <button
+          type="button"
+          disabled={processando}
+          onClick={() => void solicitarExclusao()}
+          style={{ height: 36, padding: "0 16px", fontSize: 13, borderRadius: 24, border: "1px solid var(--color-cherry)", background: "none", color: "var(--color-cherry)" }}
+        >
+          Solicitar exclusão de conta
+        </button>
+      </div>
+      {aviso && <p style={{ fontSize: 13, marginTop: 8 }}>{aviso}</p>}
+    </div>
+  );
+}
+
 export function PerfilPage() {
   const [perfil, setPerfil] = useState<PerfilParceira | null>(null);
   const [erro, setErro] = useState<string | null>(null);
@@ -213,6 +277,7 @@ export function PerfilPage() {
 
           <EditarContato perfil={perfil} aoSalvarComSucesso={setPerfil} />
           <EditarEndereco perfil={perfil} aoSalvarComSucesso={setPerfil} />
+          <MeusDadosLgpd />
         </>
       )}
     </section>
