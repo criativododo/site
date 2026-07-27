@@ -165,11 +165,24 @@ select:focus-visible {
 }
 
 .portal-login {
+	position: relative;
 	min-height: 100vh;
 	display: grid;
 	grid-template-rows: auto 1fr auto;
 	background: var(--color-cotton);
 	color: var(--color-noir);
+	overflow: hidden;
+}
+.portal-login-emblem {
+	position: absolute;
+	top: 50%;
+	right: clamp(-120px, -2vw, 40px);
+	width: min(52vw, 640px);
+	height: auto;
+	transform: translateY(-50%);
+	opacity: 0.05;
+	pointer-events: none;
+	user-select: none;
 }
 .portal-login-header {
 	display: flex;
@@ -186,27 +199,29 @@ select:focus-visible {
 	height: auto;
 }
 .portal-login-content {
+	position: relative;
+	z-index: 1;
 	width: min(100% - 48px, 440px);
 	align-self: center;
 	justify-self: center;
 	padding: 64px 0;
 }
 .portal-login-overline {
-	margin-bottom: 16px;
+	margin-bottom: 12px;
 	color: var(--color-cherry);
-	font-size: 12px;
+	font-size: 13.6px;
 	font-weight: 700;
-	letter-spacing: 0.09em;
+	letter-spacing: 0.08em;
 	text-transform: uppercase;
 }
 .portal-login-title {
 	margin: 0;
 	color: var(--color-cherry);
 	font-family: var(--font-display);
-	font-size: clamp(40px, 5vw, 56px);
+	font-size: 38.4px;
 	font-weight: 800;
-	line-height: 1;
-	letter-spacing: -0.035em;
+	line-height: 1.1;
+	letter-spacing: -0.01em;
 }
 .portal-login-description {
 	margin-top: 20px;
@@ -215,34 +230,11 @@ select:focus-visible {
 	line-height: 1.6;
 }
 .portal-login-button {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 26px;
 	width: 100%;
-	height: 48px;
 	margin-top: 36px;
-	padding: 0 24px;
-	border: 1px solid var(--color-cherry);
-	border-radius: 24px;
-	background: var(--color-cherry);
-	color: var(--color-cotton);
-	font-family: var(--font-display);
-	font-size: 15px;
-	font-weight: 700;
-	transition:
-		background 0.4s var(--ease-editorial),
-		color 0.4s var(--ease-editorial),
-		transform 0.4s var(--ease-editorial);
-}
-.portal-login-button:hover {
-	background: var(--color-maroon);
-	color: var(--color-cotton);
-	transform: translateY(-2px);
 }
 .portal-login-button span {
-	font-size: 20px;
-	font-weight: 400;
+	font-size: 18px;
 	line-height: 1;
 }
 .portal-login-security {
@@ -521,6 +513,14 @@ select:focus-visible {
 	}
 	.portal-login-content {
 		width: min(100% - 48px, 440px);
+	}
+	.portal-login-title {
+		font-size: 28.8px;
+	}
+	.portal-login-emblem {
+		opacity: 0.04;
+		width: 80vw;
+		right: -30vw;
 	}
 	.portal-login-footer {
 		padding: 24px;

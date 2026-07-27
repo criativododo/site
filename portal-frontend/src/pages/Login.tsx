@@ -1,4 +1,5 @@
 import { Navigate } from "react-router-dom";
+import emblema from "../assets/brand/icon.svg";
 import logoPrincipal from "../assets/brand/principal.svg";
 import { useSession } from "../lib/session";
 
@@ -25,6 +26,7 @@ export function LoginPage() {
 
 	return (
 		<main className="portal-login">
+			<img className="portal-login-emblem" src={emblema} alt="" aria-hidden="true" />
 			<header className="portal-login-header">
 				<img
 					className="portal-login-logo"
@@ -50,7 +52,7 @@ export function LoginPage() {
 						</p>
 						<button
 							type="button"
-							className="portal-login-button"
+							className="btn-primary portal-login-button"
 							onClick={login}
 						>
 							continuar com google <span aria-hidden="true">→</span>
