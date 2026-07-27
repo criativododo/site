@@ -66,6 +66,122 @@ function ResumoDoPeriodo({ mesReferencia }: { mesReferencia: string }) {
   );
 }
 
+type Formato = "Reel" | "Carrossel" | "Stories1" | "Stories2";
+type EstadoEntrega = "AGUARDANDO_MATERIAL" | "EM_REVISAO" | "APROVADO" | "PUBLICADO";
+type EstadoObrigacao = "EM_ABERTO" | "APROVADO" | "PAGO";
+
+interface ItemEntregaHistorico {
+  id: string;
+  formato: Formato;
+  estado: EstadoEntrega;
+  dataEntrega: string;
+}
+
+interface ItemObrigacaoHistorico {
+  id: string;
+  valor: number;
+  estado: EstadoObrigacao;
+}
+
+interface RespostaHistorico {
+  entregas: ItemEntregaHistorico[];
+  obrigacoes: ItemObrigacaoHistorico[];
+}
+
+const LABEL_FORMATO: Record<Formato, string> = {
+  Reel: "Reel",
+  Carrossel: "Carrossel",
+  Stories1: "Stories 1",
+  Stories2: "Stories 2",
+};
+
+const LABEL_ESTADO_ENTREGA: Record<EstadoEntrega, string> = {
+  AGUARDANDO_MATERIAL: "Aguardando material",
+  EM_REVISAO: "Em revisão",
+  APROVADO: "Aprovado",
+  PUBLICADO: "Publicado",
+};
+
+const LABEL_ESTADO_OBRIGACAO: Record<EstadoObrigacao, string> = {
+  EM_ABERTO: "Em aberto",
+  APROVADO: "Aprovado",
+  PAGO: "Pago",
+};
+
+function HistoricoDoPeriodo({ mesReferencia }: { mesReferencia: string }) {
+  const [historico, setHistorico] = useState<RespostaHistorico | null>(null);
+  const [erro, setErro] = useState<string | null>(null);
+  const [carregando, setCarregando] = useState(true);
+
+  useEffect(() => {
+    let ativo = true;
+    setCarregando(true);
+    setErro(null);
+
+    apiFetch<RespostaHistorico>(`/api/portal/financeiro/${mesReferencia}/historico`)
+      .then((dados) => ativo && setHistorico(dados))
+      .catch((erroCapturado) => {
+        if (!ativo) return;
+        setErro(
+          erroCapturado instanceof ApiError
+            ? erroCapturado.message
+            : "Não foi possível carregar o histórico do período.",
+        );
+      })
+      .finally(() => ativo && setCarregando(false));
+
+    return () => {
+      ativo = false;
+    };
+  }, [mesReferencia]);
+
+  if (carregando) {
+    return <p style={{ fontSize: 15 }}>Carregando histórico...</p>;
+  }
+
+  if (erro) {
+    return <p style={{ fontSize: 15, color: "var(--color-cherry)" }}>{erro}</p>;
+  }
+
+  if (!historico) {
+    return null;
+  }
+
+  return (
+    <div>
+      <h2 className="title-editorial" style={{ fontSize: 18, marginBottom: 12 }}>
+        Histórico
+      </h2>
+
+      {historico.entregas.length === 0 && historico.obrigacoes.length === 0 && (
+        <p style={{ fontSize: 14 }}>Sem histórico neste período.</p>
+      )}
+
+      {historico.entregas.length > 0 && (
+        <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
+          {historico.entregas.map((entrega) => (
+            <li key={entrega.id} style={{ display: "flex", justifyContent: "space-between", fontSize: 14 }}>
+              <span>{LABEL_FORMATO[entrega.formato]}</span>
+              <span>{LABEL_ESTADO_ENTREGA[entrega.estado]}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {historico.obrigacoes.length > 0 && (
+        <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: 8 }}>
+          {historico.obrigacoes.map((obrigacao) => (
+            <li key={obrigacao.id} style={{ display: "flex", justifyContent: "space-between", fontSize: 14 }}>
+              <span>{formatadorMoeda.format(obrigacao.valor)}</span>
+              <span>{LABEL_ESTADO_OBRIGACAO[obrigacao.estado]}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
 function labelPeriodo(mesReferencia: string): string {
   const [ano, mes] = mesReferencia.split("-");
   const nomes = [
@@ -154,7 +270,12 @@ export function FinanceiroPage() {
             </select>
           </label>
 
-          {periodoSelecionado && <ResumoDoPeriodo mesReferencia={periodoSelecionado} />}
+          {periodoSelecionado && (
+            <>
+              <ResumoDoPeriodo mesReferencia={periodoSelecionado} />
+              <HistoricoDoPeriodo mesReferencia={periodoSelecionado} />
+            </>
+          )}
         </>
       )}
     </section>

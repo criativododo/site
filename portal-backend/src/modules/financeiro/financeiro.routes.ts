@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { parceiraDaSessao } from "../../middleware/isolamento.js";
-import { listarPeriodosComAtividade, obterResumoFinanceiro } from "./financeiro.service.js";
+import { listarPeriodosComAtividade, obterHistorico, obterResumoFinanceiro } from "./financeiro.service.js";
 
 export const financeiroRoutes = Router();
 
@@ -22,4 +22,17 @@ financeiroRoutes.get("/:mesReferencia/resumo", async (req, res) => {
   }
 
   res.json(resumo);
+});
+
+/** UC-030.02 · Consultar histórico (INV-02: somente leitura). PF-02: mesmo tratamento do resumo. */
+financeiroRoutes.get("/:mesReferencia/historico", async (req, res) => {
+  const parceiraId = parceiraDaSessao(req);
+  const historico = await obterHistorico(parceiraId, req.params.mesReferencia);
+
+  if (!historico) {
+    res.status(404).json({ error: "Período inexistente para esta Parceira." });
+    return;
+  }
+
+  res.json(historico);
 });
