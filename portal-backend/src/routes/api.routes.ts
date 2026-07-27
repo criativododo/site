@@ -2,6 +2,7 @@ import { Router } from "express";
 import { registrarAuditoria } from "../middleware/auditoria.js";
 import { bloquearParceiraIdDeCliente, parceiraDaSessao } from "../middleware/isolamento.js";
 import { requireAuth, requireContaAtiva } from "../middleware/requireAuth.js";
+import { conteudoRoutes } from "../modules/conteudo/conteudo.routes.js";
 
 export const apiRoutes = Router();
 
@@ -20,3 +21,6 @@ apiRoutes.use(requireAuth, requireContaAtiva, bloquearParceiraIdDeCliente, regis
 apiRoutes.get("/fundacao/whoami", (req, res) => {
   res.json({ parceiraId: parceiraDaSessao(req) });
 });
+
+/** EPIC 2 — Conteúdo e Pendências (SPEC-027). */
+apiRoutes.use("/portal", conteudoRoutes);

@@ -37,13 +37,20 @@ export async function resolverOuCriarIdentidade(claims: ClaimsGoogle): Promise<I
     claims.email.trim().toLowerCase(),
   );
 
+  // Seed de dev/QA (env.parceiraSeed, ver config/env.ts) — substitui, só para este e-mail
+  // fixo, o fluxo real de vinculação de SPEC-035 §5.1-A que ainda não existe fisicamente.
+  const ehParceiraSeed =
+    !ehBootstrapAdministrador &&
+    env.parceiraSeed.email.length > 0 &&
+    claims.email.trim().toLowerCase() === env.parceiraSeed.email;
+
   const nova: Identidade = {
     subProvider: claims.sub,
     emailPerfil: claims.email,
     nomeCompleto: claims.nome,
     papelAtor: ehBootstrapAdministrador ? "ADMINISTRADOR" : "INFLUENCIADORA",
-    estadoConta: ehBootstrapAdministrador ? "ACTIVE" : "PENDING",
-    parceiraId: null,
+    estadoConta: ehBootstrapAdministrador || ehParceiraSeed ? "ACTIVE" : "PENDING",
+    parceiraId: ehParceiraSeed ? env.parceiraSeed.id : null,
     dataCriacao: agora,
     ultimoAcesso: agora,
   };
