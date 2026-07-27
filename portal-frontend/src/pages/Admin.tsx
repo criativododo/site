@@ -80,54 +80,36 @@ function FilaDeExclusao({
 	}
 
 	return (
-		<div style={{ marginTop: 40 }}>
-			<h2
-				className="title-editorial"
-				style={{ fontSize: 20, marginBottom: 16 }}
-			>
-				Solicitações de exclusão de conta (LGPD)
-			</h2>
+		<div className="portal-section-divider">
+			<p className="pendencias-summary is-quiet">
+				solicitações de exclusão de conta (lgpd)
+			</p>
 
-			{carregando && <p style={{ fontSize: 15 }}>Carregando...</p>}
+			{carregando && (
+				<p className="portal-page-feedback">carregando...</p>
+			)}
 			{!carregando && erro && (
-				<p style={{ fontSize: 15, color: "var(--color-cherry)" }}>{erro}</p>
+				<p className="portal-page-feedback is-error">{erro}</p>
 			)}
 			{!carregando && !erro && pendentes && pendentes.length === 0 && (
-				<p style={{ fontSize: 15 }}>
-					Nenhuma solicitação de exclusão pendente.
+				<p className="portal-page-feedback">
+					nenhuma solicitação de exclusão pendente.
 				</p>
 			)}
 
 			{!carregando && !erro && pendentes && pendentes.length > 0 && (
-				<ul
-					style={{
-						listStyle: "none",
-						display: "flex",
-						flexDirection: "column",
-						gap: 12,
-					}}
-				>
+				<ul className="portal-list">
 					{pendentes.map((solicitacao) => (
-						<li
-							key={solicitacao.id}
-							style={{
-								display: "flex",
-								justifyContent: "space-between",
-								alignItems: "center",
-								padding: "16px 20px",
-								border: "1px solid rgba(27, 23, 23, 0.1)",
-								borderRadius: 12,
-							}}
-						>
+						<li key={solicitacao.id} className="portal-list-row">
 							<div>
-								<strong style={{ fontFamily: "var(--font-display)" }}>
+								<strong className="portal-list-row-title">
 									{solicitacao.parceiraId}
 								</strong>
-								<p style={{ fontSize: 14, opacity: 0.8 }}>
-									Pedido em {solicitacao.dataPedido}
+								<p className="portal-list-row-meta">
+									pedido em {solicitacao.dataPedido}
 								</p>
 							</div>
-							<div style={{ display: "flex", gap: 8 }}>
+							<div className="portal-list-row-actions">
 								<button
 									type="button"
 									className="btn-primary"
@@ -135,7 +117,7 @@ function FilaDeExclusao({
 									onClick={() => void decidir(solicitacao.id, true)}
 									style={{ height: 36, padding: "0 20px", fontSize: 13 }}
 								>
-									Aprovar
+									aprovar
 								</button>
 								<button
 									type="button"
@@ -151,7 +133,7 @@ function FilaDeExclusao({
 										color: "var(--color-cherry)",
 									}}
 								>
-									Negar
+									negar
 								</button>
 							</div>
 						</li>
@@ -207,58 +189,44 @@ export function AdminPage() {
 
 	if (sessao?.papelAtor !== "ADMINISTRADOR") {
 		return (
-			<section>
-				<p style={{ fontSize: 15 }}>Área restrita a Administradores.</p>
+			<section className="portal-page">
+				<p className="portal-page-feedback">área restrita a administradores.</p>
 			</section>
 		);
 	}
 
 	return (
-		<section>
-			<h1
-				className="title-editorial"
-				style={{ fontSize: 28, marginBottom: 16 }}
-			>
-				Moderação de cadastros
+		<section className="portal-page">
+			<p className="portal-eyebrow">administração</p>
+			<h1 className="title-editorial portal-page-title">
+				moderação de cadastros
 			</h1>
+			<p className="portal-page-intro">
+				aprove ou rejeite contas novas e pedidos de exclusão.
+			</p>
 
-			{carregando && <p style={{ fontSize: 15 }}>Carregando...</p>}
+			{carregando && <p className="portal-page-feedback">carregando...</p>}
 			{!carregando && erro && (
-				<p style={{ fontSize: 15, color: "var(--color-cherry)" }}>{erro}</p>
+				<p className="portal-page-feedback is-error">{erro}</p>
 			)}
 
 			{!carregando && !erro && pendentes && pendentes.length === 0 && (
-				<p style={{ fontSize: 15 }}>Nenhum cadastro aguardando aprovação.</p>
+				<p className="portal-page-feedback">
+					nenhum cadastro aguardando aprovação.
+				</p>
 			)}
 
 			{!carregando && !erro && pendentes && pendentes.length > 0 && (
-				<ul
-					style={{
-						listStyle: "none",
-						display: "flex",
-						flexDirection: "column",
-						gap: 12,
-					}}
-				>
+				<ul className="portal-list">
 					{pendentes.map((conta) => (
-						<li
-							key={conta.subProvider}
-							style={{
-								display: "flex",
-								justifyContent: "space-between",
-								alignItems: "center",
-								padding: "16px 20px",
-								border: "1px solid rgba(27, 23, 23, 0.1)",
-								borderRadius: 12,
-							}}
-						>
+						<li key={conta.subProvider} className="portal-list-row">
 							<div>
-								<strong style={{ fontFamily: "var(--font-display)" }}>
+								<strong className="portal-list-row-title">
 									{conta.nome}
 								</strong>
-								<p style={{ fontSize: 14, opacity: 0.8 }}>{conta.email}</p>
+								<p className="portal-list-row-meta">{conta.email}</p>
 							</div>
-							<div style={{ display: "flex", gap: 8 }}>
+							<div className="portal-list-row-actions">
 								<button
 									type="button"
 									className="btn-primary"
@@ -266,7 +234,7 @@ export function AdminPage() {
 									onClick={() => void decidir(conta.subProvider, "aprovar")}
 									style={{ height: 36, padding: "0 20px", fontSize: 13 }}
 								>
-									Aprovar
+									aprovar
 								</button>
 								<button
 									type="button"
@@ -282,7 +250,7 @@ export function AdminPage() {
 										color: "var(--color-cherry)",
 									}}
 								>
-									Rejeitar
+									rejeitar
 								</button>
 							</div>
 						</li>

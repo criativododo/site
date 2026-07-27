@@ -40,54 +40,37 @@ function ResumoDoPeriodo({ mesReferencia }: { mesReferencia: string }) {
 	}, [mesReferencia]);
 
 	if (carregando) {
-		return <p style={{ fontSize: 15 }}>Carregando financeiro...</p>;
+		return <p className="portal-page-feedback">carregando este período...</p>;
 	}
 
 	if (erro) {
-		return <p style={{ fontSize: 15, color: "var(--color-cherry)" }}>{erro}</p>;
+		return <p className="portal-page-feedback is-error">{erro}</p>;
 	}
 
 	if (!resumo) {
 		return null;
 	}
 
+	const aReceber = resumo.previsto - resumo.pago;
+
 	return (
-		<div style={{ display: "flex", gap: 24, marginBottom: 24 }}>
-			<div
-				style={{
-					padding: "16px 20px",
-					border: "1px solid rgba(27, 23, 23, 0.1)",
-					borderRadius: 12,
-				}}
-			>
-				<span style={{ fontSize: 13, opacity: 0.8 }}>Total previsto</span>
-				<p
-					style={{
-						fontFamily: "var(--font-display)",
-						fontSize: 22,
-						fontWeight: 700,
-					}}
-				>
-					{formatadorMoeda.format(resumo.previsto)}
+		<div className="financeiro-kpis">
+			<div className="financeiro-kpi is-destaque">
+				<span className="financeiro-kpi-label">a receber</span>
+				<p className="financeiro-kpi-value">
+					{formatadorMoeda.format(aReceber)}
 				</p>
 			</div>
-			<div
-				style={{
-					padding: "16px 20px",
-					border: "1px solid rgba(27, 23, 23, 0.1)",
-					borderRadius: 12,
-				}}
-			>
-				<span style={{ fontSize: 13, opacity: 0.8 }}>Total pago</span>
-				<p
-					style={{
-						fontFamily: "var(--font-display)",
-						fontSize: 22,
-						fontWeight: 700,
-						color: "var(--color-cherry)",
-					}}
-				>
+			<div className="financeiro-kpi">
+				<span className="financeiro-kpi-label">já pago</span>
+				<p className="financeiro-kpi-value">
 					{formatadorMoeda.format(resumo.pago)}
+				</p>
+			</div>
+			<div className="financeiro-kpi">
+				<span className="financeiro-kpi-label">previsto no período</span>
+				<p className="financeiro-kpi-value">
+					{formatadorMoeda.format(resumo.previsto)}
 				</p>
 			</div>
 		</div>
@@ -121,23 +104,23 @@ interface RespostaHistorico {
 }
 
 const LABEL_FORMATO: Record<Formato, string> = {
-	Reel: "Reel",
-	Carrossel: "Carrossel",
-	Stories1: "Stories 1",
-	Stories2: "Stories 2",
+	Reel: "reel",
+	Carrossel: "carrossel",
+	Stories1: "stories 1",
+	Stories2: "stories 2",
 };
 
 const LABEL_ESTADO_ENTREGA: Record<EstadoEntrega, string> = {
-	AGUARDANDO_MATERIAL: "Aguardando material",
-	EM_REVISAO: "Em revisão",
-	APROVADO: "Aprovado",
-	PUBLICADO: "Publicado",
+	AGUARDANDO_MATERIAL: "aguardando material",
+	EM_REVISAO: "em revisão",
+	APROVADO: "aprovado",
+	PUBLICADO: "publicado",
 };
 
 const LABEL_ESTADO_OBRIGACAO: Record<EstadoObrigacao, string> = {
-	EM_ABERTO: "Em aberto",
-	APROVADO: "Aprovado",
-	PAGO: "Pago",
+	EM_ABERTO: "em aberto",
+	APROVADO: "aprovado",
+	PAGO: "pago",
 };
 
 function HistoricoDoPeriodo({ mesReferencia }: { mesReferencia: string }) {
@@ -170,76 +153,53 @@ function HistoricoDoPeriodo({ mesReferencia }: { mesReferencia: string }) {
 	}, [mesReferencia]);
 
 	if (carregando) {
-		return <p style={{ fontSize: 15 }}>Carregando histórico...</p>;
+		return <p className="portal-page-feedback">carregando histórico...</p>;
 	}
 
 	if (erro) {
-		return <p style={{ fontSize: 15, color: "var(--color-cherry)" }}>{erro}</p>;
+		return <p className="portal-page-feedback is-error">{erro}</p>;
 	}
 
 	if (!historico) {
 		return null;
 	}
 
-	return (
-		<div>
-			<h2
-				className="title-editorial"
-				style={{ fontSize: 18, marginBottom: 12 }}
-			>
-				Histórico
-			</h2>
+	const semHistorico =
+		historico.entregas.length === 0 && historico.obrigacoes.length === 0;
 
-			{historico.entregas.length === 0 && historico.obrigacoes.length === 0 && (
-				<p style={{ fontSize: 14 }}>Sem histórico neste período.</p>
+	return (
+		<div className="portal-section-divider">
+			<p className="pendencias-summary is-quiet">histórico do período</p>
+
+			{semHistorico && (
+				<p className="portal-page-feedback">sem histórico neste período.</p>
 			)}
 
 			{historico.entregas.length > 0 && (
-				<ul
-					style={{
-						listStyle: "none",
-						display: "flex",
-						flexDirection: "column",
-						gap: 8,
-						marginBottom: 16,
-					}}
-				>
+				<ul className="portal-list" style={{ marginBottom: 16 }}>
 					{historico.entregas.map((entrega) => (
-						<li
-							key={entrega.id}
-							style={{
-								display: "flex",
-								justifyContent: "space-between",
-								fontSize: 14,
-							}}
-						>
-							<span>{LABEL_FORMATO[entrega.formato]}</span>
-							<span>{LABEL_ESTADO_ENTREGA[entrega.estado]}</span>
+						<li key={entrega.id} className="portal-list-row">
+							<span className="portal-list-row-title">
+								{LABEL_FORMATO[entrega.formato]}
+							</span>
+							<span className="portal-list-row-status">
+								{LABEL_ESTADO_ENTREGA[entrega.estado]}
+							</span>
 						</li>
 					))}
 				</ul>
 			)}
 
 			{historico.obrigacoes.length > 0 && (
-				<ul
-					style={{
-						listStyle: "none",
-						display: "flex",
-						flexDirection: "column",
-						gap: 8,
-					}}
-				>
+				<ul className="portal-list">
 					{historico.obrigacoes.map((obrigacao) => (
-						<li
-							key={obrigacao.id}
-							style={{
-								display: "flex",
-								justifyContent: "space-between",
-								fontSize: 14,
-							}}
-						>
-							<span>{formatadorMoeda.format(obrigacao.valor)}</span>
-							<span>{LABEL_ESTADO_OBRIGACAO[obrigacao.estado]}</span>
+						<li key={obrigacao.id} className="portal-list-row">
+							<span className="portal-list-row-title">
+								{formatadorMoeda.format(obrigacao.valor)}
+							</span>
+							<span className="portal-list-row-status">
+								{LABEL_ESTADO_OBRIGACAO[obrigacao.estado]}
+							</span>
 						</li>
 					))}
 				</ul>
@@ -300,22 +260,27 @@ export function FinanceiroPage() {
 	}, []);
 
 	return (
-		<section>
-			<h1
-				className="title-editorial"
-				style={{ fontSize: 28, marginBottom: 16 }}
-			>
-				Financeiro e histórico
+		<section className="portal-page">
+			<p className="portal-eyebrow">pagamentos</p>
+			<h1 className="title-editorial portal-page-title">
+				financeiro e histórico
 			</h1>
+			<p className="portal-page-intro">
+				acompanhe o previsto, o já pago e o histórico por competência.
+			</p>
 
-			{carregando && <p style={{ fontSize: 15 }}>Carregando...</p>}
+			{carregando && (
+				<p className="portal-page-feedback">carregando períodos...</p>
+			)}
 
 			{!carregando && erro && (
-				<p style={{ fontSize: 15, color: "var(--color-cherry)" }}>{erro}</p>
+				<p className="portal-page-feedback is-error">{erro}</p>
 			)}
 
 			{!carregando && !erro && periodos && periodos.length === 0 && (
-				<p style={{ fontSize: 15 }}>Nenhum período com atividade ainda.</p>
+				<p className="portal-page-feedback">
+					nenhum período com atividade ainda.
+				</p>
 			)}
 
 			{!carregando && !erro && periodos && periodos.length > 0 && (
@@ -329,7 +294,7 @@ export function FinanceiroPage() {
 							marginBottom: 24,
 						}}
 					>
-						<span style={{ fontSize: 13, fontWeight: 700 }}>Período</span>
+						<span style={{ fontSize: 13, fontWeight: 700 }}>período</span>
 						<select
 							value={periodoSelecionado ?? ""}
 							onChange={(evento) => setPeriodoSelecionado(evento.target.value)}

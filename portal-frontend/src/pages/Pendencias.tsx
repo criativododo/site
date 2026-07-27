@@ -94,9 +94,9 @@ function textoPrazo(item: ItemDePendencia): string {
 	return `prazo ${formatarData(item.dataEntrega)}`;
 }
 
+/** Só retorna texto para estados em que a parceira de fato precisa agir agora (RN de UI). */
 function acaoDisponivel(item: ItemDePendencia): string | null {
 	if (item.estado === "AGUARDANDO_MATERIAL") return "enviar material";
-	if (item.estado === "EM_REVISAO") return "aguardar aprovação";
 	return null;
 }
 
@@ -216,6 +216,71 @@ function BriefingDoItem({ entregaId }: { entregaId: string }) {
 	);
 }
 
+function CardDeEntrega({
+	item,
+	aberto,
+	aoAlternar,
+	aoEnviarComSucesso,
+}: {
+	item: ItemDePendencia;
+	aberto: boolean;
+	aoAlternar: () => void;
+	aoEnviarComSucesso: (item: ItemDePendencia) => void;
+}) {
+	const atrasada = entregaAtrasada(item);
+	const acao = acaoDisponivel(item);
+
+	return (
+		<li
+			className={`pendencia-item pendencia-${item.estado.toLowerCase()}${atrasada ? " is-overdue" : ""}${aberto ? " is-open" : ""}`}
+		>
+			<button
+				type="button"
+				onClick={aoAlternar}
+				className="pendencia-trigger"
+				aria-expanded={aberto}
+			>
+				<div>
+					<strong className="pendencia-format">
+						{LABEL_FORMATO[item.formato]}
+					</strong>
+					<p className="pendencia-date">{textoPrazo(item)}</p>
+				</div>
+				<div className="pendencia-status">
+					<span className="pendencia-status-badge">
+						<span className="pendencia-status-icon" aria-hidden="true">
+							{atrasada
+								? "!"
+								: item.estado === "AGUARDANDO_MATERIAL"
+									? "↑"
+									: item.estado === "EM_REVISAO"
+										? "·"
+										: "✓"}
+						</span>
+						{LABEL_ESTADO[item.estado]}
+					</span>
+					{acao && <span className="pendencia-next-action">{acao}</span>}
+					<span className="pendencia-icon" aria-hidden="true">
+						↓
+					</span>
+				</div>
+			</button>
+
+			{aberto && (
+				<div className="pendencia-details">
+					<BriefingDoItem entregaId={item.id} />
+					{item.estado === "AGUARDANDO_MATERIAL" && (
+						<EnviarMaterial
+							entregaId={item.id}
+							aoEnviarComSucesso={aoEnviarComSucesso}
+						/>
+					)}
+				</div>
+			)}
+		</li>
+	);
+}
+
 export function PendenciasPage() {
 	const [resposta, setResposta] = useState<RespostaPendencias | null>(null);
 	const [erro, setErro] = useState<string | null>(null);
@@ -269,6 +334,12 @@ export function PendenciasPage() {
 	const itensOrdenados = resposta
 		? [...resposta.itens].sort((a, b) => prioridade(a) - prioridade(b))
 		: [];
+	const precisaDeVoce = itensOrdenados.filter(
+		(item) => item.estado === "AGUARDANDO_MATERIAL",
+	);
+	const comEquipe = itensOrdenados.filter(
+		(item) => item.estado !== "AGUARDANDO_MATERIAL",
+	);
 
 	return (
 		<section className="portal-page pendencias-page">
@@ -297,74 +368,57 @@ export function PendenciasPage() {
 
 			{!carregando && !erro && resposta && itensOrdenados.length > 0 && (
 				<>
-					<p className="pendencias-summary">
-						{itensOrdenados.length}{" "}
-						{itensOrdenados.length === 1
-							? "entrega para acompanhar"
-							: "entregas para acompanhar"}
-					</p>
-					<ul className="pendencias-list">
-						{itensOrdenados.map((item) => {
-							const aberto = itemAberto === item.id;
-							const atrasada = entregaAtrasada(item);
-							const acao = acaoDisponivel(item);
-							return (
-								<li
-									key={item.id}
-									className={`pendencia-item pendencia-${item.estado.toLowerCase()}${atrasada ? " is-overdue" : ""}${aberto ? " is-open" : ""}`}
-								>
-									<button
-										type="button"
-										onClick={() => setItemAberto(aberto ? null : item.id)}
-										className="pendencia-trigger"
-										aria-expanded={aberto}
-									>
-										<div>
-											<strong className="pendencia-format">
-												{LABEL_FORMATO[item.formato]}
-											</strong>
-											<p className="pendencia-date">{textoPrazo(item)}</p>
-										</div>
-										<div className="pendencia-status">
-											<span className="pendencia-status-badge">
-												<span
-													className="pendencia-status-icon"
-													aria-hidden="true"
-												>
-													{atrasada
-														? "!"
-														: item.estado === "AGUARDANDO_MATERIAL"
-															? "↑"
-															: item.estado === "EM_REVISAO"
-																? "·"
-																: "✓"}
-												</span>
-												{LABEL_ESTADO[item.estado]}
-											</span>
-											{acao && (
-												<span className="pendencia-next-action">{acao}</span>
-											)}
-											<span className="pendencia-icon" aria-hidden="true">
-												↓
-											</span>
-										</div>
-									</button>
+					{precisaDeVoce.length > 0 && (
+						<div className="pendencias-group">
+							<p className="pendencias-summary">
+								{precisaDeVoce.length}{" "}
+								{precisaDeVoce.length === 1
+									? "entrega para você agora"
+									: "entregas para você agora"}
+							</p>
+							<ul className="pendencias-list">
+								{precisaDeVoce.map((item) => (
+									<CardDeEntrega
+										key={item.id}
+										item={item}
+										aberto={itemAberto === item.id}
+										aoAlternar={() =>
+											setItemAberto(itemAberto === item.id ? null : item.id)
+										}
+										aoEnviarComSucesso={atualizarItem}
+									/>
+								))}
+							</ul>
+						</div>
+					)}
 
-									{aberto && (
-										<div className="pendencia-details">
-											<BriefingDoItem entregaId={item.id} />
-											{item.estado === "AGUARDANDO_MATERIAL" && (
-												<EnviarMaterial
-													entregaId={item.id}
-													aoEnviarComSucesso={atualizarItem}
-												/>
-											)}
-										</div>
-									)}
-								</li>
-							);
-						})}
-					</ul>
+					{comEquipe.length > 0 && (
+						<div className="pendencias-group">
+							{precisaDeVoce.length === 0 && (
+								<p className="pendencias-aviso">
+									nada pendente da sua parte agora.
+								</p>
+							)}
+							<p className="pendencias-summary is-quiet">
+								{comEquipe.length === 1
+									? "1 entrega com a equipe"
+									: `${comEquipe.length} entregas com a equipe`}
+							</p>
+							<ul className="pendencias-list">
+								{comEquipe.map((item) => (
+									<CardDeEntrega
+										key={item.id}
+										item={item}
+										aberto={itemAberto === item.id}
+										aoAlternar={() =>
+											setItemAberto(itemAberto === item.id ? null : item.id)
+										}
+										aoEnviarComSucesso={atualizarItem}
+									/>
+								))}
+							</ul>
+						</div>
+					)}
 				</>
 			)}
 		</section>

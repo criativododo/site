@@ -18,12 +18,51 @@ interface PerfilParceira {
 	endereco: Endereco | null;
 }
 
+const estiloInput = {
+	height: 40,
+	borderRadius: 8,
+	border: "1px solid rgba(27, 23, 23, 0.2)",
+	padding: "0 12px",
+	fontSize: 14,
+	fontWeight: 400,
+} as const;
+
+const estiloLabel = {
+	display: "flex",
+	flexDirection: "column",
+	gap: 6,
+	fontSize: 13,
+	fontWeight: 700,
+} as const;
+
+function BotaoCancelar({ aoClicar }: { aoClicar: () => void }) {
+	return (
+		<button
+			type="button"
+			onClick={aoClicar}
+			style={{
+				alignSelf: "flex-start",
+				height: 40,
+				padding: "0 4px",
+				fontSize: 14,
+				border: "none",
+				background: "none",
+				color: "rgba(27, 23, 23, 0.7)",
+			}}
+		>
+			cancelar
+		</button>
+	);
+}
+
 function EditarContato({
 	perfil,
 	aoSalvarComSucesso,
+	aoCancelar,
 }: {
 	perfil: PerfilParceira;
 	aoSalvarComSucesso: (perfil: PerfilParceira) => void;
+	aoCancelar: () => void;
 }) {
 	const [pix, setPix] = useState(perfil.pix);
 	const [email, setEmail] = useState(perfil.email);
@@ -47,7 +86,7 @@ function EditarContato({
 			setErro(
 				erroCapturado instanceof ApiError
 					? erroCapturado.message
-					: "Não foi possível salvar.",
+					: "não foi possível salvar.",
 			);
 		} finally {
 			setSalvando(false);
@@ -61,75 +100,46 @@ function EditarContato({
 				flexDirection: "column",
 				gap: 12,
 				maxWidth: 360,
-				marginTop: 24,
+				marginTop: 16,
 			}}
 		>
-			<label
-				style={{
-					display: "flex",
-					flexDirection: "column",
-					gap: 6,
-					fontSize: 13,
-					fontWeight: 700,
-				}}
-			>
-				PIX
+			<label style={estiloLabel}>
+				pix
 				<input
 					value={pix}
 					onChange={(evento) => setPix(evento.target.value)}
-					style={{
-						height: 40,
-						borderRadius: 8,
-						border: "1px solid rgba(27, 23, 23, 0.2)",
-						padding: "0 12px",
-						fontSize: 14,
-						fontWeight: 400,
-					}}
+					style={estiloInput}
 				/>
 			</label>
-			<label
-				style={{
-					display: "flex",
-					flexDirection: "column",
-					gap: 6,
-					fontSize: 13,
-					fontWeight: 700,
-				}}
-			>
-				E-mail
+			<label style={estiloLabel}>
+				e-mail
 				<input
 					type="email"
 					value={email}
 					onChange={(evento) => setEmail(evento.target.value)}
-					style={{
-						height: 40,
-						borderRadius: 8,
-						border: "1px solid rgba(27, 23, 23, 0.2)",
-						padding: "0 12px",
-						fontSize: 14,
-						fontWeight: 400,
-					}}
+					style={estiloInput}
 				/>
 			</label>
 
-			{erro && (
-				<p style={{ fontSize: 13, color: "var(--color-cherry)" }}>{erro}</p>
-			)}
+			{erro && <p className="portal-page-feedback is-error">{erro}</p>}
 
-			<button
-				type="button"
-				className="btn-primary"
-				disabled={salvando}
-				onClick={() => void salvar()}
-				style={{
-					alignSelf: "flex-start",
-					height: 40,
-					padding: "0 24px",
-					fontSize: 14,
-				}}
-			>
-				{salvando ? "Salvando..." : "Salvar"}
-			</button>
+			<div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+				<button
+					type="button"
+					className="btn-primary"
+					disabled={salvando}
+					onClick={() => void salvar()}
+					style={{
+						alignSelf: "flex-start",
+						height: 40,
+						padding: "0 24px",
+						fontSize: 14,
+					}}
+				>
+					{salvando ? "salvando..." : "salvar"}
+				</button>
+				<BotaoCancelar aoClicar={aoCancelar} />
+			</div>
 		</div>
 	);
 }
@@ -137,9 +147,11 @@ function EditarContato({
 function EditarEndereco({
 	perfil,
 	aoSalvarComSucesso,
+	aoCancelar,
 }: {
 	perfil: PerfilParceira;
 	aoSalvarComSucesso: (perfil: PerfilParceira) => void;
+	aoCancelar: () => void;
 }) {
 	const [cep, setCep] = useState(perfil.endereco?.cep ?? "");
 	const [numero, setNumero] = useState(perfil.endereco?.numero ?? "");
@@ -164,14 +176,14 @@ function EditarEndereco({
 			aoSalvarComSucesso(resposta.perfil);
 			if (!resposta.cepResolvido) {
 				setAviso(
-					"CEP não encontrado — número e complemento foram salvos mesmo assim.",
+					"cep não encontrado — número e complemento foram salvos mesmo assim.",
 				);
 			}
 		} catch (erroCapturado) {
 			setAviso(
 				erroCapturado instanceof ApiError
 					? erroCapturado.message
-					: "Não foi possível salvar.",
+					: "não foi possível salvar.",
 			);
 		} finally {
 			setSalvando(false);
@@ -185,97 +197,53 @@ function EditarEndereco({
 				flexDirection: "column",
 				gap: 12,
 				maxWidth: 360,
-				marginTop: 24,
+				marginTop: 16,
 			}}
 		>
-			<label
-				style={{
-					display: "flex",
-					flexDirection: "column",
-					gap: 6,
-					fontSize: 13,
-					fontWeight: 700,
-				}}
-			>
-				CEP
+			<label style={estiloLabel}>
+				cep
 				<input
 					value={cep}
 					onChange={(evento) => setCep(evento.target.value)}
-					style={{
-						height: 40,
-						borderRadius: 8,
-						border: "1px solid rgba(27, 23, 23, 0.2)",
-						padding: "0 12px",
-						fontSize: 14,
-						fontWeight: 400,
-					}}
+					style={estiloInput}
 				/>
 			</label>
-			<label
-				style={{
-					display: "flex",
-					flexDirection: "column",
-					gap: 6,
-					fontSize: 13,
-					fontWeight: 700,
-				}}
-			>
-				Número
+			<label style={estiloLabel}>
+				número
 				<input
 					value={numero}
 					onChange={(evento) => setNumero(evento.target.value)}
-					style={{
-						height: 40,
-						borderRadius: 8,
-						border: "1px solid rgba(27, 23, 23, 0.2)",
-						padding: "0 12px",
-						fontSize: 14,
-						fontWeight: 400,
-					}}
+					style={estiloInput}
 				/>
 			</label>
-			<label
-				style={{
-					display: "flex",
-					flexDirection: "column",
-					gap: 6,
-					fontSize: 13,
-					fontWeight: 700,
-				}}
-			>
-				Complemento
+			<label style={estiloLabel}>
+				complemento
 				<input
 					value={complemento}
 					onChange={(evento) => setComplemento(evento.target.value)}
-					style={{
-						height: 40,
-						borderRadius: 8,
-						border: "1px solid rgba(27, 23, 23, 0.2)",
-						padding: "0 12px",
-						fontSize: 14,
-						fontWeight: 400,
-					}}
+					style={estiloInput}
 				/>
 			</label>
 
-			{aviso && (
-				<p style={{ fontSize: 13, color: "var(--color-cherry)" }}>{aviso}</p>
-			)}
+			{aviso && <p className="portal-page-feedback">{aviso}</p>}
 
-			<button
-				type="button"
-				className="btn-primary"
-				disabled={salvando}
-				onClick={() => void salvar()}
-				style={{
-					alignSelf: "flex-start",
-					height: 40,
-					padding: "0 24px",
-					fontSize: 14,
-				}}
-			>
-				{salvando ? "Salvando..." : "Salvar endereço"}
-			</button>
+			<div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+				<button
+					type="button"
+					className="btn-primary"
+					disabled={salvando}
+					onClick={() => void salvar()}
+					style={{
+						alignSelf: "flex-start",
+						height: 40,
+						padding: "0 24px",
+						fontSize: 14,
+					}}
+				>
+					{salvando ? "salvando..." : "salvar endereço"}
+				</button>
+				<BotaoCancelar aoClicar={aoCancelar} />
+			</div>
 		</div>
 	);
 }
@@ -302,7 +270,7 @@ function MeusDadosLgpd() {
 			setAviso(
 				erroCapturado instanceof ApiError
 					? erroCapturado.message
-					: "Não foi possível exportar.",
+					: "não foi possível exportar.",
 			);
 		} finally {
 			setProcessando(false);
@@ -315,13 +283,13 @@ function MeusDadosLgpd() {
 		try {
 			await apiFetch("/api/portal/lgpd/exclusao", { method: "POST" });
 			setAviso(
-				"Pedido de exclusão registrado. A equipe avaliará e retornará sobre a decisão.",
+				"pedido de exclusão registrado. a equipe avaliará e retornará sobre a decisão.",
 			);
 		} catch (erroCapturado) {
 			setAviso(
 				erroCapturado instanceof ApiError
 					? erroCapturado.message
-					: "Não foi possível registrar o pedido.",
+					: "não foi possível registrar o pedido.",
 			);
 		} finally {
 			setProcessando(false);
@@ -329,21 +297,16 @@ function MeusDadosLgpd() {
 	}
 
 	return (
-		<div
-			style={{
-				marginTop: 32,
-				paddingTop: 24,
-				borderTop: "1px solid rgba(27, 23, 23, 0.1)",
-				maxWidth: 360,
-			}}
-		>
-			<h2
-				className="title-editorial"
-				style={{ fontSize: 16, marginBottom: 12 }}
+		<div className="portal-section-divider">
+			<p className="pendencias-summary is-quiet">seus dados (lgpd)</p>
+			<div
+				style={{
+					display: "flex",
+					flexWrap: "wrap",
+					gap: 12,
+					marginTop: 12,
+				}}
 			>
-				Meus dados (LGPD)
-			</h2>
-			<div style={{ display: "flex", gap: 12 }}>
 				<button
 					type="button"
 					disabled={processando}
@@ -357,7 +320,7 @@ function MeusDadosLgpd() {
 						background: "none",
 					}}
 				>
-					Baixar meus dados
+					baixar meus dados
 				</button>
 				<button
 					type="button"
@@ -373,11 +336,52 @@ function MeusDadosLgpd() {
 						color: "var(--color-cherry)",
 					}}
 				>
-					Solicitar exclusão de conta
+					solicitar exclusão de conta
 				</button>
 			</div>
-			{aviso && <p style={{ fontSize: 13, marginTop: 8 }}>{aviso}</p>}
+			{aviso && (
+				<p className="portal-page-feedback" style={{ marginTop: 8 }}>
+					{aviso}
+				</p>
+			)}
 		</div>
+	);
+}
+
+function LinhaDePerfil({
+	rotulo,
+	valor,
+	editando,
+	aoEditar,
+}: {
+	rotulo: string;
+	valor: string;
+	editando: boolean;
+	aoEditar: () => void;
+}) {
+	return (
+		<>
+			<dt style={{ fontWeight: 700 }}>{rotulo}</dt>
+			<dd style={{ display: "flex", alignItems: "center", gap: 12 }}>
+				{valor}
+				{!editando && (
+					<button
+						type="button"
+						onClick={aoEditar}
+						style={{
+							border: "none",
+							background: "none",
+							padding: 0,
+							fontSize: 13,
+							fontWeight: 700,
+							color: "var(--color-cherry)",
+						}}
+					>
+						editar
+					</button>
+				)}
+			</dd>
+		</>
 	);
 }
 
@@ -385,6 +389,8 @@ export function PerfilPage() {
 	const [perfil, setPerfil] = useState<PerfilParceira | null>(null);
 	const [erro, setErro] = useState<string | null>(null);
 	const [carregando, setCarregando] = useState(true);
+	const [editandoContato, setEditandoContato] = useState(false);
+	const [editandoEndereco, setEditandoEndereco] = useState(false);
 
 	useEffect(() => {
 		let ativo = true;
@@ -396,7 +402,7 @@ export function PerfilPage() {
 				setErro(
 					erroCapturado instanceof ApiError
 						? erroCapturado.message
-						: "Não foi possível carregar o perfil.",
+						: "não foi possível carregar o perfil.",
 				);
 			})
 			.finally(() => ativo && setCarregando(false));
@@ -407,18 +413,19 @@ export function PerfilPage() {
 	}, []);
 
 	return (
-		<section>
-			<h1
-				className="title-editorial"
-				style={{ fontSize: 28, marginBottom: 16 }}
-			>
-				Perfil
-			</h1>
+		<section className="portal-page">
+			<p className="portal-eyebrow">sua conta</p>
+			<h1 className="title-editorial portal-page-title">perfil</h1>
+			<p className="portal-page-intro">
+				seus dados de contato e pagamento.
+			</p>
 
-			{carregando && <p style={{ fontSize: 15 }}>Carregando...</p>}
+			{carregando && (
+				<p className="portal-page-feedback">carregando perfil...</p>
+			)}
 
 			{!carregando && erro && (
-				<p style={{ fontSize: 15, color: "var(--color-cherry)" }}>{erro}</p>
+				<p className="portal-page-feedback is-error">{erro}</p>
 			)}
 
 			{!carregando && !erro && perfil && (
@@ -427,25 +434,90 @@ export function PerfilPage() {
 						style={{
 							display: "grid",
 							gridTemplateColumns: "auto 1fr",
-							gap: "10px 20px",
+							gap: "14px 20px",
 							fontSize: 15,
 							maxWidth: 480,
 						}}
 					>
-						<dt style={{ fontWeight: 700 }}>PIX</dt>
-						<dd>{perfil.pix}</dd>
-						<dt style={{ fontWeight: 700 }}>E-mail</dt>
-						<dd>{perfil.email}</dd>
-						<dt style={{ fontWeight: 700 }}>Endereço</dt>
-						<dd>
-							{perfil.endereco
-								? `${perfil.endereco.rua}, ${perfil.endereco.numero} — ${perfil.endereco.bairro}, ${perfil.endereco.cidade}/${perfil.endereco.uf}`
-								: "Não informado"}
-						</dd>
+						<LinhaDePerfil
+							rotulo="pix"
+							valor={perfil.pix}
+							editando={editandoContato}
+							aoEditar={() => setEditandoContato(true)}
+						/>
+						<LinhaDePerfil
+							rotulo="e-mail"
+							valor={perfil.email}
+							editando={editandoContato}
+							aoEditar={() => setEditandoContato(true)}
+						/>
+
+						<>
+							<dt style={{ fontWeight: 700 }}>endereço</dt>
+							<dd style={{ display: "flex", alignItems: "center", gap: 12 }}>
+								{perfil.endereco ? (
+									<>
+										{`${perfil.endereco.rua}, ${perfil.endereco.numero} — ${perfil.endereco.bairro}, ${perfil.endereco.cidade}/${perfil.endereco.uf}`}
+										{!editandoEndereco && (
+											<button
+												type="button"
+												onClick={() => setEditandoEndereco(true)}
+												style={{
+													border: "none",
+													background: "none",
+													padding: 0,
+													fontSize: 13,
+													fontWeight: 700,
+													color: "var(--color-cherry)",
+												}}
+											>
+												editar
+											</button>
+										)}
+									</>
+								) : (
+									!editandoEndereco && (
+										<button
+											type="button"
+											onClick={() => setEditandoEndereco(true)}
+											style={{
+												border: "none",
+												background: "none",
+												padding: 0,
+												fontSize: 15,
+												fontWeight: 700,
+												color: "var(--color-cherry)",
+											}}
+										>
+											adicionar endereço →
+										</button>
+									)
+								)}
+							</dd>
+						</>
 					</dl>
 
-					<EditarContato perfil={perfil} aoSalvarComSucesso={setPerfil} />
-					<EditarEndereco perfil={perfil} aoSalvarComSucesso={setPerfil} />
+					{editandoContato && (
+						<EditarContato
+							perfil={perfil}
+							aoSalvarComSucesso={(atualizado) => {
+								setPerfil(atualizado);
+								setEditandoContato(false);
+							}}
+							aoCancelar={() => setEditandoContato(false)}
+						/>
+					)}
+					{editandoEndereco && (
+						<EditarEndereco
+							perfil={perfil}
+							aoSalvarComSucesso={(atualizado) => {
+								setPerfil(atualizado);
+								setEditandoEndereco(false);
+							}}
+							aoCancelar={() => setEditandoEndereco(false)}
+						/>
+					)}
+
 					<MeusDadosLgpd />
 				</>
 			)}
