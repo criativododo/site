@@ -615,6 +615,32 @@ select:focus-visible {
 .pendencia-submit {
 	box-shadow: 0 6px 14px rgba(129, 1, 0, 0.18);
 }
+.pendencia-upload-arquivo {
+	margin: 0;
+	font-size: 13px;
+	color: rgba(27, 23, 23, 0.75);
+}
+.pendencia-upload-arquivo.is-enviando {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	color: var(--color-noir);
+}
+.pendencia-upload-spinner {
+	width: 14px;
+	height: 14px;
+	border: 2px solid rgba(129, 1, 0, 0.2);
+	border-top-color: var(--color-cherry);
+	border-radius: 50%;
+	animation: portal-spin 0.8s linear infinite;
+}
+.pendencia-feedback.is-sucesso {
+	color: var(--color-noir);
+	font-weight: 700;
+}
+.pendencia-upload-sessao-expirada {
+	align-items: flex-start;
+}
 
 @keyframes pendencia-expand {
 	from {

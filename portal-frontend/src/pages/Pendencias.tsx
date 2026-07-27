@@ -1,5 +1,7 @@
+import type { ChangeEvent } from "react";
 import { useEffect, useState } from "react";
 import { ApiError, apiFetch } from "../lib/api";
+import { useSession } from "../lib/session";
 
 type Formato = "Reel" | "Carrossel" | "Stories1" | "Stories2";
 type EstadoEntrega =
@@ -71,6 +73,12 @@ function formatarCompetencia(mesReferencia: string): string {
 	return `${nomes[Number(mes) - 1]} de ${ano}`;
 }
 
+function formatarTamanhoArquivo(bytes: number): string {
+	if (bytes < 1024) return `${bytes} B`;
+	if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+	return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
 function entregaAtrasada(item: ItemDePendencia): boolean {
 	return (
 		item.estado === "AGUARDANDO_MATERIAL" &&
@@ -100,6 +108,15 @@ function acaoDisponivel(item: ItemDePendencia): string | null {
 	return null;
 }
 
+/** Estados visíveis do envio — cada um corresponde a uma renderização própria abaixo. */
+type EstadoEnvio =
+	| "ocioso"
+	| "selecionado"
+	| "enviando"
+	| "sucesso"
+	| "erro"
+	| "sessaoExpirada";
+
 function EnviarMaterial({
 	entregaId,
 	aoEnviarComSucesso,
@@ -107,14 +124,22 @@ function EnviarMaterial({
 	entregaId: string;
 	aoEnviarComSucesso: (item: ItemDePendencia) => void;
 }) {
+	const { login } = useSession();
 	const [arquivo, setArquivo] = useState<File | null>(null);
-	const [enviando, setEnviando] = useState(false);
-	const [erro, setErro] = useState<string | null>(null);
+	const [estado, setEstado] = useState<EstadoEnvio>("ocioso");
+	const [mensagemErro, setMensagemErro] = useState<string | null>(null);
+
+	function selecionarArquivo(evento: ChangeEvent<HTMLInputElement>) {
+		const selecionado = evento.target.files?.[0] ?? null;
+		setArquivo(selecionado);
+		setEstado(selecionado ? "selecionado" : "ocioso");
+		setMensagemErro(null);
+	}
 
 	async function enviar() {
 		if (!arquivo) return;
-		setEnviando(true);
-		setErro(null);
+		setEstado("enviando");
+		setMensagemErro(null);
 
 		try {
 			const formData = new FormData();
@@ -123,17 +148,48 @@ function EnviarMaterial({
 				`/api/portal/entregas/${entregaId}/material`,
 				{ method: "POST", body: formData },
 			);
-			aoEnviarComSucesso(resposta.entrega);
-			setArquivo(null);
+			setEstado("sucesso");
+			// Mantém a confirmação visível por um instante antes do card mudar de estado
+			// (a Entrega passa a EM_REVISAO e este formulário some da tela).
+			window.setTimeout(() => aoEnviarComSucesso(resposta.entrega), 1600);
 		} catch (erroCapturado) {
-			setErro(
+			if (erroCapturado instanceof ApiError && erroCapturado.status === 401) {
+				setEstado("sessaoExpirada");
+				return;
+			}
+			setEstado("erro");
+			setMensagemErro(
 				erroCapturado instanceof ApiError
 					? erroCapturado.message
-					: "Não foi possível enviar o material.",
+					: "não foi possível enviar o material. verifique sua conexão e tente novamente.",
 			);
-		} finally {
-			setEnviando(false);
 		}
+	}
+
+	if (estado === "sessaoExpirada") {
+		return (
+			<div
+				className="pendencia-upload pendencia-upload-sessao-expirada"
+				aria-live="polite"
+			>
+				<p className="pendencia-feedback is-error">
+					sua sessão expirou. faça login novamente para continuar o envio.
+				</p>
+				<button type="button" className="btn-primary" onClick={login}>
+					entrar novamente
+				</button>
+			</div>
+		);
+	}
+
+	if (estado === "sucesso") {
+		return (
+			<div className="pendencia-upload pendencia-upload-sucesso" aria-live="polite">
+				<p className="pendencia-feedback is-sucesso">
+					<span aria-hidden="true">✓</span> material enviado com sucesso.
+				</p>
+			</div>
+		);
 	}
 
 	return (
@@ -141,20 +197,46 @@ function EnviarMaterial({
 			<div className="pendencia-upload-controls">
 				<input
 					type="file"
-					onChange={(evento) => setArquivo(evento.target.files?.[0] ?? null)}
-					disabled={enviando}
+					onChange={selecionarArquivo}
+					disabled={estado === "enviando"}
 				/>
 				<button
 					type="button"
 					className="btn-primary pendencia-submit"
-					disabled={!arquivo || enviando}
+					disabled={!arquivo || estado === "enviando"}
 					onClick={() => void enviar()}
 					style={{ height: 36, padding: "0 20px", fontSize: 13 }}
 				>
-					{enviando ? "enviando..." : "enviar material"}
+					{estado === "enviando"
+						? "enviando..."
+						: estado === "erro"
+							? "tentar novamente"
+							: "enviar material"}
 				</button>
 			</div>
-			{erro && <p className="pendencia-feedback">{erro}</p>}
+
+			{arquivo && estado !== "enviando" && (
+				<p className="pendencia-upload-arquivo">
+					arquivo selecionado: <strong>{arquivo.name}</strong> (
+					{formatarTamanhoArquivo(arquivo.size)})
+				</p>
+			)}
+
+			{estado === "enviando" && (
+				<p
+					className="pendencia-upload-arquivo is-enviando"
+					aria-live="polite"
+				>
+					<span className="pendencia-upload-spinner" aria-hidden="true" />
+					enviando {arquivo?.name}…
+				</p>
+			)}
+
+			{estado === "erro" && mensagemErro && (
+				<p className="pendencia-feedback is-error" role="alert">
+					{mensagemErro}
+				</p>
+			)}
 		</div>
 	);
 }
