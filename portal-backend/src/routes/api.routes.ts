@@ -6,6 +6,7 @@ import { briefingAdminRoutes } from "../modules/briefing/admin.routes.js";
 import { entregaAdminRoutes } from "../modules/conteudo/admin.routes.js";
 import { conteudoRoutes } from "../modules/conteudo/conteudo.routes.js";
 import { dashboardRoutes } from "../modules/dashboard/dashboard.routes.js";
+import { obrigacaoAdminRoutes } from "../modules/financeiro/admin.routes.js";
 import { financeiroRoutes } from "../modules/financeiro/financeiro.routes.js";
 import { adminRoutes } from "../modules/identidade/admin.routes.js";
 import { lgpdAdminRoutes, lgpdRoutes } from "../modules/lgpd/lgpd.routes.js";
@@ -54,6 +55,9 @@ apiRoutes.use("/admin/entregas", requireAdmin, entregaAdminRoutes);
 
 /** Backoffice administrativo — Briefing (CRUD completo, SPEC-009; sempre vinculado a uma Entrega existente). */
 apiRoutes.use("/admin/briefings", requireAdmin, briefingAdminRoutes);
+
+/** Backoffice administrativo — Obrigação Financeira (CRUD completo, SPEC-020/ADR-009). */
+apiRoutes.use("/admin/obrigacoes", requireAdmin, obrigacaoAdminRoutes);
 
 /** LGPD (ADR-010) — direitos do titular: acesso/portabilidade e processo de expurgo. */
 apiRoutes.use("/portal/lgpd", bloquearParceiraIdDeCliente, lgpdRoutes);

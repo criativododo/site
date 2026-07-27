@@ -15,6 +15,7 @@ function seedInicial(): ObrigacaoFinanceira[] {
 
   const mesCorrente = competenciaCorrente();
   const mesAnterior = competenciaAnterior(mesCorrente);
+  const agora = new Date().toISOString();
 
   return [
     {
@@ -23,6 +24,10 @@ function seedInicial(): ObrigacaoFinanceira[] {
       mesReferencia: mesCorrente,
       valor: 2500,
       estado: "EM_ABERTO",
+      tipo: "MENSAL",
+      dataCriacao: agora,
+      dataAtualizacao: agora,
+      dataArquivamento: null,
     },
     {
       id: "obrigacao-seed-2",
@@ -30,6 +35,10 @@ function seedInicial(): ObrigacaoFinanceira[] {
       mesReferencia: mesAnterior,
       valor: 2500,
       estado: "PAGO",
+      tipo: "MENSAL",
+      dataCriacao: agora,
+      dataAtualizacao: agora,
+      dataArquivamento: agora,
     },
   ];
 }
@@ -56,6 +65,36 @@ export class ObrigacaoRepositorioEmMemoria {
   ): Promise<ObrigacaoFinanceira[]> {
     const doPeriodo = await this.listarPorParceira(parceiraId);
     return doPeriodo.filter((obrigacao) => obrigacao.mesReferencia === mesReferencia);
+  }
+
+  async buscarPorId(id: string): Promise<ObrigacaoFinanceira | null> {
+    return this.obrigacoes.find((obrigacao) => obrigacao.id === id) ?? null;
+  }
+
+  /** Lançamento administrativo (Backoffice). Persistência pura — validações no service. */
+  async criar(obrigacao: ObrigacaoFinanceira): Promise<ObrigacaoFinanceira> {
+    this.obrigacoes.push(obrigacao);
+    return obrigacao;
+  }
+
+  /** Carimba `dataAtualizacao` aqui, mesma disciplina de entrega.repository.ts/briefing.repository.ts. */
+  async atualizar(obrigacaoAtualizada: ObrigacaoFinanceira): Promise<ObrigacaoFinanceira> {
+    const indice = this.obrigacoes.findIndex((obrigacao) => obrigacao.id === obrigacaoAtualizada.id);
+    if (indice === -1) {
+      throw new Error(`Obrigação Financeira inexistente para atualização: ${obrigacaoAtualizada.id}`);
+    }
+    const atualizada: ObrigacaoFinanceira = { ...obrigacaoAtualizada, dataAtualizacao: new Date().toISOString() };
+    this.obrigacoes[indice] = atualizada;
+    return atualizada;
+  }
+
+  /** Remoção administrativa (RN de "quando permitido" é responsabilidade do service). */
+  async remover(id: string): Promise<void> {
+    const indice = this.obrigacoes.findIndex((obrigacao) => obrigacao.id === id);
+    if (indice === -1) {
+      throw new Error(`Obrigação Financeira inexistente para remoção: ${id}`);
+    }
+    this.obrigacoes.splice(indice, 1);
   }
 }
 

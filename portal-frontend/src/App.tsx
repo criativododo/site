@@ -5,6 +5,7 @@ import { AdminPage } from "./pages/Admin";
 import { AdminBriefingsPage } from "./pages/AdminBriefings";
 import { AdminDashboardPage } from "./pages/AdminDashboard";
 import { AdminEntregasPage } from "./pages/AdminEntregas";
+import { AdminObrigacoesPage } from "./pages/AdminObrigacoes";
 import { AdminParceirasPage } from "./pages/AdminParceiras";
 import { FinanceiroPage } from "./pages/Financeiro";
 import { LoginPage } from "./pages/Login";
@@ -30,6 +31,7 @@ function App() {
 				<Route path="/admin/parceiras" element={<AdminParceirasPage />} />
 				<Route path="/admin/entregas" element={<AdminEntregasPage />} />
 				<Route path="/admin/briefings" element={<AdminBriefingsPage />} />
+				<Route path="/admin/financeiro" element={<AdminObrigacoesPage />} />
 				<Route path="/admin" element={<AdminPage />} />
 			</Route>
 

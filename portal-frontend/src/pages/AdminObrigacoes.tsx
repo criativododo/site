@@ -1,0 +1,845 @@
+import type { ChangeEvent } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { ApiError, apiFetch } from "../lib/api";
+import { useSession } from "../lib/session";
+
+type FormatoEntrega = "Reel" | "Carrossel" | "Stories1" | "Stories2";
+type EstadoEntrega =
+	| "AGUARDANDO_MATERIAL"
+	| "EM_REVISAO"
+	| "APROVADO"
+	| "PUBLICADO";
+type EstadoObrigacao = "EM_ABERTO" | "APROVADO" | "PAGO";
+type TipoObrigacao = "MENSAL" | "AVULSO";
+
+interface ItemDePendencia {
+	id: string;
+	mesReferencia: string;
+	formato: FormatoEntrega;
+	estado: EstadoEntrega;
+	dataEntrega: string;
+}
+
+interface ObrigacaoFinanceira {
+	id: string;
+	parceiraId: string;
+	mesReferencia: string;
+	valor: number;
+	estado: EstadoObrigacao;
+	tipo: TipoObrigacao;
+	dataArquivamento: string | null;
+	entregasDaCompetencia: ItemDePendencia[];
+	elegivelParaLiberacao: boolean;
+}
+
+interface Parceira {
+	id: string;
+	nome: string;
+	chave: string;
+	status: "ATIVA" | "INATIVA";
+}
+
+const LABEL_ESTADO: Record<EstadoObrigacao, string> = {
+	EM_ABERTO: "em aberto",
+	APROVADO: "aprovado",
+	PAGO: "pago",
+};
+
+const LABEL_TIPO: Record<TipoObrigacao, string> = {
+	MENSAL: "mensal",
+	AVULSO: "avulso",
+};
+
+const LABEL_FORMATO: Record<FormatoEntrega, string> = {
+	Reel: "reel",
+	Carrossel: "carrossel",
+	Stories1: "stories 1",
+	Stories2: "stories 2",
+};
+
+const LABEL_ESTADO_ENTREGA: Record<EstadoEntrega, string> = {
+	AGUARDANDO_MATERIAL: "aguardando material",
+	EM_REVISAO: "em revisão",
+	APROVADO: "aprovado",
+	PUBLICADO: "publicado",
+};
+
+const formatadorMoeda = new Intl.NumberFormat("pt-BR", {
+	style: "currency",
+	currency: "BRL",
+});
+
+function formatarData(dataIso: string): string {
+	return new Date(dataIso).toLocaleDateString("pt-BR");
+}
+
+function mesReferenciaCorrente(): string {
+	const agora = new Date();
+	const ano = agora.getUTCFullYear();
+	const mes = String(agora.getUTCMonth() + 1).padStart(2, "0");
+	return `${ano}-${mes}`;
+}
+
+const estiloInput = {
+	height: 40,
+	borderRadius: 8,
+	border: "1px solid rgba(27, 23, 23, 0.2)",
+	padding: "0 12px",
+	fontSize: 14,
+	fontWeight: 400,
+} as const;
+
+const estiloLabel = {
+	display: "flex",
+	flexDirection: "column",
+	gap: 6,
+	fontSize: 13,
+	fontWeight: 700,
+} as const;
+
+const estiloBotaoOutlineNeutro = {
+	height: 36,
+	padding: "0 16px",
+	fontSize: 13,
+	borderRadius: 24,
+	border: "1px solid rgba(27, 23, 23, 0.2)",
+	background: "none",
+} as const;
+
+const estiloBotaoOutlineCherry = {
+	height: 36,
+	padding: "0 16px",
+	fontSize: 13,
+	borderRadius: 24,
+	border: "1px solid var(--color-cherry)",
+	background: "none",
+	color: "var(--color-cherry)",
+} as const;
+
+const estiloBotaoPrimarioPequeno = {
+	height: 36,
+	padding: "0 16px",
+	fontSize: 13,
+} as const;
+
+/** UC-020.01 (Mensal) / UC-020.02 (Avulso) — Mensal só lista Parceiras ATIVA; Avulso, qualquer uma. */
+function FormularioNovaObrigacao({
+	parceiras,
+	aoSalvarComSucesso,
+	aoCancelar,
+}: {
+	parceiras: Parceira[];
+	aoSalvarComSucesso: (obrigacao: ObrigacaoFinanceira) => void;
+	aoCancelar: () => void;
+}) {
+	const [tipo, setTipo] = useState<TipoObrigacao>("MENSAL");
+	const parceirasDisponiveis = useMemo(
+		() =>
+			tipo === "MENSAL"
+				? parceiras.filter((parceira) => parceira.status === "ATIVA")
+				: parceiras,
+		[parceiras, tipo],
+	);
+	const [parceiraId, setParceiraId] = useState(
+		parceirasDisponiveis[0]?.id ?? "",
+	);
+	const [mesReferencia, setMesReferencia] = useState(mesReferenciaCorrente());
+	const [valor, setValor] = useState("");
+	const [salvando, setSalvando] = useState(false);
+	const [erro, setErro] = useState<string | null>(null);
+
+	function aoTrocarTipo(novoTipo: TipoObrigacao) {
+		setTipo(novoTipo);
+		const disponiveis =
+			novoTipo === "MENSAL"
+				? parceiras.filter((parceira) => parceira.status === "ATIVA")
+				: parceiras;
+		setParceiraId(disponiveis[0]?.id ?? "");
+	}
+
+	async function salvar() {
+		const valorNumerico = Number(valor);
+		if (!parceiraId || !mesReferencia.trim() || !(valorNumerico > 0)) {
+			setErro(
+				"parceira, competência e valor (maior que zero) são obrigatórios.",
+			);
+			return;
+		}
+
+		setSalvando(true);
+		setErro(null);
+		try {
+			const criada = await apiFetch<ObrigacaoFinanceira>(
+				"/api/admin/obrigacoes",
+				{
+					method: "POST",
+					body: JSON.stringify({
+						parceiraId,
+						mesReferencia,
+						valor: valorNumerico,
+						tipo,
+					}),
+				},
+			);
+			aoSalvarComSucesso(criada);
+		} catch (erroCapturado) {
+			setErro(
+				erroCapturado instanceof ApiError
+					? erroCapturado.message
+					: "não foi possível lançar a Obrigação.",
+			);
+		} finally {
+			setSalvando(false);
+		}
+	}
+
+	return (
+		<div
+			style={{
+				display: "grid",
+				gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+				gap: 12,
+				marginTop: 16,
+				paddingTop: 16,
+				borderTop: "1px solid rgba(27, 23, 23, 0.1)",
+			}}
+		>
+			<label style={estiloLabel}>
+				tipo
+				<select
+					value={tipo}
+					onChange={(evento) =>
+						aoTrocarTipo(evento.target.value as TipoObrigacao)
+					}
+					style={estiloInput}
+				>
+					<option value="MENSAL">mensal</option>
+					<option value="AVULSO">avulso</option>
+				</select>
+			</label>
+
+			{parceirasDisponiveis.length === 0 ? (
+				<p
+					className="portal-page-feedback is-error"
+					style={{ margin: 0, gridColumn: "1 / -1" }}
+				>
+					{tipo === "MENSAL"
+						? "nenhuma Parceira ATIVA cadastrada — ative uma Parceira antes de lançar Obrigação Mensal."
+						: "nenhuma Parceira cadastrada ainda."}
+				</p>
+			) : (
+				<label style={estiloLabel}>
+					parceira
+					<select
+						value={parceiraId}
+						onChange={(evento) => setParceiraId(evento.target.value)}
+						style={estiloInput}
+					>
+						{parceirasDisponiveis.map((parceira) => (
+							<option key={parceira.id} value={parceira.id}>
+								{parceira.nome} ({parceira.chave})
+							</option>
+						))}
+					</select>
+				</label>
+			)}
+
+			<label style={estiloLabel}>
+				competência (aaaa-mm)
+				<input
+					value={mesReferencia}
+					onChange={(evento: ChangeEvent<HTMLInputElement>) =>
+						setMesReferencia(evento.target.value)
+					}
+					placeholder="2026-07"
+					style={estiloInput}
+				/>
+			</label>
+
+			<label style={estiloLabel}>
+				valor (r$)
+				<input
+					type="number"
+					value={valor}
+					onChange={(evento) => setValor(evento.target.value)}
+					style={estiloInput}
+				/>
+			</label>
+
+			{erro && (
+				<p
+					className="portal-page-feedback is-error"
+					style={{ margin: 0, gridColumn: "1 / -1" }}
+				>
+					{erro}
+				</p>
+			)}
+
+			<div
+				style={{
+					display: "flex",
+					gap: 8,
+					alignItems: "center",
+					gridColumn: "1 / -1",
+				}}
+			>
+				<button
+					type="button"
+					className="btn-primary"
+					disabled={salvando || parceirasDisponiveis.length === 0}
+					onClick={() => void salvar()}
+					style={estiloBotaoPrimarioPequeno}
+				>
+					{salvando ? "salvando..." : "salvar"}
+				</button>
+				<button
+					type="button"
+					onClick={aoCancelar}
+					style={{ ...estiloBotaoOutlineNeutro, border: "none" }}
+				>
+					cancelar
+				</button>
+			</div>
+		</div>
+	);
+}
+
+function FormularioEdicaoValor({
+	obrigacao,
+	aoSalvarComSucesso,
+	aoCancelar,
+}: {
+	obrigacao: ObrigacaoFinanceira;
+	aoSalvarComSucesso: (obrigacao: ObrigacaoFinanceira) => void;
+	aoCancelar: () => void;
+}) {
+	const [valor, setValor] = useState(String(obrigacao.valor));
+	const [salvando, setSalvando] = useState(false);
+	const [erro, setErro] = useState<string | null>(null);
+
+	async function salvar() {
+		const valorNumerico = Number(valor);
+		if (!(valorNumerico > 0)) {
+			setErro("valor deve ser maior que zero.");
+			return;
+		}
+
+		setSalvando(true);
+		setErro(null);
+		try {
+			const salva = await apiFetch<ObrigacaoFinanceira>(
+				`/api/admin/obrigacoes/${obrigacao.id}`,
+				{ method: "PATCH", body: JSON.stringify({ valor: valorNumerico }) },
+			);
+			aoSalvarComSucesso(salva);
+		} catch (erroCapturado) {
+			setErro(
+				erroCapturado instanceof ApiError
+					? erroCapturado.message
+					: "não foi possível salvar.",
+			);
+		} finally {
+			setSalvando(false);
+		}
+	}
+
+	return (
+		<div
+			style={{
+				display: "flex",
+				gap: 12,
+				alignItems: "flex-end",
+				marginTop: 16,
+				paddingTop: 16,
+				borderTop: "1px solid rgba(27, 23, 23, 0.1)",
+				flexWrap: "wrap",
+			}}
+		>
+			<label style={estiloLabel}>
+				valor (r$)
+				<input
+					type="number"
+					value={valor}
+					onChange={(evento) => setValor(evento.target.value)}
+					style={estiloInput}
+				/>
+			</label>
+			{erro && (
+				<p className="portal-page-feedback is-error" style={{ margin: 0 }}>
+					{erro}
+				</p>
+			)}
+			<button
+				type="button"
+				className="btn-primary"
+				disabled={salvando}
+				onClick={() => void salvar()}
+				style={estiloBotaoPrimarioPequeno}
+			>
+				{salvando ? "salvando..." : "salvar"}
+			</button>
+			<button
+				type="button"
+				onClick={aoCancelar}
+				style={{ ...estiloBotaoOutlineNeutro, border: "none" }}
+			>
+				cancelar
+			</button>
+		</div>
+	);
+}
+
+function LinhaObrigacao({
+	obrigacao,
+	nomeParceira,
+	expandida,
+	editando,
+	emAcao,
+	aoAlternarDetalhes,
+	aoAlternarEdicao,
+	aoSalvarEdicao,
+	aoLiberar,
+	aoPagar,
+	aoRemover,
+}: {
+	obrigacao: ObrigacaoFinanceira;
+	nomeParceira: string;
+	expandida: boolean;
+	editando: boolean;
+	emAcao: boolean;
+	aoAlternarDetalhes: () => void;
+	aoAlternarEdicao: () => void;
+	aoSalvarEdicao: (obrigacao: ObrigacaoFinanceira) => void;
+	aoLiberar: () => void;
+	aoPagar: () => void;
+	aoRemover: () => void;
+}) {
+	const podeLiberar =
+		obrigacao.estado === "EM_ABERTO" && obrigacao.elegivelParaLiberacao;
+	const motivoBloqueioLiberacao =
+		obrigacao.tipo === "MENSAL" && !obrigacao.elegivelParaLiberacao
+			? "há Entregas da competência ainda não Aprovadas/Publicadas."
+			: undefined;
+
+	return (
+		<li className="portal-list-row operational-row">
+			<span
+				className="portal-list-row-status"
+				style={{
+					fontWeight: 700,
+					color:
+						obrigacao.estado === "PAGO" ? "inherit" : "var(--color-cherry)",
+				}}
+			>
+				{LABEL_ESTADO[obrigacao.estado]}
+			</span>
+
+			<button
+				type="button"
+				onClick={aoAlternarDetalhes}
+				style={{
+					textAlign: "left",
+					background: "none",
+					border: "none",
+					padding: 0,
+					cursor: "pointer",
+				}}
+			>
+				<strong className="portal-list-row-title">{nomeParceira}</strong>
+				<p className="portal-list-row-meta">
+					{LABEL_TIPO[obrigacao.tipo]} · competência {obrigacao.mesReferencia}
+				</p>
+			</button>
+
+			<p className="portal-list-row-meta">
+				{formatadorMoeda.format(obrigacao.valor)}
+			</p>
+
+			<p className="portal-list-row-meta">
+				{obrigacao.entregasDaCompetencia.length}{" "}
+				{obrigacao.entregasDaCompetencia.length === 1
+					? "entrega vinculada"
+					: "entregas vinculadas"}
+				{" · "}
+				{obrigacao.elegivelParaLiberacao
+					? "elegível para liberação"
+					: "não elegível para liberação"}
+			</p>
+
+			<div className="portal-list-row-actions">
+				{obrigacao.estado === "EM_ABERTO" && (
+					<>
+						<button
+							type="button"
+							onClick={aoAlternarEdicao}
+							style={estiloBotaoOutlineNeutro}
+						>
+							{editando ? "fechar edição" : "editar"}
+						</button>
+						<button
+							type="button"
+							className="btn-primary"
+							disabled={!podeLiberar || emAcao}
+							onClick={aoLiberar}
+							title={motivoBloqueioLiberacao}
+							style={estiloBotaoPrimarioPequeno}
+						>
+							{emAcao ? "..." : "liberar"}
+						</button>
+						<button
+							type="button"
+							disabled={emAcao}
+							onClick={aoRemover}
+							style={estiloBotaoOutlineCherry}
+						>
+							{emAcao ? "..." : "remover"}
+						</button>
+					</>
+				)}
+				{obrigacao.estado === "APROVADO" && (
+					<button
+						type="button"
+						className="btn-primary"
+						disabled={emAcao}
+						onClick={aoPagar}
+						style={estiloBotaoPrimarioPequeno}
+					>
+						{emAcao ? "..." : "marcar como pago"}
+					</button>
+				)}
+				{obrigacao.estado === "PAGO" && obrigacao.dataArquivamento && (
+					<span className="portal-list-row-meta">
+						pago em {formatarData(obrigacao.dataArquivamento)}
+					</span>
+				)}
+			</div>
+
+			{expandida && (
+				<div
+					style={{
+						gridColumn: "1 / -1",
+						paddingTop: 12,
+						marginTop: 4,
+						borderTop: "1px solid rgba(27, 23, 23, 0.1)",
+						width: "100%",
+					}}
+				>
+					<p style={{ fontWeight: 700, fontSize: 13, marginBottom: 8 }}>
+						entregas da competência ({obrigacao.entregasDaCompetencia.length})
+					</p>
+					{obrigacao.entregasDaCompetencia.length === 0 ? (
+						<p className="portal-list-row-meta">
+							nenhuma Entrega nesta competência.
+						</p>
+					) : (
+						<ul style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+							{obrigacao.entregasDaCompetencia.map((item) => (
+								<li key={item.id} className="portal-list-row-meta">
+									{LABEL_FORMATO[item.formato]} —{" "}
+									{LABEL_ESTADO_ENTREGA[item.estado]} — entrega{" "}
+									{formatarData(item.dataEntrega)}
+								</li>
+							))}
+						</ul>
+					)}
+				</div>
+			)}
+
+			{editando && (
+				<div style={{ gridColumn: "1 / -1", width: "100%" }}>
+					<FormularioEdicaoValor
+						obrigacao={obrigacao}
+						aoSalvarComSucesso={aoSalvarEdicao}
+						aoCancelar={aoAlternarEdicao}
+					/>
+				</div>
+			)}
+		</li>
+	);
+}
+
+type FiltroEstado = "TODOS" | EstadoObrigacao;
+
+export function AdminObrigacoesPage() {
+	const { sessao } = useSession();
+	const [obrigacoes, setObrigacoes] = useState<ObrigacaoFinanceira[] | null>(
+		null,
+	);
+	const [parceiras, setParceiras] = useState<Parceira[] | null>(null);
+	const [erro, setErro] = useState<string | null>(null);
+	const [carregando, setCarregando] = useState(true);
+
+	const [busca, setBusca] = useState("");
+	const [filtroEstado, setFiltroEstado] = useState<FiltroEstado>("TODOS");
+	const [formularioAberto, setFormularioAberto] = useState(false);
+	const [expandidaId, setExpandidaId] = useState<string | null>(null);
+	const [emEdicaoId, setEmEdicaoId] = useState<string | null>(null);
+	const [idEmAcao, setIdEmAcao] = useState<string | null>(null);
+
+	useEffect(() => {
+		let ativo = true;
+		setCarregando(true);
+		setErro(null);
+
+		Promise.all([
+			apiFetch<{ itens: ObrigacaoFinanceira[] }>("/api/admin/obrigacoes"),
+			apiFetch<{ itens: Parceira[] }>("/api/admin/parceiras"),
+		])
+			.then(([obrigacoesResposta, parceirasResposta]) => {
+				if (!ativo) return;
+				setObrigacoes(obrigacoesResposta.itens);
+				setParceiras(parceirasResposta.itens);
+			})
+			.catch((erroCapturado) => {
+				if (!ativo) return;
+				setErro(
+					erroCapturado instanceof ApiError
+						? erroCapturado.message
+						: "não foi possível carregar as Obrigações.",
+				);
+			})
+			.finally(() => ativo && setCarregando(false));
+
+		return () => {
+			ativo = false;
+		};
+	}, []);
+
+	const nomePorParceiraId = useMemo(() => {
+		const mapa = new Map<string, string>();
+		for (const parceira of parceiras ?? []) {
+			mapa.set(parceira.id, parceira.nome);
+		}
+		return mapa;
+	}, [parceiras]);
+
+	function atualizarNaLista(atualizada: ObrigacaoFinanceira) {
+		setObrigacoes((atual) =>
+			atual
+				? atual.map((obrigacao) =>
+						obrigacao.id === atualizada.id ? atualizada : obrigacao,
+					)
+				: atual,
+		);
+	}
+
+	async function liberar(obrigacao: ObrigacaoFinanceira) {
+		setIdEmAcao(obrigacao.id);
+		setErro(null);
+		try {
+			const atualizada = await apiFetch<ObrigacaoFinanceira>(
+				`/api/admin/obrigacoes/${obrigacao.id}/liberar`,
+				{ method: "PATCH" },
+			);
+			atualizarNaLista(atualizada);
+		} catch (erroCapturado) {
+			setErro(
+				erroCapturado instanceof ApiError
+					? erroCapturado.message
+					: "não foi possível liberar a Obrigação.",
+			);
+		} finally {
+			setIdEmAcao(null);
+		}
+	}
+
+	async function pagar(obrigacao: ObrigacaoFinanceira) {
+		setIdEmAcao(obrigacao.id);
+		setErro(null);
+		try {
+			const atualizada = await apiFetch<ObrigacaoFinanceira>(
+				`/api/admin/obrigacoes/${obrigacao.id}/pagar`,
+				{ method: "PATCH" },
+			);
+			atualizarNaLista(atualizada);
+		} catch (erroCapturado) {
+			setErro(
+				erroCapturado instanceof ApiError
+					? erroCapturado.message
+					: "não foi possível marcar como pago.",
+			);
+		} finally {
+			setIdEmAcao(null);
+		}
+	}
+
+	async function remover(obrigacao: ObrigacaoFinanceira) {
+		setIdEmAcao(obrigacao.id);
+		setErro(null);
+		try {
+			await apiFetch<void>(`/api/admin/obrigacoes/${obrigacao.id}`, {
+				method: "DELETE",
+			});
+			setObrigacoes((atual) =>
+				atual ? atual.filter((item) => item.id !== obrigacao.id) : atual,
+			);
+		} catch (erroCapturado) {
+			setErro(
+				erroCapturado instanceof ApiError
+					? erroCapturado.message
+					: "não foi possível remover a Obrigação.",
+			);
+		} finally {
+			setIdEmAcao(null);
+		}
+	}
+
+	const filtradas = useMemo(() => {
+		if (!obrigacoes) return [];
+		const termo = busca.trim().toLowerCase();
+
+		return obrigacoes
+			.filter((obrigacao) => {
+				if (filtroEstado !== "TODOS" && obrigacao.estado !== filtroEstado) {
+					return false;
+				}
+				if (!termo) return true;
+				const nomeParceira =
+					nomePorParceiraId.get(obrigacao.parceiraId)?.toLowerCase() ?? "";
+				return nomeParceira.includes(termo);
+			})
+			.sort((a, b) => b.mesReferencia.localeCompare(a.mesReferencia));
+	}, [obrigacoes, busca, filtroEstado, nomePorParceiraId]);
+
+	if (sessao?.papelAtor !== "ADMINISTRADOR") {
+		return (
+			<section className="portal-page">
+				<p className="portal-page-feedback">área restrita a administradores.</p>
+			</section>
+		);
+	}
+
+	return (
+		<section className="portal-page" style={{ maxWidth: 1080 }}>
+			<p className="portal-eyebrow">administração</p>
+			<h1 className="title-editorial portal-page-title">obrigações</h1>
+			<p className="portal-page-intro">
+				lance, acompanhe e libere as Obrigações Financeiras de cada Parceira por
+				competência.
+			</p>
+
+			{carregando && (
+				<p className="portal-page-feedback">carregando Obrigações...</p>
+			)}
+			{!carregando && erro && (
+				<p className="portal-page-feedback is-error">{erro}</p>
+			)}
+
+			{!carregando && obrigacoes && (
+				<>
+					<div
+						style={{
+							display: "flex",
+							flexWrap: "wrap",
+							gap: 12,
+							alignItems: "flex-end",
+							marginBottom: 16,
+						}}
+					>
+						<label style={{ ...estiloLabel, flex: "2 1 220px" }}>
+							buscar por parceira
+							<input
+								placeholder="nome da parceira"
+								value={busca}
+								onChange={(evento) => setBusca(evento.target.value)}
+								style={estiloInput}
+							/>
+						</label>
+						<label style={{ ...estiloLabel, flex: "1 1 170px" }}>
+							estado
+							<select
+								value={filtroEstado}
+								onChange={(evento) =>
+									setFiltroEstado(evento.target.value as FiltroEstado)
+								}
+								style={estiloInput}
+							>
+								<option value="TODOS">todos</option>
+								{Object.entries(LABEL_ESTADO).map(([valor, rotulo]) => (
+									<option key={valor} value={valor}>
+										{rotulo}
+									</option>
+								))}
+							</select>
+						</label>
+						<button
+							type="button"
+							className="btn-primary"
+							onClick={() => setFormularioAberto((atual) => !atual)}
+							style={{ height: 40, padding: "0 24px", fontSize: 14 }}
+						>
+							{formularioAberto ? "fechar" : "+ nova obrigação"}
+						</button>
+					</div>
+
+					{formularioAberto && (
+						<div
+							style={{
+								marginBottom: 24,
+								paddingBottom: 24,
+								borderBottom: "1px solid rgba(27, 23, 23, 0.1)",
+							}}
+						>
+							<FormularioNovaObrigacao
+								parceiras={parceiras ?? []}
+								aoSalvarComSucesso={(nova) => {
+									setObrigacoes((atual) => (atual ? [nova, ...atual] : [nova]));
+									setFormularioAberto(false);
+								}}
+								aoCancelar={() => setFormularioAberto(false)}
+							/>
+						</div>
+					)}
+
+					<p className="pendencias-summary is-quiet">
+						{obrigacoes.length}{" "}
+						{obrigacoes.length === 1 ? "obrigação" : "obrigações"}
+					</p>
+
+					{filtradas.length === 0 && (
+						<p className="portal-page-feedback">
+							{obrigacoes.length === 0
+								? "nenhuma Obrigação lançada ainda."
+								: "nenhuma Obrigação encontrada para esse filtro."}
+						</p>
+					)}
+
+					{filtradas.length > 0 && (
+						<ul className="portal-list">
+							{filtradas.map((obrigacao) => (
+								<LinhaObrigacao
+									key={obrigacao.id}
+									obrigacao={obrigacao}
+									nomeParceira={
+										nomePorParceiraId.get(obrigacao.parceiraId) ??
+										"parceira desconhecida"
+									}
+									expandida={expandidaId === obrigacao.id}
+									editando={emEdicaoId === obrigacao.id}
+									emAcao={idEmAcao === obrigacao.id}
+									aoAlternarDetalhes={() =>
+										setExpandidaId((atual) =>
+											atual === obrigacao.id ? null : obrigacao.id,
+										)
+									}
+									aoAlternarEdicao={() =>
+										setEmEdicaoId((atual) =>
+											atual === obrigacao.id ? null : obrigacao.id,
+										)
+									}
+									aoSalvarEdicao={(atualizada) => {
+										atualizarNaLista(atualizada);
+										setEmEdicaoId(null);
+									}}
+									aoLiberar={() => void liberar(obrigacao)}
+									aoPagar={() => void pagar(obrigacao)}
+									aoRemover={() => void remover(obrigacao)}
+								/>
+							))}
+						</ul>
+					)}
+				</>
+			)}
+		</section>
+	);
+}
