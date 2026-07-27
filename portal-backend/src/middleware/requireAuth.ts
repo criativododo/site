@@ -32,3 +32,12 @@ export function requireContaAtiva(req: Request, res: Response, next: NextFunctio
   }
   next();
 }
+
+/** RN-04/RN-05 (SPEC-035): moderação é privilégio exclusivo do papel Administrador. */
+export function requireAdmin(req: Request, res: Response, next: NextFunction) {
+  if (req.sessao?.papelAtor !== "ADMINISTRADOR") {
+    res.status(403).json({ error: "Operação restrita a Administradores." });
+    return;
+  }
+  next();
+}

@@ -10,6 +10,7 @@ const navItems = [
 
 export function PortalLayout() {
   const { sessao, logout } = useSession();
+  const itensNav = sessao?.papelAtor === "ADMINISTRADOR" ? [...navItems, { to: "/admin", label: "Moderação" }] : navItems;
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
@@ -25,7 +26,7 @@ export function PortalLayout() {
         <img src={logoPrincipal} alt="Criativo DODÔ" style={{ width: 96 }} />
 
         <nav style={{ display: "flex", gap: 24 }}>
-          {navItems.map((item) => (
+          {itensNav.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}

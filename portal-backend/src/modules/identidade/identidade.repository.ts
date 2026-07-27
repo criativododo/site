@@ -28,6 +28,11 @@ class IdentidadeRepositorioEmMemoria {
     this.porSub.set(identidade.subProvider, identidade);
     return identidade;
   }
+
+  /** UC-035 (Feature 5.3, Moderação): lista contas por estado, para a fila de aprovação do Administrador. */
+  async listarPorEstado(estadoConta: Identidade["estadoConta"]): Promise<Identidade[]> {
+    return [...this.porSub.values()].filter((identidade) => identidade.estadoConta === estadoConta);
+  }
 }
 
 export const identidadeRepositorio = new IdentidadeRepositorioEmMemoria();

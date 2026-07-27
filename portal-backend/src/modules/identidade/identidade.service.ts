@@ -57,3 +57,43 @@ export async function resolverOuCriarIdentidade(claims: ClaimsGoogle): Promise<I
 
   return identidadeRepositorio.salvar(nova);
 }
+
+/** UC-035 (Feature 5.3) · Fila de moderação: contas aguardando decisão do Administrador. */
+export async function listarContasPendentes(): Promise<Identidade[]> {
+  return identidadeRepositorio.listarPorEstado("PENDING");
+}
+
+export type ResultadoModeracao =
+  | { ok: true; identidade: Identidade }
+  | { ok: false; motivo: "NAO_ENCONTRADA" }
+  | { ok: false; motivo: "NAO_PENDENTE" };
+
+/**
+ * RN-04: só Administrador decide (garantido por `requireAdmin` na rota); só uma conta
+ * `PENDING` pode transicionar — decisão já tomada (`ACTIVE`/`REJECTED`) não é reaberta aqui.
+ */
+async function moderarConta(
+  subProvider: string,
+  novoEstado: "ACTIVE" | "REJECTED",
+): Promise<ResultadoModeracao> {
+  const identidade = await identidadeRepositorio.buscarPorSub(subProvider);
+  if (!identidade) {
+    return { ok: false, motivo: "NAO_ENCONTRADA" };
+  }
+  if (identidade.estadoConta !== "PENDING") {
+    return { ok: false, motivo: "NAO_PENDENTE" };
+  }
+
+  const atualizada = await identidadeRepositorio.salvar({ ...identidade, estadoConta: novoEstado });
+  return { ok: true, identidade: atualizada };
+}
+
+/** UC-035 (Feature 5.3) · Aprovar: PENDING → ACTIVE. */
+export function aprovarConta(subProvider: string): Promise<ResultadoModeracao> {
+  return moderarConta(subProvider, "ACTIVE");
+}
+
+/** UC-035 (Feature 5.3) · Rejeitar: PENDING → REJECTED. */
+export function rejeitarConta(subProvider: string): Promise<ResultadoModeracao> {
+  return moderarConta(subProvider, "REJECTED");
+}

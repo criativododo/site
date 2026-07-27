@@ -3,6 +3,7 @@ import { LoginPage } from "./pages/Login";
 import { PendenciasPage } from "./pages/Pendencias";
 import { FinanceiroPage } from "./pages/Financeiro";
 import { PerfilPage } from "./pages/Perfil";
+import { AdminPage } from "./pages/Admin";
 import { PortalLayout } from "./components/PortalLayout";
 import { RotaProtegida } from "./components/RotaProtegida";
 
@@ -21,6 +22,7 @@ function App() {
         <Route path="/pendencias" element={<PendenciasPage />} />
         <Route path="/financeiro" element={<FinanceiroPage />} />
         <Route path="/perfil" element={<PerfilPage />} />
+        <Route path="/admin" element={<AdminPage />} />
       </Route>
 
       <Route path="/" element={<Navigate to="/pendencias" replace />} />

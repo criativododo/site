@@ -9,11 +9,14 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:4000
  */
 export type EstadoConta = "PENDING" | "ACTIVE" | "INACTIVE" | "REJECTED";
 
+export type PapelAtor = "ADMINISTRADOR" | "INFLUENCIADORA";
+
 export interface SessaoParceira {
   parceiraId: string | null;
   nome: string;
   email: string;
   estadoConta: EstadoConta;
+  papelAtor: PapelAtor;
 }
 
 interface SessionContextValue {

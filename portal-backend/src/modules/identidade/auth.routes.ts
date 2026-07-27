@@ -111,6 +111,7 @@ authRoutes.get("/me", requireAuth, (req, res) => {
     nome: sessao.nome,
     email: sessao.email,
     estadoConta: sessao.estadoConta,
+    papelAtor: sessao.papelAtor,
   });
 });
 
