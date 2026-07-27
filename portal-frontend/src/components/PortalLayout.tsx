@@ -55,6 +55,7 @@ export function PortalLayout() {
 		sessao?.papelAtor === "ADMINISTRADOR"
 			? [
 					{ to: "/admin/dashboard", label: "Dashboard" },
+					{ to: "/admin/parceiras", label: "Parceiras" },
 					...navItems,
 					{ to: "/admin", label: "Moderação" },
 				]

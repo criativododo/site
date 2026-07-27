@@ -398,6 +398,22 @@ select:focus-visible {
 	font-size: 14px;
 }
 
+/*
+ * Grid de colunas fixas para listas operacionais de alto volume (Gestão de Parceiras):
+ * status sempre na mesma posição x, independente do tamanho do nome/e-mail de cada linha —
+ * permite escanear a coluna de status verticalmente em vez de reler cada linha por completo.
+ */
+.operational-row {
+	display: grid;
+	grid-template-columns: 68px minmax(200px, 1.4fr) 120px 130px 230px;
+	column-gap: 16px;
+	row-gap: 8px;
+	align-items: start;
+}
+.operational-row > * {
+	min-width: 0;
+}
+
 .financeiro-kpis {
 	display: flex;
 	flex-wrap: wrap;
@@ -634,6 +650,9 @@ select:focus-visible {
 	}
 	.financeiro-kpi {
 		min-width: 100%;
+	}
+	.operational-row {
+		grid-template-columns: 1fr;
 	}
 	/*
 	 * Sidebar vira duas linhas no mobile: logo+conta em cima (largura

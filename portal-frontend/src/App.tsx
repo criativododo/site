@@ -3,6 +3,7 @@ import { PortalLayout } from "./components/PortalLayout";
 import { RotaProtegida } from "./components/RotaProtegida";
 import { AdminPage } from "./pages/Admin";
 import { AdminDashboardPage } from "./pages/AdminDashboard";
+import { AdminParceirasPage } from "./pages/AdminParceiras";
 import { FinanceiroPage } from "./pages/Financeiro";
 import { LoginPage } from "./pages/Login";
 import { PendenciasPage } from "./pages/Pendencias";
@@ -24,6 +25,7 @@ function App() {
 				<Route path="/financeiro" element={<FinanceiroPage />} />
 				<Route path="/perfil" element={<PerfilPage />} />
 				<Route path="/admin/dashboard" element={<AdminDashboardPage />} />
+				<Route path="/admin/parceiras" element={<AdminParceirasPage />} />
 				<Route path="/admin" element={<AdminPage />} />
 			</Route>
 
