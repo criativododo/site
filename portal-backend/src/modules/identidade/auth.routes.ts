@@ -97,7 +97,8 @@ authRoutes.get("/google/callback", async (req, res) => {
       nome: identidade.nomeCompleto,
     });
 
-    res.redirect(`${env.frontendUrl}/pendencias`);
+    const destino = identidade.papelAtor === "ADMINISTRADOR" ? "/admin/dashboard" : "/pendencias";
+    res.redirect(`${env.frontendUrl}${destino}`);
   } catch {
     // Nunca vazar detalhe interno do erro OIDC para o cliente (aud/iss/exp inválidos, etc.).
     res.status(401).json({ error: "Não foi possível concluir o login com o Google." });
