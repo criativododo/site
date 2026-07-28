@@ -23,7 +23,9 @@ DEST_FILE="$BACKUP_DIR/${DB_NAME}_${TIMESTAMP}.sql.gz"
 mkdir -p "$BACKUP_DIR"
 
 echo "==> Backup $DB_NAME -> $DEST_FILE"
-PGPASSWORD="${PGPASSWORD:-}" pg_dump -U "$DB_USER" -h 127.0.0.1 "$DB_NAME" | gzip > "$DEST_FILE"
+# Autenticacao via ~/.pgpass (chmod 600) ou PGPASSWORD ja exportado no ambiente que chama
+# este script — nao forcar PGPASSWORD="" aqui, isso sobrescreveria e quebraria o .pgpass.
+pg_dump -U "$DB_USER" -h 127.0.0.1 "$DB_NAME" | gzip > "$DEST_FILE"
 
 echo "==> Removendo backups com mais de $RETENTION_DAYS dias"
 find "$BACKUP_DIR" -name "${DB_NAME}_*.sql.gz" -mtime "+$RETENTION_DAYS" -delete
