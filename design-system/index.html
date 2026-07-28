@@ -70,9 +70,35 @@ button { font-family: inherit; cursor: pointer; }
 button:focus-visible,
 a:focus-visible,
 input:focus-visible,
-select:focus-visible {
+select:focus-visible,
+textarea:focus-visible {
   outline: 2px solid var(--color-cherry);
   outline-offset: 3px;
+}
+
+.ds-skip-link {
+  position: absolute;
+  left: 12px;
+  top: -48px;
+  z-index: 50;
+  background: var(--color-cherry);
+  color: var(--color-cotton);
+  padding: 10px 18px;
+  border-radius: var(--radius-pill);
+  font-size: 13px;
+  font-weight: 700;
+  transition: top 0.2s var(--ease-editorial);
+}
+.ds-skip-link:focus { top: 12px; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* ============================================================
@@ -341,7 +367,7 @@ table.ds-table th {
 }
 .ds-tag.is-real { background: rgba(27, 23, 23, 0.08); color: var(--color-noir); }
 .ds-tag.is-legacy { background: rgba(129, 1, 0, 0.1); color: var(--color-cherry); }
-.ds-tag.is-unbuilt { background: rgba(27, 23, 23, 0.04); color: rgba(27, 23, 23, 0.6); }
+.ds-tag.is-unbuilt { background: rgba(27, 23, 23, 0.08); color: rgba(27, 23, 23, 0.8); }
 
 footer.ds-footer {
   margin-top: 120px;
@@ -393,10 +419,15 @@ footer.ds-footer {
 }
 
 /* ============================================================
-   COMPONENTES REAIS DO PORTAL — copiados verbatim de
+   COMPONENTES REAIS DO PORTAL — valores copiados de
    portal-frontend/src/index.css (e do accordion da Landing para
-   o demo de §21) para que os demos abaixo sejam fiéis ao
-   produto, não uma recriação aproximada. Ver DESIGN.md Parte III.
+   o demo de §21), conferidos propriedade por propriedade contra
+   o CSS de produção. Uma exceção deliberada: `.operational-row`
+   aqui inclui padding/borda/raio/font-size na própria classe só
+   para o demo funcionar isolado — no código real esses valores
+   vêm de `.portal-list-row`, sempre combinada no JSX
+   (`className="portal-list-row operational-row"`). Ver DESIGN.md
+   Parte III.
    ============================================================ */
 .title-editorial { font-family: var(--font-display); font-weight: 800; color: var(--color-cherry); }
 
@@ -427,11 +458,11 @@ footer.ds-footer {
 
 .portal-list { display: flex; flex-direction: column; gap: 12px; list-style: none; }
 .portal-list-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 20px; border: 1px solid rgba(27,23,23,0.1); border-radius: 12px; }
-.portal-list-row-title { font-family: var(--font-display); font-weight: 600; }
+.portal-list-row-title { font-family: var(--font-display); }
 .portal-list-row-meta { margin-top: 2px; font-size: 14px; opacity: 0.8; }
 .portal-list-row-status { font-size: 14px; }
 
-.operational-row { display: grid; grid-template-columns: 68px minmax(140px,1.4fr) 120px 130px; column-gap: 16px; row-gap: 8px; align-items: start; padding: 14px 16px; border: 1px solid rgba(27,23,23,0.1); border-radius: 12px; font-size: 13.5px; }
+.operational-row { display: grid; grid-template-columns: 68px minmax(200px,1.4fr) 120px 130px 230px; column-gap: 16px; row-gap: 8px; align-items: start; padding: 14px 16px; border: 1px solid rgba(27,23,23,0.1); border-radius: 12px; font-size: 13.5px; }
 .operational-row.is-header { font-family: var(--font-display); font-weight: 700; font-size: 11px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--color-cherry); border: none; padding: 0 16px; }
 
 .financeiro-kpis { display: flex; flex-wrap: wrap; gap: 16px; }
@@ -440,12 +471,12 @@ footer.ds-footer {
 .financeiro-kpi-value { margin-top: 2px; font-family: var(--font-display); font-size: 22px; font-weight: 700; }
 .financeiro-kpi.is-destaque .financeiro-kpi-value { color: var(--color-cherry); }
 
-.pendencia-item { overflow: hidden; border: 1px solid rgba(27,23,23,0.14); border-radius: 14px; background: rgba(255,255,255,0.35); transition: border-color 0.3s var(--ease-editorial), box-shadow 0.3s var(--ease-editorial), transform 0.3s var(--ease-editorial); }
+.pendencia-item { overflow: hidden; border: 1px solid rgba(27,23,23,0.14); border-radius: 14px; background: rgba(255,255,255,0.18); transition: border-color 0.3s var(--ease-editorial), box-shadow 0.3s var(--ease-editorial), transform 0.3s var(--ease-editorial); }
 .pendencia-item:hover, .pendencia-item.is-open { border-color: rgba(129,1,0,0.36); box-shadow: 0 10px 24px rgba(27,23,23,0.07); }
 .pendencia-item:hover { transform: translateY(-2px); }
 .pendencia-item.is-overdue { border-color: var(--color-cherry); background: rgba(129,1,0,0.055); }
-.pendencia-trigger { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 22px 22px 20px; border: 0; background: none; color: var(--color-noir); text-align: left; }
-.pendencia-format { display: block; font-family: var(--font-display); font-size: 19px; font-weight: 600; line-height: 1.1; transition: font-weight 0.3s ease, text-decoration-color 0.3s ease; }
+.pendencia-trigger { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 24px 24px 22px; border: 0; background: none; color: var(--color-noir); text-align: left; }
+.pendencia-format { display: block; font-family: var(--font-display); font-size: 20.8px; font-weight: 600; line-height: 1.1; transition: font-weight 0.3s ease, text-decoration-color 0.3s ease; }
 .pendencia-trigger:hover .pendencia-format, .pendencia-item.is-open .pendencia-format { font-weight: 800; text-decoration: underline; text-underline-offset: 4px; }
 .pendencia-date { margin-top: 8px; font-size: 13.6px; }
 .pendencia-status { display: flex; align-items: center; gap: 12px; color: var(--color-cherry); font-size: 13px; font-weight: 700; white-space: nowrap; }
@@ -455,15 +486,15 @@ footer.ds-footer {
 .pendencia-em_revisao .pendencia-status-icon { background: var(--color-noir); }
 .pendencia-aprovado .pendencia-status-badge { background: rgba(27,23,23,0.05); color: rgba(27,23,23,0.7); }
 .pendencia-aprovado .pendencia-status-icon { background: rgba(27,23,23,0.65); }
-.pendencia-icon { display: inline-block; font-size: 24px; font-weight: 300; line-height: 1; transition: transform 0.4s var(--ease-editorial); }
+.pendencia-icon { display: inline-block; font-size: 28px; font-weight: 300; line-height: 1; transition: transform 0.4s var(--ease-editorial); }
 .pendencia-item.is-open .pendencia-icon { transform: rotate(180deg); }
-.pendencia-details { margin: 0 22px; padding: 18px 0 20px; border-top: 1px solid rgba(27,23,23,0.12); font-size: 13.6px; line-height: 1.6; display: none; }
+.pendencia-details { margin: 0 24px; padding: 20px 0 24px; border-top: 1px solid rgba(27,23,23,0.12); font-size: 13.6px; line-height: 1.6; display: none; }
 .pendencia-item.is-open .pendencia-details { display: block; animation: pendencia-expand 0.3s var(--ease-editorial); }
 @keyframes pendencia-expand { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
 
 .demo-sidebar { display: flex; flex-direction: column; justify-content: space-between; width: 220px; padding: 24px 20px; border-right: 1px solid rgba(27,23,23,0.1); }
 .demo-sidebar-nav { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
-.portal-nav-link { position: relative; display: inline-block; padding-bottom: 2px; color: var(--color-cherry); font-size: 14px; font-weight: 600; width: fit-content; }
+.portal-nav-link { position: relative; display: inline-block; padding-bottom: 2px; color: var(--color-cherry); font-size: 15.3px; line-height: 1.3; font-weight: 600; width: fit-content; }
 .portal-nav-link::after { content: ""; position: absolute; right: 0; bottom: 0; left: 0; height: 1px; background: var(--color-cherry); transform: scaleX(0); transform-origin: bottom right; transition: transform 0.4s var(--ease-editorial); }
 .portal-nav-link:hover::after, .portal-nav-link.is-active::after { transform: scaleX(1); transform-origin: bottom left; }
 .demo-sidebar-user { display: flex; flex-direction: column; gap: 10px; font-size: 12px; padding-top: 16px; border-top: 1px solid rgba(27,23,23,0.1); }
@@ -473,18 +504,18 @@ footer.ds-footer {
 .spinner { width: 22px; height: 22px; border: 2px solid rgba(129,1,0,0.2); border-top-color: var(--color-cherry); border-radius: 50%; animation: portal-spin 0.8s linear infinite; }
 @keyframes portal-spin { to { transform: rotate(360deg); } }
 
-.feedback-text { font-size: 14px; line-height: 1.6; }
-.feedback-text.is-error { color: var(--color-cherry); }
-.feedback-text.is-sucesso { color: var(--color-noir); font-weight: 700; }
-.feedback-text.is-vazio { opacity: 0.75; }
+.portal-page-feedback { font-size: 15px; line-height: 1.6; }
+.portal-page-feedback.is-error { color: var(--color-cherry); }
+.pendencia-feedback.is-sucesso { color: var(--color-noir); font-weight: 700; }
 </style>
 </head>
 
 <body>
+<a class="ds-skip-link" href="#ds-main-conteudo">pular para o conteúdo</a>
 <div class="ds-shell">
 
   <div class="ds-mobile-toggle">
-    <button type="button" id="ds-toggle-nav">sumário</button>
+    <button type="button" id="ds-toggle-nav" aria-expanded="false" aria-controls="ds-sidebar">sumário</button>
     <strong style="font-family:var(--font-display); color:var(--color-cherry); font-size:14px;">design system dodô</strong>
   </div>
 
@@ -552,7 +583,7 @@ footer.ds-footer {
         </ul>
       </div>
       <div class="ds-nav-group">
-        <div class="ds-nav-part">V · Acessibilidade</div>
+        <div class="ds-nav-part">V · Acessibilidade e guidelines</div>
         <ul class="ds-nav-list">
           <li><a href="#29-acessibilidade">29 · Acessibilidade (WCAG)</a></li>
           <li><a href="#30-guidelines">30 · Do's & don'ts</a></li>
@@ -570,7 +601,7 @@ footer.ds-footer {
     </nav>
   </aside>
 
-  <main class="ds-main">
+  <main class="ds-main" id="ds-main-conteudo">
 
     <div class="ds-hero">
       <p class="ds-hero-eyebrow">design system · criativo dodô</p>
@@ -603,7 +634,7 @@ footer.ds-footer {
       <h2>03 · Personalidade e princípios</h2>
       <p>a dodô é uma marca premium. mas premium, aqui, não é sinônimo de ostentação.</p>
       <div class="ds-table-wrap"><table class="ds-table">
-        <tr><th>premium não é</th><th>premium é</th></tr>
+        <tr><th scope="col">premium não é</th><th scope="col">premium é</th></tr>
         <tr><td>luxo ostentatório, dourado, glass/glow, gradiente exagerado, excesso</td><td>clareza, inteligência, refinamento, ritmo, silêncio visual, tipografia excelente, hierarquia excelente</td></tr>
       </table></div>
       <p><strong>critério de qualidade.</strong> toda decisão nova passa por: <em>isto parece um template, ou parece uma decisão que nasceu da dodô?</em> se a resposta for "template", volta para a mesa.</p>
@@ -625,7 +656,7 @@ footer.ds-footer {
       <p><strong>caixa e pontuação.</strong> caixa baixa como padrão em todo conteúdo digital. ponto final, vírgula, dois pontos; sem exclamação salvo exceção específica. <strong>sem travessão em nenhum contexto. sem reticências, nunca.</strong> o Portal segue à risca até em telas de erro: "nenhuma entrega criada ainda.", "sessão expirada.".</p>
       <blockquote>a dodô não entrega um documento e sai.<br>fica.</blockquote>
       <div class="ds-table-wrap"><table class="ds-table">
-        <tr><th>bom fechamento</th><th>fechamento banido</th></tr>
+        <tr><th scope="col">bom fechamento</th><th scope="col">fechamento banido</th></tr>
         <tr><td>"isso fica com quem entende de marca." ou a última ideia, sem amarração</td><td>"e é assim que fazemos a diferença." resumo, moral, CTA no corpo, pergunta retórica</td></tr>
       </table></div>
       <p><strong>vocabulário banido.</strong> incrível, poderoso, transformador, revolucionário, jornada, propósito, inspiração, inovação, impacto, empoderamento, "no mundo de hoje", crucial, pivotal. também: negrito mecânico, emoji decorativo, "não é x, é y".</p>
@@ -637,7 +668,7 @@ footer.ds-footer {
       <p><strong>a lição das três gerações de Design System.</strong> antes deste documento, o projeto passou por três gerações de identidade visual em sequência, cada uma abandonada. a lição não é sobre cor — é sobre processo: <strong>documentar identidade sem checar contra o código real produz documentação que mente.</strong></p>
       <p><strong>erros já cometidos, com honestidade:</strong> uma classe <code>.acumin-bold</code> referencia uma fonte que não existe no sistema atual. o vídeo do hero é, por comentário literal do script de setup, um placeholder de marca anterior. no Portal, os botões e campos de formulário administrativos são objetos de estilo inline <strong>copiados e colados</strong> em cinco arquivos diferentes — ver <a href="#16-botoes">§16</a>.</p>
       <div class="ds-table-wrap"><table class="ds-table">
-        <tr><th>nunca fazemos</th><th>sempre fazemos</th></tr>
+        <tr><th scope="col">nunca fazemos</th><th scope="col">sempre fazemos</th></tr>
         <tr><td>redesenhar o logotipo; inventar token porque "parece que deveria existir"; deixar vermelho dominar tela de uso contínuo; travessão ou reticências; copiar objeto de estilo de uma tela Admin para a próxima</td><td>extrair do código antes de propor; marcar "não definido" o que não está definido; perguntar "isso parece um template?"; promover padrão repetido 3+ vezes a componente nomeado</td></tr>
       </table></div>
     </section>
@@ -663,7 +694,7 @@ footer.ds-footer {
         <div class="ds-demo-caption">wordmark (cherry) · marca secundária · emblema — os três ativos reais, em ordem de uso</div>
       </div>
       <div class="ds-table-wrap"><table class="ds-table">
-        <tr><th>ativo</th><th>função</th><th>em uso hoje?</th></tr>
+        <tr><th scope="col">ativo</th><th scope="col">função</th><th scope="col">em uso hoje?</th></tr>
         <tr><td><strong>wordmark</strong></td><td>assinatura institucional</td><td>cherry no header da Landing e no login do Portal; noir na sidebar de todo o Portal</td></tr>
         <tr><td><strong>marca secundária</strong></td><td>lockup compacto (D/O/D/Ô)</td><td>não — arquivo pronto, sem aplicação</td></tr>
         <tr><td><strong>emblema</strong></td><td>o "Ô" isolado</td><td>favicon da Landing; marca d'água do login do Portal</td></tr>
@@ -684,7 +715,7 @@ footer.ds-footer {
       <p>não existe uma quinta cor "branco" separada — Cotton cumpre os dois papéis porque não é um branco puro, é um branco quente, o mesmo em qualquer contexto.</p>
       <h3>contraste (WCAG), calculado sobre os quatro tokens</h3>
       <div class="ds-table-wrap"><table class="ds-table">
-        <tr><th>par</th><th>razão</th><th>AA (4.5:1)</th><th>AAA (7:1)</th></tr>
+        <tr><th scope="col">par</th><th scope="col">razão</th><th scope="col">AA (4.5:1)</th><th scope="col">AAA (7:1)</th></tr>
         <tr><td>cherry / cotton</td><td><strong>9.05:1</strong></td><td>passa</td><td>passa</td></tr>
         <tr><td>noir / cotton</td><td><strong>14.84:1</strong></td><td>passa</td><td>passa</td></tr>
         <tr><td>cotton / maroon</td><td><strong>11.45:1</strong></td><td>passa</td><td>passa</td></tr>
@@ -791,7 +822,7 @@ footer.ds-footer {
 
     <section class="ds-section" id="16-botoes">
       <h2>16 · Botões</h2>
-      <p>três variantes existem, em uso real, mas só uma tem classe CSS — as outras duas são <strong>objetos de estilo inline duplicados</strong> em cinco arquivos (<code>AdminEntregas</code>, <code>AdminBriefings</code>, <code>AdminObrigacoes</code>, <code>AdminParceiras</code>, <code>Perfil</code>), quase idênticos entre si.</p>
+      <p>quatro variantes existem, em uso real, mas só uma tem classe CSS — as outras três são <strong>objetos de estilo inline duplicados</strong>, quase idênticos entre si, entre <code>AdminEntregas</code>, <code>AdminBriefings</code>, <code>AdminObrigacoes</code>, <code>AdminParceiras</code> e <code>Perfil</code> (nenhuma variante está nos 5 arquivos ao mesmo tempo — contagem exata na tabela abaixo).</p>
       <div class="ds-demo">
         <div class="ds-demo-stage">
           <button class="btn-primary">salvar</button>
@@ -803,13 +834,13 @@ footer.ds-footer {
         <div class="ds-demo-caption">primário (.btn-primary, único com classe própria) · primário pequeno · outline cherry · outline neutro · disabled — tab até aqui para ver o foco visível herdado do seletor genérico</div>
       </div>
       <div class="ds-table-wrap"><table class="ds-table">
-        <tr><th>variante</th><th>definida em</th><th>altura</th><th>uso</th></tr>
+        <tr><th scope="col">variante</th><th scope="col">definida em</th><th scope="col">altura</th><th scope="col">uso</th></tr>
         <tr><td>primário</td><td>classe <code>.btn-primary</code></td><td>48px</td><td>uma ação por tela: login, sair, salvar</td></tr>
-        <tr><td>outline neutro</td><td><code>estiloBotaoOutlineNeutro</code>, 5 cópias</td><td>36px</td><td>ação secundária neutra — "cancelar"</td></tr>
-        <tr><td>outline cherry</td><td><code>estiloBotaoOutlineCherry</code>, 4 cópias</td><td>36px</td><td>ação secundária de ênfase</td></tr>
-        <tr><td>primário pequeno</td><td><code>estiloBotaoPrimarioPequeno</code>, 3 cópias</td><td>36px</td><td>ação primária dentro de linha de lista</td></tr>
+        <tr><td>outline neutro</td><td><code>estiloBotaoOutlineNeutro</code>, 4 arquivos (falta em Perfil)</td><td>36px</td><td>ação secundária neutra — "cancelar"</td></tr>
+        <tr><td>outline cherry</td><td><code>estiloBotaoOutlineCherry</code>, 3 arquivos (falta em AdminEntregas e Perfil)</td><td>36px</td><td>ação secundária de ênfase</td></tr>
+        <tr><td>primário pequeno</td><td><code>estiloBotaoPrimarioPequeno</code>, 2 arquivos, byte-idênticos</td><td>36px</td><td>ação primária dentro de linha de lista</td></tr>
       </table></div>
-      <div class="ds-callout is-gap"><strong>pendência real, não só observação</strong><code>estiloBotaoPrimarioPequeno</code> tem <code>border-radius: 24px</code> em dois arquivos, mas nenhum raio definido num terceiro — a mesma variante nomeada igual, com aparência ligeiramente diferente dependendo de qual tela renderizou. promover os três objetos a classes CSS nomeadas eliminaria esse drift.</div>
+      <div class="ds-callout is-gap"><strong>a divergência real, não a de raio</strong>as 2 cópias nomeadas de <code>estiloBotaoPrimarioPequeno</code> são idênticas — o raio vem de <code>.btn-primary</code> combinada no JSX, nunca do objeto. a divergência real está em 4 arquivos que reproduzem o mesmo objeto <strong>sem nomeá-lo</strong> (<code>AdminBriefings</code>, <code>AdminEntregas</code>, <code>Admin.tsx</code>, <code>Pendencias.tsx</code>) — em 2 deles o padding é <code>"0 20px"</code>, não <code>"0 16px"</code>. promover as três variantes a classes nomeadas eliminaria essa duplicação.</div>
     </section>
 
     <section class="ds-section" id="17-formularios">
@@ -819,7 +850,7 @@ footer.ds-footer {
           <label class="demo-field">nome<input type="text" placeholder="nome da parceira" /></label>
           <label class="demo-field">observações<textarea placeholder="briefing do mês…"></textarea></label>
         </div>
-        <div class="ds-demo-caption">input (40px, raio 8px) e textarea (spread de estiloInput + resize vertical) — o único objeto de estilo que já pratica composição em vez de repetição total</div>
+        <div class="ds-demo-caption">input (40px, raio 8px) e textarea (spread de estiloInput + resize vertical) — mesma forma em 5 arquivos nomeados + 1 cópia sem nome em Financeiro.tsx</div>
       </div>
       <p><strong>validação e erro.</strong> não existe um padrão visual de campo inválido (borda vermelha, ícone inline) em nenhuma tela hoje — o erro é reportado como texto abaixo do formulário inteiro, não por campo. registrado como lacuna em <a href="#29-acessibilidade">§29</a>, não resolvido aqui.</p>
     </section>
@@ -855,10 +886,10 @@ footer.ds-footer {
               <div class="portal-list-row-status">aprovado</div>
             </li>
           </ul>
-          <div class="operational-row is-header"><span>status</span><span>parceira</span><span>competência</span><span>ação</span></div>
+          <div class="operational-row is-header"><span>status</span><span>parceira</span><span>competência</span><span>formato</span><span>ação</span></div>
           <div class="operational-row">
             <span class="pendencia-status-icon" style="background:var(--color-cherry)"></span>
-            <span>gabi souza</span><span>2026-07</span><span><button class="btn-outline-cherry">editar</button></span>
+            <span>gabi souza</span><span>2026-07</span><span>reel</span><span><button class="btn-outline-cherry">editar</button></span>
           </div>
           <div class="financeiro-kpis">
             <div class="financeiro-kpi"><div class="financeiro-kpi-label">previsto</div><div class="financeiro-kpi-value">R$ 4.800</div></div>
@@ -883,11 +914,11 @@ footer.ds-footer {
 
     <section class="ds-section" id="21-accordion">
       <h2>21 · Accordion</h2>
-      <p>o único mecanismo interativo de revelação de conteúdo em toda a base de código — clique para abrir. no Portal, cada item é independente (não exclusivo entre si), diferente do padrão exclusivo da Landing.</p>
+      <p>o único mecanismo interativo de revelação de conteúdo em toda a base de código — clique para abrir. no Portal, mesmo mecanismo exclusivo da Landing: um único estado (`itemAberto`) compartilhado por toda a tela — abrir um item fecha qualquer outro, mesmo em grupos diferentes.</p>
       <div class="ds-demo">
         <div class="ds-demo-stage is-column">
           <div class="pendencia-item ds-js-accordion">
-            <button class="pendencia-trigger" type="button">
+            <button class="pendencia-trigger" type="button" aria-expanded="false">
               <div><span class="pendencia-format">reel · formato vertical</span><span class="pendencia-date">entrega até 20/07</span></div>
               <div class="pendencia-status"><span class="pendencia-status-badge"><span class="pendencia-status-icon">●</span>aguardando</span><span class="pendencia-icon">+</span></div>
             </button>
@@ -902,12 +933,12 @@ footer.ds-footer {
       <h2>22 · Feedback: carregando, erro, sucesso, vazio</h2>
       <div class="ds-demo">
         <div class="ds-demo-stage is-column">
-          <p class="feedback-text is-error">parceira, competência e data de entrega são obrigatórias.</p>
-          <p class="feedback-text is-sucesso">entrega registrada com sucesso.</p>
-          <p class="feedback-text is-vazio">nenhuma entrega criada ainda.</p>
+          <p class="portal-page-feedback is-error">parceira, competência e data de entrega são obrigatórias.</p>
+          <p class="pendencia-feedback is-sucesso">entrega registrada com sucesso.</p>
+          <p class="portal-page-feedback">nenhuma Entrega criada ainda.</p>
         </div>
       </div>
-      <p>erro em cherry, sucesso em noir com peso 700 (deliberadamente <strong>não</strong> cherry — reservado para ação/atenção), vazio em texto minúsculo completo, nunca ilustração ou CTA embutido.</p>
+      <p>erro em cherry (<code>.portal-page-feedback.is-error</code>), sucesso em noir com peso 700 (<code>.pendencia-feedback.is-sucesso</code>, deliberadamente <strong>não</strong> cherry — reservado para ação/atenção). vazio não tem classe/estilo próprio hoje — é texto normal dentro de <code>.portal-page-feedback</code>; a capitalização do nome da entidade varia por tela (maiúscula na maioria das Admin*, minúscula só em AdminParceiras) — inconsistência real, não convenção.</p>
     </section>
 
     <section class="ds-section" id="23-tabelas">
@@ -918,7 +949,7 @@ footer.ds-footer {
 
     <section class="ds-section" id="24-modais">
       <h2>24 · Modais <span class="ds-tag is-unbuilt">proposta</span></h2>
-      <p><strong>não existe modal, dialog ou overlay em nenhum dos dois produtos hoje.</strong> confirmações destrutivas (reprovar cadastro, excluir Obrigação) acontecem inline, sem camada de confirmação.</p>
+      <p><strong>não existe modal/dialog estilizado — mas há um precedente nativo isolado.</strong> <code>Admin.tsx</code> usa <code>window.prompt()</code> para capturar o fundamento jurídico antes de aprovar/negar exclusão LGPD; o fluxo de rejeitar cadastro, no mesmo arquivo, não tem confirmação nenhuma.</p>
       <p>extensão proposta dos tokens já existentes: fundo <code>rgba(27,23,23,0.5)</code>, painel cotton, raio 14px, elevação por contraste de fundo, não sombra pesada. <strong>proposta, não implementação</strong> — não construir sem confirmar o padrão de interação com quem decide produto.</p>
     </section>
 
@@ -945,7 +976,7 @@ footer.ds-footer {
       <h2>26 · Temas de produto</h2>
       <p>a identidade não muda de produto para produto — muda o quanto ela ocupa a tela. esta tabela, escrita antes de o Portal existir em código, previa exatamente o que o código hoje confirma:</p>
       <div class="ds-table-wrap"><table class="ds-table">
-        <tr><th>produto</th><th>presença institucional</th><th>confirmado pelo código?</th></tr>
+        <tr><th scope="col">produto</th><th scope="col">presença institucional</th><th scope="col">confirmado pelo código?</th></tr>
         <tr><td>landing</td><td>alta — grandes áreas de vermelho aceitáveis</td><td>sim, sem alteração</td></tr>
         <tr><td>portal (parceira + backoffice)</td><td>moderada/mínima — vermelho pontua, não domina</td><td><strong>sim</strong> — fundo cotton constante, cherry só em acento</td></tr>
       </table></div>
@@ -955,7 +986,7 @@ footer.ds-footer {
     <section class="ds-section" id="27-templates">
       <h2>27 · Templates</h2>
       <div class="ds-table-wrap"><table class="ds-table">
-        <tr><th>template</th><th>composição</th><th>onde</th></tr>
+        <tr><th scope="col">template</th><th scope="col">composição</th><th scope="col">onde</th></tr>
         <tr><td>shell autenticado</td><td>sidebar fixa + conteúdo, cabeçalho opcional de breadcrumb/ações</td><td><code>PortalLayout.tsx</code> — toda tela pós-login</td></tr>
         <tr><td>login</td><td>grid de 3 linhas, emblema como marca d'água, conteúdo centralizado até 440px</td><td><code>Login.tsx</code> — 3 estados no mesmo template</td></tr>
         <tr><td>lista + formulário administrativo</td><td>filtro no topo, formulário mostrar/esconder (nunca modal), lista, estado vazio</td><td><code>AdminEntregas</code>, <code>AdminBriefings</code>, <code>AdminObrigacoes</code>, <code>AdminParceiras</code></td></tr>
@@ -982,14 +1013,14 @@ footer.ds-footer {
       <h2>29 · Acessibilidade (WCAG)</h2>
       <h3>o que já está certo, por construção</h3>
       <ul>
-        <li><strong>contraste</strong> — os quatro tokens, em qualquer combinação usada de fato, passam AAA para texto normal (<a href="#09-cor">§09</a>).</li>
-        <li><strong>foco visível</strong> — regra genérica por seletor de elemento (<code>button:focus-visible</code> etc.), cobre até botões e inputs sem classe própria.</li>
-        <li><strong>aria pontual, onde importa</strong> — <code>aria-live="polite"</code> no carregamento do login, <code>aria-labelledby</code> ligando header a título, <code>aria-hidden</code> em decorativos.</li>
+        <li><strong>contraste</strong> — os quatro tokens puros passam AAA (<a href="#09-cor">§09</a>); variantes com opacidade não seguem automaticamente — <code>rgba(27,23,23,0.6)</code> sobre cotton (<code>.is-quiet</code>) fica em 4.38:1, abaixo até de AA.</li>
+        <li><strong>foco visível</strong> — regra genérica por seletor de elemento, cobre botões e inputs sem classe própria, mas <strong>não inclui <code>textarea</code></strong> — o campo de observações fica sem foco visível garantido.</li>
+        <li><strong>aria mais ampla do que parece</strong> — além do login, <code>Pendencias.tsx</code> usa <code>aria-live</code> em todo o fluxo de upload, <code>role="alert"</code> no erro, e <code>aria-expanded</code> no próprio accordion real; <code>PortalLayout.tsx</code> nomeia os dois landmarks de navegação.</li>
         <li><strong>texto de estado sempre como frase</strong> — nenhum badge depende só de cor ou só de ícone.</li>
       </ul>
       <h3>o que é lacuna real, não decisão</h3>
       <ul>
-        <li><code>prefers-reduced-motion</code> não existe em nenhum dos dois produtos.</li>
+        <li><code>prefers-reduced-motion</code> não existe em nenhum dos dois produtos (nem neste próprio site — corrigido aqui, ver rodapé do CSS).</li>
         <li>campo de formulário inválido não tem indicação própria (<code>aria-invalid</code>, borda, <code>aria-describedby</code>).</li>
         <li>nenhuma tela foi auditada com leitor de tela real nesta sessão — os pontos acima vêm de leitura de código, trate como primeira passada.</li>
         <li><code>.operational-row</code> não tem cabeçalho de coluna visível.</li>
@@ -999,7 +1030,7 @@ footer.ds-footer {
     <section class="ds-section" id="30-guidelines">
       <h2>30 · Guidelines de uso — do's & don'ts</h2>
       <div class="ds-table-wrap"><table class="ds-table">
-        <tr><th>faça</th><th>não faça</th></tr>
+        <tr><th scope="col">faça</th><th scope="col">não faça</th></tr>
         <tr><td>use cherry para uma única ação/destaque por tela</td><td>espalhe cherry em mais de um elemento sólido na mesma tela</td></tr>
         <tr><td>escreva vazio/erro como frase minúscula completa, com ponto final</td><td>use uma palavra só ou ponto de exclamação</td></tr>
         <tr><td>na 3ª ocorrência de um objeto de estilo repetido, promova a classe CSS nomeada</td><td>copie e cole um objeto <code>estilo*</code> de uma tela Admin para a próxima</td></tr>
@@ -1015,7 +1046,7 @@ footer.ds-footer {
     <section class="ds-section" id="31-engenharia">
       <h2>31 · Engenharia</h2>
       <div class="ds-table-wrap"><table class="ds-table">
-        <tr><th>peça</th><th>Landing</th><th>Portal</th></tr>
+        <tr><th scope="col">peça</th><th scope="col">Landing</th><th scope="col">Portal</th></tr>
         <tr><td>framework</td><td>React 19 + TS, Vite</td><td>React 19 + TS, Vite</td></tr>
         <tr><td>roteamento</td><td>nenhum</td><td>react-router-dom 7</td></tr>
         <tr><td>estilo</td><td>CSS global único</td><td>CSS global + estilo inline pontual</td></tr>
@@ -1053,13 +1084,15 @@ footer.ds-footer {
         <li>marca secundária e emblema noir sem aplicação definida fora do favicon/marca d'água.</li>
         <li>tipografia e espaçamento não são tokens, são literais, em ambos os produtos.</li>
         <li>nenhum tratamento de <code>prefers-reduced-motion</code>.</li>
-        <li>wordmark duplicado — quatro cópias dos mesmos SVGs no repositório.</li>
-        <li>botões e campos administrativos são objetos inline duplicados em 5 arquivos, com divergência real já detectada.</li>
+        <li><s>wordmark duplicado, um deles com fill errado</s> — <strong>resolvido nesta auditoria</strong>: <code>portal-frontend/.../principal.svg</code> tinha fill cherry em vez de noir (bug real de produto, não só duplicação); corrigido. a duplicação física entre <code>app/</code> e <code>portal-frontend/</code> continua.</li>
+        <li>botões administrativos: contagens corrigidas nesta auditoria (4/3/2 arquivos, não 5/4/3); a divergência real é padding (16px vs. 20px) em 4 cópias sem nome, não raio.</li>
         <li><code>.operational-row</code> não tem cabeçalho de coluna visível.</li>
-        <li>nenhuma confirmação antes de ação administrativa destrutiva.</li>
+        <li>confirmação de ação destrutiva: existe um precedente nativo isolado (<code>window.prompt()</code> na exclusão LGPD), mas não no fluxo de rejeitar cadastro, no mesmo arquivo.</li>
         <li>15 ícones sem nenhum uso em código; dois carregam vocabulário de domínio descontinuado.</li>
+        <li><code>.pendencias-summary</code> e <code>.portal-eyebrow</code> são dois "kickers" quase-duplicados, com valores ligeiramente diferentes.</li>
+        <li>regra de voz "sem travessão em nenhum contexto" contradiz o uso real deste documento — decisão aberta, não resolvida aqui.</li>
       </ol>
-      <p style="margin-top:20px">leitura completa, com apêndice de notas técnicas menores: <a href="../DESIGN.md#34-pendências-encontradas">DESIGN.md §34</a>.</p>
+      <p style="margin-top:20px">leitura completa, com apêndice de notas técnicas menores: <a href="../DESIGN.md#34--pendências-encontradas">DESIGN.md §34</a>.</p>
     </section>
 
     <footer class="ds-footer">
@@ -1075,7 +1108,8 @@ footer.ds-footer {
   var sidebar = document.getElementById("ds-sidebar");
   if (toggle) {
     toggle.addEventListener("click", function () {
-      sidebar.classList.toggle("is-open");
+      var isOpen = sidebar.classList.toggle("is-open");
+      toggle.setAttribute("aria-expanded", String(isOpen));
     });
   }
   sidebar.addEventListener("click", function (e) {
@@ -1107,7 +1141,8 @@ footer.ds-footer {
 
   document.querySelectorAll(".ds-js-accordion .pendencia-trigger").forEach(function (btn) {
     btn.addEventListener("click", function () {
-      btn.closest(".pendencia-item").classList.toggle("is-open");
+      var isOpen = btn.closest(".pendencia-item").classList.toggle("is-open");
+      btn.setAttribute("aria-expanded", String(isOpen));
     });
   });
 })();

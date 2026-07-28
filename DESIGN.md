@@ -14,50 +14,50 @@
 ## Sumário
 
 **Parte I — Identidade**
-1. [Manifesto](#01-manifesto)
-2. [História e posicionamento](#02-história-e-posicionamento)
-3. [Personalidade e princípios](#03-personalidade-e-princípios)
-4. [Como pensamos](#04-como-pensamos)
-5. [Como escrevemos, como falamos](#05-como-escrevemos-como-falamos)
-6. [O que nunca fazemos](#06-o-que-nunca-fazemos)
-7. [Branding, produto e engenharia](#07-branding-produto-e-engenharia)
+1. [Manifesto](#01--manifesto)
+2. [História e posicionamento](#02--história-e-posicionamento)
+3. [Personalidade e princípios](#03--personalidade-e-princípios)
+4. [Como pensamos](#04--como-pensamos)
+5. [Como escrevemos, como falamos](#05--como-escrevemos-como-falamos)
+6. [O que nunca fazemos](#06--o-que-nunca-fazemos)
+7. [Branding, produto e engenharia](#07--branding-produto-e-engenharia)
 
 **Parte II — Fundação visual (tokens)**
-8. [Fundamentos da marca](#08-fundamentos-da-marca)
-9. [Cor](#09-cor)
-10. [Tipografia](#10-tipografia)
-11. [Grid e espaçamento](#11-grid-e-espaçamento)
-12. [Raio, borda e elevação](#12-raio-borda-e-elevação)
-13. [Motion](#13-motion)
-14. [Ícones](#14-ícones)
-15. [Ilustração e imagem](#15-ilustração-e-imagem)
+8. [Fundamentos da marca](#08--fundamentos-da-marca)
+9. [Cor](#09--cor)
+10. [Tipografia](#10--tipografia)
+11. [Grid e espaçamento](#11--grid-e-espaçamento)
+12. [Raio, borda e elevação](#12--raio-borda-e-elevação)
+13. [Motion](#13--motion)
+14. [Ícones](#14--ícones)
+15. [Ilustração e imagem](#15--ilustração-e-imagem)
 
 **Parte III — Componentes**
-16. [Botões](#16-botões)
-17. [Formulários](#17-formulários)
-18. [Navegação](#18-navegação)
-19. [Cards e listas](#19-cards-e-listas)
-20. [Badges e estado](#20-badges-e-estado)
-21. [Accordion](#21-accordion)
-22. [Feedback: carregando, erro, sucesso, vazio](#22-feedback-carregando-erro-sucesso-vazio)
-23. [Tabelas — proposta](#23-tabelas--proposta)
-24. [Modais — proposta](#24-modais--proposta)
+16. [Botões](#16--botões)
+17. [Formulários](#17--formulários)
+18. [Navegação](#18--navegação)
+19. [Cards e listas](#19--cards-e-listas)
+20. [Badges e estado](#20--badges-e-estado)
+21. [Accordion](#21--accordion)
+22. [Feedback: carregando, erro, sucesso, vazio](#22--feedback-carregando-erro-sucesso-vazio)
+23. [Tabelas — proposta](#23--tabelas--proposta)
+24. [Modais — proposta](#24--modais--proposta)
 
 **Parte IV — Padrões, templates e sistema responsivo**
-25. [Padrões](#25-padrões)
-26. [Temas de produto](#26-temas-de-produto)
-27. [Templates](#27-templates)
-28. [Sistema responsivo](#28-sistema-responsivo)
+25. [Padrões](#25--padrões)
+26. [Temas de produto](#26--temas-de-produto)
+27. [Templates](#27--templates)
+28. [Sistema responsivo](#28--sistema-responsivo)
 
 **Parte V — Acessibilidade e guidelines**
-29. [Acessibilidade (WCAG)](#29-acessibilidade-wcag)
-30. [Guidelines de uso — do's & don'ts](#30-guidelines-de-uso--dos--donts)
+29. [Acessibilidade (WCAG)](#29--acessibilidade-wcag)
+30. [Guidelines de uso — do's & don'ts](#30--guidelines-de-uso--dos--donts)
 
 **Parte VI — Engenharia e governança**
-31. [Engenharia](#31-engenharia)
-32. [Governança do documento](#32-governança-do-documento)
-33. [Roadmap](#33-roadmap)
-34. [Pendências encontradas](#34-pendências-encontradas)
+31. [Engenharia](#31--engenharia)
+32. [Governança do documento](#32--governança-do-documento)
+33. [Roadmap](#33--roadmap)
+34. [Pendências encontradas](#34--pendências-encontradas)
 
 ---
 
@@ -101,7 +101,7 @@ a dodô é uma marca premium. mas premium, aqui, não é sinônimo de ostentaç�
 
 **critério de qualidade.** toda decisão nova deve passar por: *isto parece um template, ou parece uma decisão que nasceu da dodô?* se a resposta for "template", a decisão volta para a mesa.
 
-**disciplina com o vermelho.** a identidade carrega bastante Cherry Red — isso exige disciplina, não repetição automática. a cor principal não domina a interface por padrão, tem intenção. a landing alterna blocos de fundo claro (Cotton) com blocos vermelhos (Cherry ou Maroon), nunca os dois competindo na mesma dobra; o Portal, produto de uso contínuo, inverte a dose — fundo Cotton do início ao fim, Cherry pontuando ação, título e estado, nunca seção inteira (ver [temas de produto](#26-temas-de-produto), onde essa previsão de 2026-07-26 aparece confirmada pelo código real do Portal).
+**disciplina com o vermelho.** a identidade carrega bastante Cherry Red — isso exige disciplina, não repetição automática. a cor principal não domina a interface por padrão, tem intenção. a landing alterna blocos de fundo claro (Cotton) com blocos vermelhos (Cherry ou Maroon), nunca os dois competindo na mesma dobra; o Portal, produto de uso contínuo, inverte a dose — fundo Cotton do início ao fim, Cherry pontuando ação, título e estado, nunca seção inteira (ver [temas de produto](#26--temas-de-produto), onde essa previsão de 2026-07-26 aparece confirmada pelo código real do Portal).
 
 **processo de decisão.** ordem de prioridade: **clareza** antes de impacto, **consistência** antes de novidade, **o que já existe no código** antes de uma ideia nova.
 
@@ -137,7 +137,7 @@ direto, específico, sem ornamento. soa como alguém que domina o que faz sem pr
 
 **"a gente" vs. "eu".** conteúdo de marca geral: primeira pessoa do plural. conteúdo autoral do fundador: primeira pessoa do singular. nunca misturar sem intenção clara.
 
-**vocabulário de domínio, no Portal, não é opcional.** o Contrato Soberano (`knowledge/Historico/CONTRATO_SOBERANO.md`) define os termos oficiais do produto: `Colaboração Mensal`, `Entrega`, `Envio`, `Obrigação Financeira`, `Parceira`. um segundo vocabulário — `Campanha`, `ParticipacaoNaCampanha` — existe em documentação histórica de um sistema descontinuado ("Sistema B") e não deve aparecer em texto de interface novo. os ícones legados em `design-system/icons/` (`02-campanhas.svg`, `03-marcas.svg`) carregam esse vocabulário antigo — ver [ícones](#14-ícones).
+**vocabulário de domínio, no Portal, não é opcional.** o Contrato Soberano (`knowledge/Historico/CONTRATO_SOBERANO.md`) define os termos oficiais do produto: `Colaboração Mensal`, `Entrega`, `Envio`, `Obrigação Financeira`, `Parceira`. um segundo vocabulário — `Campanha`, `ParticipacaoNaCampanha` — existe em documentação histórica de um sistema descontinuado ("Sistema B") e não deve aparecer em texto de interface novo. os ícones legados em `design-system/icons/` (`02-campanhas.svg`, `03-marcas.svg`) carregam esse vocabulário antigo — ver [ícones](#14--ícones).
 
 ### 06 · O que nunca fazemos
 
@@ -148,7 +148,7 @@ a lição não é sobre cor — é sobre processo: **documentar identidade sem c
 **erros comuns já cometidos, com honestidade:**
 - uma classe CSS chamada `.acumin-bold` aplica peso 800 em texto hoje renderizado em Elms Sans — o nome referencia uma fonte ("Acumin") fora do sistema atual, resquício provável de ferramenta de design anterior.
 - o vídeo e a imagem estática do hero são, por comentário literal do próprio script de setup, um *"placeholder, origem Estúdio Elã"* — conteúdo de marca anterior, ainda no ar na peça mais visível do site.
-- no Portal, os botões e campos de formulário das telas administrativas (`AdminEntregas`, `AdminBriefings`, `AdminObrigacoes`, `AdminParceiras`, `Perfil`) são objetos de estilo inline (`estiloInput`, `estiloBotaoOutlineCherry` etc.) **copiados e colados** em cinco arquivos diferentes, quase idênticos, com pequenas divergências de detalhe entre eles — exatamente o tipo de duplicação que um Design System existe para eliminar. ver [botões](#16-botões) e [formulários](#17-formulários).
+- no Portal, os botões e campos de formulário das telas administrativas (`AdminEntregas`, `AdminBriefings`, `AdminObrigacoes`, `AdminParceiras`, `Perfil`) são objetos de estilo inline (`estiloInput`, `estiloBotaoOutlineCherry` etc.) **copiados e colados** em cinco arquivos diferentes, quase idênticos, com pequenas divergências de detalhe entre eles — exatamente o tipo de duplicação que um Design System existe para eliminar. ver [botões](#16--botões) e [formulários](#17--formulários).
 
 | nunca fazemos | sempre fazemos |
 |---|---|
@@ -156,7 +156,7 @@ a lição não é sobre cor — é sobre processo: **documentar identidade sem c
 
 ### 07 · Branding, produto e engenharia
 
-branding decide o quê e o porquê. produto decide onde. engenharia decide como. o caminho mais curto hoje: os valores de cor nascem como variáveis CSS (`--color-cotton`, `--color-cherry`, `--color-maroon`, `--color-noir`) num único arquivo (`app/src/index.css`) e são **importados literalmente** por `portal-frontend/src/styles/tokens.css` — Design System funcionando na prática, com um mecanismo real de propagação entre dois projetos sem workspace compartilhado (tipografia e espaçamento ainda não seguem o mesmo padrão de variável, ver [pendências](#34-pendências-encontradas)).
+branding decide o quê e o porquê. produto decide onde. engenharia decide como. o caminho mais curto hoje: os valores de cor nascem como variáveis CSS (`--color-cotton`, `--color-cherry`, `--color-maroon`, `--color-noir`) num único arquivo (`app/src/index.css`) e são **importados literalmente** por `portal-frontend/src/styles/tokens.css` — Design System funcionando na prática, com um mecanismo real de propagação entre dois projetos sem workspace compartilhado (tipografia e espaçamento ainda não seguem o mesmo padrão de variável, ver [pendências](#34--pendências-encontradas)).
 
 **quando um documento de marca some do código.** há um precedente relevante: uma ADR antiga (`knowledge/Arquitetura/ADR-019`) nomeou formalmente um "Manual de Design Dodô v1.0", paleta laranja-primária, como fonte única de verdade visual. o código hoje implementa uma paleta completamente diferente (Cherry Red/Cotton/Maroon/Noir Black), e a governança atual (`knowledge/ARCHITECTURAL_DECISIONS.md`, ADR-001/ADR-004) já formaliza a Landing como fonte de verdade e supera a ADR antiga para fins visuais. não é um erro deste livro a corrigir — é um fato a registrar: a documentação de arquitetura pode ficar para trás do produto real, e a régua de qual documento vale é sempre o código em produção.
 
@@ -174,7 +174,7 @@ três ativos de identidade, cada um com uma função — a mesma distinção que
 | **Marca secundária** | `secundario.svg` · `0 0 123.5 133.6` | lockup compacto em grade (D/O/D/Ô), para formatos quadrados | não — arquivo pronto, sem aplicação hoje em nenhum dos dois produtos |
 | **Emblema** | `icon.svg` · `0 0 116.2 127.2` | o símbolo sozinho, um anel com acento circunflexo — o "Ô" isolado | sim. `favicon.svg` da Landing, e como marca d'água de fundo (opacidade 0.05) na tela de login do Portal (`.portal-login-emblem`) — primeira aplicação decorativa do emblema no produto |
 
-**técnica.** as duas variantes de cor do wordmark são dois arquivos SVG distintos com fill fixo, não um único arquivo recolorível via `currentColor` — a mesma geometria duplicada em disco, agora em **quatro** cópias (`app/src/assets/brand/` e `portal-frontend/src/assets/brand/`, cada uma com os quatro arquivos) em vez de duas — ver [pendências](#34-pendências-encontradas).
+**técnica.** as duas variantes de cor do wordmark são dois arquivos SVG distintos com fill fixo, não um único arquivo recolorível via `currentColor`. a mesma geometria está duplicada em disco: wordmark, **4** cópias (2 variantes × `app/src/assets/brand/` + `portal-frontend/src/assets/brand/`); emblema e marca secundária, 2 cópias cada (1 arquivo × os mesmos 2 diretórios). até 2026-07-28, a cópia de `principal.svg` em `portal-frontend/` tinha o `fill` da variante cherry em vez de noir — bug real de produto (sidebar e login do Portal renderizavam wordmark cherry), corrigido nesta auditoria — ver [pendências](#34--pendências-encontradas).
 
 **o que ainda não está definido.** não existe regra escrita de área de proteção mínima, tamanho mínimo de reprodução, ou critério fechado de quando usar mono vs. emblema. os três ativos existem e têm função clara; a régua de aplicação caso a caso ainda depende de critério editorial. não invente uma regra aqui.
 
@@ -202,7 +202,7 @@ o último par confirma, em número, uma regra que o código já pratica por comp
 
 **a disciplina da alternância — Landing.** a landing não mistura vermelho e claro na mesma seção — alterna seções inteiras: claro → vermelho → claro → maroon. cada seção é 100% de uma cor de fundo, nunca degradê ou mistura.
 
-**a disciplina da alternância — Portal.** o Portal inverte a proporção sem trair a regra: fundo Cotton do topo ao rodapé, em toda tela, sem exceção. Cherry aparece só como acento pontual — título de página (`.title-editorial`, `.portal-login-title`), link de navegação e seu sublinhado, botão primário, borda/ícone de um badge de status específico (`aguardando material`), overline em maiúscula pequena (`.portal-eyebrow`). nunca como fundo de bloco ou seção no Portal hoje. essa é exatamente a previsão registrada em [personalidade e princípios](#03-personalidade-e-princípios) desde antes de o Portal existir em código — e o código, agora que existe, a confirma.
+**a disciplina da alternância — Portal.** o Portal inverte a proporção sem trair a regra: fundo Cotton do topo ao rodapé, em toda tela, sem exceção. Cherry aparece só como acento pontual — título de página (`.title-editorial`, `.portal-login-title`), link de navegação e seu sublinhado, botão primário, borda/ícone de um badge de status específico (`aguardando material`), overline em maiúscula pequena (`.portal-eyebrow`). nunca como fundo de bloco ou seção no Portal hoje. essa é exatamente a previsão registrada em [personalidade e princípios](#03--personalidade-e-princípios) desde antes de o Portal existir em código — e o código, agora que existe, a confirma.
 
 > **nota técnica.** `.accordion-item` (Landing) usa `border-bottom: rgba(237, 235, 221, 0.3)` — numericamente `--color-cotton` a 30% de opacidade, mas escrito como literal, não `var()`. o Portal tem o mesmo hábito em vários lugares (`rgba(27, 23, 23, 0.1)` para bordas hairline, `rgba(129, 1, 0, 0.08)` para o fundo do badge padrão) — nenhum é bug visual, mas um ajuste futuro de paleta exigiria busca manual em vez de edição de variável em nenhum dos dois produtos.
 
@@ -239,7 +239,7 @@ só cinco pesos são de fato usados em toda a base de código: 300, 400, 600, 70
 | meta/legenda | 13–14px | — | 400–700 | `.portal-list-row-meta`, `.financeiro-kpi-label` |
 | valor de KPI | 22px | — | 700, `--font-display` | `.financeiro-kpi-value` |
 | nav lateral | 15.3px | — | 600 | `.portal-nav-link` |
-| campo de formulário | 14px | — | 400 | `estiloInput` (inline, não classe — ver [botões](#16-botões)) |
+| campo de formulário | 14px | — | 400 | `estiloInput` (inline, não classe — ver [botões](#16--botões)) |
 | label de formulário | 13px | — | 700 | `estiloLabel` (inline) |
 
 a razão desktop→mobile do título de página gira perto de 0.75, igual à Landing — a mesma proporção herdada sem reabrir a decisão, exatamente como o roadmap anterior deste documento pedia.
@@ -299,11 +299,11 @@ o **Portal** não usa GSAP — não tem dependência de motion library nenhuma (
 | rotação do ícone de accordion | `0.4s var(--ease-editorial)` | `.pendencia-icon`, `.accordion-icon` (Landing) |
 | spinner de carregamento | `portal-spin`, `0.8s linear infinite` | `.portal-login-loader`, `.pendencia-upload-spinner` |
 
-> **gap real de acessibilidade, presente nos dois produtos.** não existe nenhum tratamento de `prefers-reduced-motion`, nem em CSS nem em JS, nem na Landing nem no Portal. todo visitante e toda Parceira recebem as mesmas animações. gap real do código atual, não decisão de marca — qualquer implementação nova de motion deveria fechar essa lacuna, não repeti-la. ver [acessibilidade](#29-acessibilidade-wcag).
+> **gap real de acessibilidade, presente nos dois produtos.** não existe nenhum tratamento de `prefers-reduced-motion`, nem em CSS nem em JS, nem na Landing nem no Portal. todo visitante e toda Parceira recebem as mesmas animações. gap real do código atual, não decisão de marca — qualquer implementação nova de motion deveria fechar essa lacuna, não repeti-la. ver [acessibilidade](#29--acessibilidade-wcag).
 
 ### 14 · Ícones
 
-`design-system/icons/` guarda quinze SVGs numerados, gerados numa sessão anterior, sem uso em nenhum dos dois produtos hoje. auditando o nome de cada um contra o vocabulário de domínio vigente ([Contrato Soberano](#05-como-escrevemos-como-falamos)):
+`design-system/icons/` guarda quinze SVGs numerados, gerados numa sessão anterior, sem uso em nenhum dos dois produtos hoje. auditando o nome de cada um contra o vocabulário de domínio vigente ([Contrato Soberano](#05--como-escrevemos-como-falamos)):
 
 | arquivo | conceito | vocabulário atual? |
 |---|---|---|
@@ -321,39 +321,39 @@ nenhum ícone está de fato importado em código React hoje — nem os que mapei
 
 ### 15 · Ilustração e imagem
 
-não existe, hoje, um sistema de ilustração — nem na Landing, nem no Portal. os únicos ativos de imagem em uso são os três ativos de marca ([§08](#08-fundamentos-da-marca)) e o vídeo/poster do hero da Landing, que é placeholder herdado ([pendências](#34-pendências-encontradas), item 1). o Portal não usa nenhuma imagem além do wordmark e do emblema — nenhuma foto de perfil de Parceira, nenhum thumbnail de material enviado é renderizado hoje, mesmo onde o domínio (upload de material) sugeriria isso. não invente um sistema de ilustração aqui: registre a ausência.
+não existe, hoje, um sistema de ilustração — nem na Landing, nem no Portal. os únicos ativos de imagem em uso são os três ativos de marca ([§08](#08--fundamentos-da-marca)) e o vídeo/poster do hero da Landing, que é placeholder herdado ([pendências](#34--pendências-encontradas), item 1). o Portal não usa nenhuma imagem além do wordmark e do emblema — nenhuma foto de perfil de Parceira, nenhum thumbnail de material enviado é renderizado hoje, mesmo onde o domínio (upload de material) sugeriria isso. não invente um sistema de ilustração aqui: registre a ausência.
 
 ---
 
 ## Parte III — Componentes
 
-> Esta parte documenta o que **existe em código hoje**, não uma biblioteca planejada. Onde o Portal repete um padrão sem tê-lo promovido a classe nomeada, este livro nomeia o padrão mesmo assim — nomear é o primeiro passo de consolidação, extrair para uma classe/componente React é o segundo, ainda pendente (ver [roadmap](#33-roadmap)).
+> Esta parte documenta o que **existe em código hoje**, não uma biblioteca planejada. Onde o Portal repete um padrão sem tê-lo promovido a classe nomeada, este livro nomeia o padrão mesmo assim — nomear é o primeiro passo de consolidação, extrair para uma classe/componente React é o segundo, ainda pendente (ver [roadmap](#33--roadmap)).
 
 ### 16 · Botões
 
-três variantes existem, em uso real, mas só uma tem classe CSS — as outras duas são **objetos de estilo inline duplicados** em cinco arquivos (`AdminEntregas.tsx`, `AdminBriefings.tsx`, `AdminObrigacoes.tsx`, `AdminParceiras.tsx`, `Perfil.tsx`), quase idênticos entre si.
+quatro variantes existem, em uso real, mas só uma tem classe CSS — as outras três são **objetos de estilo inline duplicados**, quase idênticos entre si, entre `AdminEntregas.tsx`, `AdminBriefings.tsx`, `AdminObrigacoes.tsx`, `AdminParceiras.tsx` e `Perfil.tsx` (contagem exata por variante na tabela abaixo — nenhuma delas está nos cinco arquivos ao mesmo tempo).
 
 | variante | onde está definida | altura | raio | uso |
 |---|---|---|---|---|
 | **primário** | classe `.btn-primary` em `index.css` (Landing e Portal) | 48px | 24px | uma ação por tela: login, sair, salvar formulário |
-| **outline neutro** | objeto `estiloBotaoOutlineNeutro`, duplicado 5x | 36px | 24px | ação secundária neutra — "cancelar" |
-| **outline cherry** | objeto `estiloBotaoOutlineCherry`, duplicado 4x (falta em `AdminEntregas.tsx`) | 36px | 24px | ação secundária de ênfase — "editar", "nova obrigação" |
-| **primário pequeno** | objeto `estiloBotaoPrimarioPequeno`, duplicado 3x | 36px | *sem raio definido* — divergência real entre cópias | ação primária dentro de uma linha de lista |
+| **outline neutro** | objeto `estiloBotaoOutlineNeutro`, em 4 arquivos (falta em `Perfil.tsx`) | 36px | 24px | ação secundária neutra — "cancelar" |
+| **outline cherry** | objeto `estiloBotaoOutlineCherry`, em 3 arquivos (falta em `AdminEntregas.tsx` e `Perfil.tsx`) | 36px | 24px | ação secundária de ênfase — "editar", "nova obrigação" |
+| **primário pequeno** | objeto `estiloBotaoPrimarioPequeno`, em 2 arquivos (`AdminObrigacoes.tsx`, `AdminParceiras.tsx`) | 36px | 24px, via `className="btn-primary"` combinada no JSX — nenhum dos dois objetos define `borderRadius` próprio | ação primária dentro de uma linha de lista |
 
 **primário** (`.btn-primary`): fundo cherry, texto cotton, borda cherry 1px; hover inverte para fundo transparente e texto cherry; `:disabled` reduz opacidade para 0.5. É o único botão com estado `:focus-visible` explícito no CSS (outline 2px cherry, offset 3px) — herdado do seletor genérico `button:focus-visible`, então os outros três, sendo `<button>` nativo com estilo inline, **também recebem** esse foco visível, por herança do seletor de elemento, não por decisão própria de cada variante.
 
-> **por que isso é uma pendência, não só uma observação.** `estiloBotaoPrimarioPequeno` tem `border-radius: 24px` em `AdminObrigacoes.tsx` e `AdminParceiras.tsx`, mas nenhum raio definido no terceiro arquivo que o declara — a mesma variante nomeada igual, com aparência ligeiramente diferente dependendo de qual tela renderizou. é o tipo exato de drift que promover os três objetos a classes CSS nomeadas (`.btn-outline-neutral`, `.btn-outline-cherry`, `.btn-primary-sm`) eliminaria. ver [pendências](#34-pendências-encontradas).
+> **a divergência real, não a que a v2.0 original alegava.** `estiloBotaoPrimarioPequeno` **não** tem divergência de raio entre as suas 2 cópias nomeadas — são byte-idênticas. a divergência real está em quatro arquivos que reproduzem o mesmo objeto **sem nomeá-lo** (inline, cru, dentro do `style={{...}}`): `AdminBriefings.tsx`, `AdminEntregas.tsx`, `Admin.tsx` e `Pendencias.tsx` — e em dois deles (`Admin.tsx`, `Pendencias.tsx`) o padding é `"0 20px"`, não `"0 16px"` como nas cópias nomeadas. é o mesmo problema de fundo (objeto de estilo duplicado em vez de classe nomeada), só que a variação real é de padding, não de raio. promover as três variantes a classes CSS nomeadas (`.btn-outline-neutral`, `.btn-outline-cherry`, `.btn-primary-sm`) eliminaria a duplicação e a divergência. ver [pendências](#34--pendências-encontradas).
 
 ### 17 · Formulários
 
-campo e label também são objetos inline, mais consistentes entre si que os botões (mesma forma em todas as 6 ocorrências):
+campo e label também são objetos inline, mais consistentes entre si que os botões (mesma forma nos 5 arquivos que os nomeiam — `AdminEntregas.tsx`, `AdminBriefings.tsx`, `AdminObrigacoes.tsx`, `AdminParceiras.tsx`, `Perfil.tsx` — mais uma 6ª ocorrência sem nome própria em `Financeiro.tsx`, idêntica às outras exceto por não repetir `fontWeight: 400`):
 
 - **input** (`estiloInput`): altura 40px, raio 8px, borda `1px solid rgba(27,23,23,0.2)`, padding horizontal 12px, fonte 14px/400.
 - **label** (`estiloLabel`): coluna flex, gap 6px, fonte 13px/700 — sempre acima do campo, nunca ao lado.
 - **textarea** (`estiloTextarea`, só em `AdminBriefings.tsx`): estende `estiloInput` via spread (`...estiloInput`), sobrescrevendo altura para `auto`/`min-height: 80px` e adicionando `resize: vertical`. é o único dos objetos de estilo que já pratica composição em vez de repetição total — o padrão a copiar quando os outros forem consolidados.
 - **campo de busca/filtro**: mesmo `estiloInput`, sem variante própria — os filtros de lista administrativa (`AdminEntregas`, `AdminParceiras`, `AdminObrigacoes`, `AdminBriefings`) reaproveitam o input padrão.
 
-**validação e erro.** não existe um padrão visual de campo inválido (borda vermelha, ícone de erro inline) em nenhuma tela hoje — o erro de formulário é reportado como texto abaixo do formulário inteiro (ver [feedback](#22-feedback-carregando-erro-sucesso-vazio)), não por campo. registre como lacuna, não proponha aqui uma solução não validada pelo responsável do produto.
+**validação e erro.** não existe um padrão visual de campo inválido (borda vermelha, ícone de erro inline) em nenhuma tela hoje — o erro de formulário é reportado como texto abaixo do formulário inteiro (ver [feedback](#22--feedback-carregando-erro-sucesso-vazio)), não por campo. registre como lacuna, não proponha aqui uma solução não validada pelo responsável do produto.
 
 **foco.** como o input é `<input>` nativo sem classe, ele herda o mesmo `input:focus-visible { outline: 2px solid cherry; outline-offset: 3px }` do seletor genérico — foco visível funciona, por herança, mesmo em campo sem CSS próprio.
 
@@ -372,9 +372,9 @@ campo e label também são objetos inline, mais consistentes entre si que os bot
 três formas de agrupar itens, cada uma com uso específico — não são intercambiáveis:
 
 - **`.portal-list-row`** — linha de lista genérica: título, meta (linha secundária, opacidade 0.8) e ações à direita, tudo em `justify-content: space-between`. raio 12px, borda hairline. é a forma mais usada em telas de Parceira (histórico do Financeiro).
-- **`.operational-row`** — grid de colunas fixas (ver [§11](#11-grid-e-espaçamento)), para listas administrativas de alto volume onde escanear uma coluna específica (status) importa mais que a leitura linha a linha.
+- **`.operational-row`** — grid de colunas fixas (ver [§11](#11--grid-e-espaçamento)), para listas administrativas de alto volume onde escanear uma coluna específica (status) importa mais que a leitura linha a linha.
 - **`.financeiro-kpi`** — card de número único: label pequeno (13px, opacidade 0.8) em cima, valor grande (22px, `--font-display`, 700) embaixo. modificador `.is-destaque` pinta o valor de cherry — usado só no total pendente, nunca em mais de um KPI por tela, mesma disciplina de "um único destaque" que o CTA da Landing pratica.
-- **`.pendencia-item`** — o card mais elaborado: é ao mesmo tempo card e accordion, ver [§21](#21-accordion).
+- **`.pendencia-item`** — o card mais elaborado: é ao mesmo tempo card e accordion, ver [§21](#21--accordion).
 
 nenhuma das quatro formas usa sombra em repouso — elevação (`box-shadow`) só aparece em hover ou em estado de destaque, nunca como base.
 
@@ -395,7 +395,7 @@ o padrão de nome — `is-*` para estado transitório de UI (`is-active`, `is-op
 o único mecanismo interativo de revelação de conteúdo em toda a base de código, reaproveitado sem alteração de mecânica entre Landing e Portal:
 
 - **Landing** (`Servicos.tsx`) — três serviços, `useState(0)` guarda o índice aberto, exclusivo (abrir um fecha o anterior), `max-height` animado a partir de `scrollHeight` via `useRef`+`useEffect`, 0.6s.
-- **Portal** (`Pendencias.tsx`) — cada `.pendencia-item` é um accordion independente (não exclusivo entre si — mais de um pode estar aberto ao mesmo tempo, diferença deliberada do padrão da Landing, já que aqui o conteúdo é briefing de trabalho, não copy institucional). abre/fecha via `.pendencia-details` com animação `pendencia-expand` (fade + translateY, 0.3s), não `max-height`.
+- **Portal** (`Pendencias.tsx`) — mesmo mecanismo de exclusividade da Landing: um único `useState<string | null>` (`itemAberto`) compartilhado por toda a tela, incluindo os dois grupos ("precisa de você"/"com a equipe") — abrir um item fecha qualquer outro que estivesse aberto, na tela inteira. abre/fecha via `.pendencia-details` com animação `pendencia-expand` (fade + translateY, 0.3s), não `max-height`.
 
 ambos compartilham o ícone "+" que gira 180° ao abrir (`.pendencia-icon`, `.accordion-icon`) e o efeito de "peso aumenta e sublinha" no título ao passar o mouse ou abrir.
 
@@ -404,17 +404,17 @@ ambos compartilham o ícone "+" que gira 180° ao abrir (`.pendencia-icon`, `.ac
 - **carregando** — um único padrão de spinner em todo o Portal: círculo 28px (login) ou 14px (upload), borda cherry a 20% de opacidade com o topo em cherry sólido, `portal-spin` 0.8s linear infinito. sem skeleton screen, sem shimmer — só o spinner.
 - **erro** — texto abaixo do elemento relevante, cor cherry, classe `.is-error` (`.portal-page-feedback.is-error`, `.pendencia-feedback`). sempre em minúsculas, sempre frase completa com ponto final — nunca só a palavra "erro".
 - **sucesso** — texto em noir, peso 700 (`.pendencia-feedback.is-sucesso`) — deliberadamente **não** usa cherry para sucesso, reservando a cor de marca para ação e atenção, não para confirmação.
-- **vazio** — um padrão textual único, repetido ao pé da letra em toda lista administrativa: `"nenhum(a) [entidade] [criado(a)/cadastrado(a)] ainda."` quando a lista está genuinamente vazia, e `"nenhum(a) [entidade] encontrado(a) para esse filtro/busca."` quando o vazio é resultado de um filtro. sempre minúsculo, sempre frase completa, nunca ilustração ou call-to-action dentro do estado vazio — o mesmo despojamento que a voz da marca pratica em toda parte ([§05](#05-como-escrevemos-como-falamos)).
+- **vazio** — um padrão textual único, repetido ao pé da letra em toda lista administrativa: `"nenhum(a) [entidade] [criado(a)/cadastrado(a)] ainda."` quando a lista está genuinamente vazia, e `"nenhum(a) [entidade] encontrado(a) para esse filtro/busca."` quando o vazio é resultado de um filtro. sem classe/estilo próprio — é texto normal dentro de `.portal-page-feedback`. sempre frase completa, nunca ilustração ou call-to-action embutido — mas a capitalização do nome da entidade **não** é sempre minúscula como esta seção afirmava antes: `AdminEntregas`, `AdminBriefings` e `AdminObrigacoes` capitalizam ("nenhuma Entrega criada ainda."), só `AdminParceiras` usa minúscula — inconsistência real entre telas, não convenção.
 
 ### 23 · Tabelas — proposta
 
-**não existe `<table>` em nenhuma linha de código hoje**, em nenhum dos dois produtos — nenhuma SPEC nem tela real pede uma. toda listagem administrativa de dados tabulares (Parceiras, Entregas, Obrigações) já resolve o problema com `.operational-row` ([§19](#19-cards-e-listas)): um grid de colunas fixas, sem `<table>`/`<thead>`/`<tbody>` semânticos.
+**não existe `<table>` em nenhuma linha de código hoje**, em nenhum dos dois produtos — nenhuma SPEC nem tela real pede uma. toda listagem administrativa de dados tabulares (Parceiras, Entregas, Obrigações) já resolve o problema com `.operational-row` ([§19](#19--cards-e-listas)): um grid de colunas fixas, sem `<table>`/`<thead>`/`<tbody>` semânticos.
 
 isto é uma lacuna real, não uma escolha documentada — hoje `.operational-row` não tem cabeçalho de coluna (`<th>` ou equivalente visual), o que prejudica leitores de tela e usuários que perderam o contexto do topo da lista. se uma tela nova precisar de dado genuinamente tabular (múltiplas colunas numéricas comparáveis, ordenação, seleção em massa), a extensão natural é: promover `.operational-row` para uma `<table>` semântica com `<caption>`, mantendo os mesmos tokens de largura de coluna, raio e borda já validados — não introduzir uma biblioteca de tabela nova. **não implementar sem validar com o responsável do produto que o caso de uso realmente pede uma tabela**, em vez de mais uma lista.
 
 ### 24 · Modais — proposta
 
-**não existe modal, dialog ou overlay em nenhum dos dois produtos hoje.** confirmações destrutivas (ex.: reprovar cadastro, excluir Obrigação) hoje acontecem inline, sem camada de confirmação — risco de UX real em ações administrativas irreversíveis, não decisão deliberada.
+**não existe modal, dialog ou overlay estilizado em nenhum dos dois produtos hoje — mas existe um precedente nativo isolado.** `Admin.tsx` usa `window.prompt()` (diálogo modal nativo do navegador) para capturar o fundamento jurídico antes de aprovar/negar um pedido de exclusão LGPD — é a única ocorrência de `window.prompt`/`window.confirm`/`<dialog>` em toda a base de código. o outro fluxo destrutivo do mesmo arquivo (rejeitar um cadastro `PENDING`) não tem nenhuma confirmação — inconsistência real dentro do próprio `Admin.tsx`, não só ausência total de padrão.
 
 se um modal for necessário, a extensão natural dos tokens já existentes seria: fundo `rgba(27, 23, 23, 0.5)` sobre o conteúdo (mesma família de opacidade que as bordas hairline já usam para noir), painel em cotton, raio 14px (o mesmo de `.pendencia-item`, o maior raio de bloco já validado), sem sombra pesada — elevação por contraste de fundo, não por `box-shadow` extremo, coerente com a Landing e o Portal nunca terem usado sombra como recurso primário de profundidade. **proposta, não implementação** — não construir sem confirmar o padrão de interação (fecha ao clicar fora? tem foco preso/`focus-trap`? qual tecla fecha?) com quem decide produto.
 
@@ -443,7 +443,7 @@ a identidade não muda de produto para produto — muda o quanto ela ocupa a tel
 | produto | presença institucional | implementado hoje? | confirmado pelo código? |
 |---|---|---|---|
 | landing | alta — grandes áreas de vermelho aceitáveis, peça institucional pontual | sim | sim, sem alteração |
-| portal (parceira + backoffice) | moderada/mínima — vermelho pontua, não domina uma tela recorrente | **sim, desde 2026-07-27** | **sim** — fundo cotton constante, cherry só em título/link/CTA/um badge, nunca seção inteira (ver [§09](#09-cor)) |
+| portal (parceira + backoffice) | moderada/mínima — vermelho pontua, não domina uma tela recorrente | **sim, desde 2026-07-27** | **sim** — fundo cotton constante, cherry só em título/link/CTA/um badge, nunca seção inteira (ver [§09](#09--cor)) |
 | dashboard e admin (equipe) | mínima interferência — a interface de trabalho não compete com o trabalho | sim — parte do mesmo `portal-frontend`, papel `ADMINISTRADOR` | sim — mesmas regras de cor do Portal da Parceira, sem paleta própria |
 
 **por que isso importava antes de existir código, e por que importa agora que existe.** era tentador copiar a landing inteira para o portal quando ele fosse construído. o princípio existia para impedir isso — e o Portal real, hoje, é a prova de que funcionou: nenhuma tela do Portal usa `.section-red`, nenhuma usa vídeo de fundo, nenhuma tem 140px de respiro entre blocos. a identidade é a mesma (mesma cor, mesma fonte, mesmo mecanismo de accordion e de sublinhado); a dose mudou, exatamente como planejado.
@@ -454,7 +454,7 @@ quatro composições de tela se repetem hoje no Portal — vale nomeá-las, mesm
 
 - **shell autenticado** (`PortalLayout.tsx`) — sidebar fixa + `<Outlet />` de conteúdo, com cabeçalho opcional de breadcrumb/ações. toda tela pós-login usa este template.
 - **login** (`Login.tsx`) — grid de três linhas (header/conteúdo/footer), emblema como marca d'água à direita, conteúdo centralizado em coluna única de até 440px. três estados de tela no mesmo template: carregando, formulário de login, e dois avisos (cadastro recebido / acesso indisponível) — todos reaproveitam `.portal-login-content` e `.portal-login-title`.
-- **lista + formulário administrativo** (`AdminEntregas`, `AdminBriefings`, `AdminObrigacoes`, `AdminParceiras`) — filtro/busca no topo (`estiloInput`), formulário de criação (mostrado/escondido, nunca em modal — ver [§24](#24-modais--proposta)), lista abaixo (`.operational-row` ou `.portal-list-row`), estado vazio ao pé da letra ([§22](#22-feedback-carregando-erro-sucesso-vazio)).
+- **lista + formulário administrativo** (`AdminEntregas`, `AdminBriefings`, `AdminObrigacoes`, `AdminParceiras`) — filtro/busca no topo (`estiloInput`), formulário de criação (mostrado/escondido, nunca em modal — ver [§24](#24--modais--proposta)), lista abaixo (`.operational-row` ou `.portal-list-row`), estado vazio ao pé da letra ([§22](#22--feedback-carregando-erro-sucesso-vazio)).
 - **resumo + histórico** (`Financeiro.tsx`, `AdminDashboard.tsx`) — fileira de `.financeiro-kpi` no topo, lista/accordion de detalhe abaixo.
 
 ### 28 · Sistema responsivo
@@ -477,16 +477,16 @@ nenhum dos dois produtos tem, hoje, um breakpoint de tablet específico (só o s
 ### 29 · Acessibilidade (WCAG)
 
 **o que já está certo, por construção:**
-- **contraste** — os quatro tokens de cor, em qualquer combinação usada de fato em produção (texto sobre fundo), passam AAA para texto normal (ver tabela em [§09](#09-cor)). o único par que falharia (cherry sobre maroon) nunca é usado como texto sobre fundo em nenhum dos dois produtos.
-- **foco visível** — `button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid cherry; outline-offset: 3px }` é uma regra genérica por seletor de elemento, não por classe — cobre até os botões e inputs que são estilo inline sem classe própria ([§16](#16-botões), [§17](#17-formulários)).
-- **aria pontual, onde importa** — o login usa `aria-live="polite"` na tela de carregamento, `aria-labelledby` ligando o `<header>` ao `<h1>`, e `aria-hidden="true"` no emblema decorativo e no separador do breadcrumb (`" / "`), para não serem lidos por leitor de tela como conteúdo.
-- **texto de estado sempre como frase, nunca só ícone** — todo badge de status ([§20](#20-badges-e-estado)) tem o texto do estado ao lado do ícone, nunca só a cor ou só o ícone carregando o significado.
+- **contraste** — os quatro tokens de cor puros, em qualquer combinação usada como texto sobre fundo, passam AAA (ver tabela em [§09](#09--cor)). isso **não** se estende automaticamente a variantes com opacidade: `rgba(27,23,23,0.6)` sobre cotton (`.pendencias-summary.is-quiet`) fica em 4.38:1 — **falha até AA** (4.5:1); `rgba(27,23,23,0.7)` sobre cotton (breadcrumb, login) fica em 6.03:1 — passa AA, falha AAA. não auditado exaustivamente; tratar como amostra, não certificação completa.
+- **foco visível** — `button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid cherry; outline-offset: 3px }` é uma regra genérica por seletor de elemento, cobre até botões/inputs sem classe própria ([§16](#16--botões), [§17](#17--formulários)) — mas **não inclui `textarea`**, então o campo de observações (`estiloTextarea`, `AdminBriefings.tsx`) não tem foco visível garantido.
+- **aria mais ampla do que uma primeira leitura sugere** — além do login (`aria-live`, `aria-labelledby`, `aria-hidden`), `Pendencias.tsx` usa `aria-live="polite"` em todo o fluxo de upload (enviando/sucesso/sessão expirada), `role="alert"` na mensagem de erro de upload, e `aria-expanded` no botão-trigger do próprio accordion de pendência — e `PortalLayout.tsx` nomeia os dois landmarks `<nav>` do shell (`aria-label="Trilha de navegação"`, `aria-label="Navegação principal"`).
+- **texto de estado sempre como frase, nunca só ícone** — todo badge de status ([§20](#20--badges-e-estado)) tem o texto do estado ao lado do ícone, nunca só a cor ou só o ícone carregando o significado.
 
 **o que é lacuna real, não decisão:**
-- **`prefers-reduced-motion` não existe em nenhum dos dois produtos** — repetido de [§13](#13-motion) porque é o gap de acessibilidade mais concreto encontrado nesta auditoria. GSAP na Landing e as animações CSS do Portal (accordion, spinner, hover) tocam sempre, para qualquer visitante.
-- **campo de formulário inválido não tem indicação própria** — erro de formulário é reportado como bloco de texto, não como estado do campo (`aria-invalid`, borda, texto associado por `aria-describedby`) — ver [§17](#17-formulários).
+- **`prefers-reduced-motion` não existe em nenhum dos dois produtos** — repetido de [§13](#13--motion) porque é o gap de acessibilidade mais concreto encontrado nesta auditoria. GSAP na Landing e as animações CSS do Portal (accordion, spinner, hover) tocam sempre, para qualquer visitante.
+- **campo de formulário inválido não tem indicação própria** — erro de formulário é reportado como bloco de texto, não como estado do campo (`aria-invalid`, borda, texto associado por `aria-describedby`) — ver [§17](#17--formulários).
 - **nenhuma tela foi auditada com leitor de tela real** nesta sessão — os pontos acima vêm de leitura de código (presença/ausência de atributo), não de teste assistido. trate como primeira passada, não como certificação.
-- **`.operational-row` não tem cabeçalho de coluna** — ver [§23](#23-tabelas--proposta).
+- **`.operational-row` não tem cabeçalho de coluna** — ver [§23](#23--tabelas--proposta).
 
 ### 30 · Guidelines de uso — do's & don'ts
 
@@ -497,7 +497,7 @@ nenhum dos dois produtos tem, hoje, um breakpoint de tablet específico (só o s
 | ao adicionar uma terceira ocorrência de um objeto de estilo inline repetido, promova-o a classe CSS nomeada | copie e cole um objeto `estilo*` de uma tela Admin para a próxima |
 | use `.operational-row` para listas administrativas de alto volume, escaneáveis por coluna | use `.operational-row` para uma lista de 2-3 itens sem necessidade de escaneio por coluna — nesse caso, `.portal-list-row` é suficiente |
 | use o accordion (`.pendencia-item`) quando o item carrega conteúdo denso a mais (briefing) | use accordion para esconder uma única linha de texto que caberia direto na lista |
-| peça confirmação explícita do responsável de produto antes de implementar tabela ou modal | implemente tabela/modal "porque parece que deveria existir" sem esse aval — ver [§23](#23-tabelas--proposta)/[§24](#24-modais--proposta) |
+| peça confirmação explícita do responsável de produto antes de implementar tabela ou modal | implemente tabela/modal "porque parece que deveria existir" sem esse aval — ver [§23](#23--tabelas--proposta)/[§24](#24--modais--proposta) |
 | cheque este documento contra o código antes de confiar em um valor, se o tempo tiver passado | trate qualquer número aqui como definitivo sem checar a data de auditoria no topo do arquivo |
 
 ---
@@ -510,14 +510,14 @@ nenhum dos dois produtos tem, hoje, um breakpoint de tablet específico (só o s
 |---|---|---|
 | framework | React 19 + TypeScript, via Vite | React 19 + TypeScript, via Vite |
 | roteamento | nenhum (página única) | `react-router-dom` 7 |
-| estilo | CSS global único (`index.css`) — nenhum CSS Module, CSS-in-JS ou Tailwind | idêntico: CSS global único + objetos de estilo inline pontuais (ver [§16](#16-botões)) |
+| estilo | CSS global único (`index.css`) — nenhum CSS Module, CSS-in-JS ou Tailwind | idêntico: CSS global único + objetos de estilo inline pontuais (ver [§16](#16--botões)) |
 | motion | GSAP + ScrollTrigger, orquestrado em um hook único | nenhuma lib — só CSS |
 | lint | ESLint (flat config) | Biome + oxlint |
 | backend | nenhum (site estático) | Node.js/TypeScript/Express 5, persistência em memória (decisão deliberada) |
 
 dois projetos independentes, sem workspace compartilhado, cada um com seu próprio `package.json` — a única ponte entre os dois é o arquivo de tokens (`portal-frontend/src/styles/tokens.css`) importando os valores literais do `app/src/index.css`, mantido manualmente, não por build compartilhado.
 
-**pipeline de assets.** `design-system/` na raiz é a origem — fontes e os três SVGs de marca na forma canônica (noir). `scripts/setup-assets.sh` copia, idempotente, fontes e SVGs para dentro de `app/`; o mesmo conjunto de arquivos foi replicado manualmente para dentro de `portal-frontend/src/assets/brand/` quando o Portal nasceu, sem que o script de setup soubesse do Portal — ver [pendências](#34-pendências-encontradas).
+**pipeline de assets.** `design-system/` na raiz é a origem — fontes e os três SVGs de marca na forma canônica (noir). `scripts/setup-assets.sh` copia, idempotente, fontes e SVGs para dentro de `app/`; o mesmo conjunto de arquivos foi replicado manualmente para dentro de `portal-frontend/src/assets/brand/` quando o Portal nasceu, sem que o script de setup soubesse do Portal — ver [pendências](#34--pendências-encontradas).
 
 **o que ainda não está conectado.** sem Tailwind, Storybook, Figma, ou MCP de design para nenhum dos dois front-ends hoje. conectar essas ferramentas faz sentido quando houver mais de um time decidindo sobre componentes ao mesmo tempo — hoje ainda não é o caso.
 
@@ -531,12 +531,12 @@ dois projetos independentes, sem workspace compartilhado, cada um com seu própr
 
 ### 33 · Roadmap
 
-- **próximo** — **consolidar os objetos de estilo inline** (`estiloInput`, `estiloBotaoOutlineCherry` etc.) em classes CSS nomeadas, uma única fonte por variante, eliminando a divergência real já encontrada em `estiloBotaoPrimarioPequeno` ([§16](#16-botões)).
+- **próximo** — **consolidar os objetos de estilo inline** (`estiloInput`, `estiloBotaoOutlineCherry` etc.) em classes CSS nomeadas, uma única fonte por variante, eliminando a divergência real já encontrada em `estiloBotaoPrimarioPequeno` ([§16](#16--botões)).
 - **próximo** — **tokenizar tipografia e espaço**: hoje são literais repetidos por seletor em ambos os produtos; deveriam virar variáveis CSS, seguindo o exemplo que a cor já dá.
 - **próximo** — **fechar o gap de `prefers-reduced-motion`** nos dois produtos antes de qualquer novo trabalho de motion.
-- **médio prazo** — **cabeçalho de coluna em `.operational-row`**, ou promoção para `<table>` semântica onde o caso de uso realmente pedir dado tabular ([§23](#23-tabelas--proposta)).
+- **médio prazo** — **cabeçalho de coluna em `.operational-row`**, ou promoção para `<table>` semântica onde o caso de uso realmente pedir dado tabular ([§23](#23--tabelas--proposta)).
 - **médio prazo** — **indicação de campo inválido em formulário** (hoje só existe erro de bloco inteiro).
-- **médio prazo** — **modal/confirmação para ações administrativas destrutivas** ([§24](#24-modais--proposta)) — validar com o responsável de produto antes de construir.
+- **médio prazo** — **modal/confirmação para ações administrativas destrutivas** ([§24](#24--modais--proposta)) — validar com o responsável de produto antes de construir.
 - **quando necessário** — **extrair biblioteca de componentes React compartilhável**, só quando houver uma terceira superfície de produto além de Landing e Portal, com intenção — não abstrair em cima de dois produtos só porque dois já é mais que um.
 
 ### 34 · Pendências encontradas
@@ -545,12 +545,16 @@ dois projetos independentes, sem workspace compartilhado, cada um com seu própr
 2. **ADR de paleta antiga, sem revogação formal na série antiga de ADRs** — uma ADR do "Sistema B" nomeia laranja/roxo como fonte de verdade visual; o código implementa Cherry Red/Cotton/Maroon/Noir Black. a série de governança vigente (`ARCHITECTURAL_DECISIONS.md`) já resolve isso para fins práticos, mas a ADR antiga em si nunca foi formalmente revogada.
 3. **marca secundária e emblema noir sem aplicação definida** fora do favicon e da marca d'água do login.
 4. **tipografia e espaçamento não são tokens, são literais**, em ambos os produtos — diferente da cor, que é variável CSS e se propaga de verdade entre Landing e Portal.
-5. **nenhum tratamento de `prefers-reduced-motion`**, em nenhum dos dois produtos.
-6. **wordmark duplicado como dois arquivos por variante, não recolorível**, e agora replicado fisicamente em dois diretórios de assets (`app/` e `portal-frontend/`) — quatro cópias de cada SVG de marca no repositório.
-7. **botões e campos de formulário administrativos são objetos de estilo inline, duplicados em 5 arquivos**, com pelo menos uma divergência real já detectada (`estiloBotaoPrimarioPequeno` sem raio definido em `AdminObrigacoes.tsx`/`AdminParceiras.tsx` vs. presente nos outros locais que o replicam).
+5. **nenhum tratamento de `prefers-reduced-motion`**, em nenhum dos dois produtos — `design-system/index.html` (este site) já trata isso na própria folha de estilo, como exemplo do que falta no Portal e na Landing.
+6. ~~wordmark duplicado como dois arquivos por variante~~ — **RESOLVIDO nesta auditoria**: `portal-frontend/src/assets/brand/principal.svg` tinha o `fill` da variante cherry (bug real, não só duplicação); corrigido para o conteúdo noir canônico de `app/src/assets/brand/principal.svg`. a duplicação física em si (4 cópias do wordmark, 2 cada de emblema/marca secundária, entre `app/` e `portal-frontend/`) continua sem solução de token/build compartilhado.
+7. **botões administrativos são objetos de estilo inline duplicados**, com contagem real corrigida nesta auditoria: `estiloBotaoOutlineNeutro` em 4 arquivos (não 5), `estiloBotaoOutlineCherry` em 3 (não 4), `estiloBotaoPrimarioPequeno` em 2 (não 3) — mais 4 arquivos que repetem o mesmo objeto sem nomeá-lo (`AdminBriefings`, `AdminEntregas`, `Admin.tsx`, `Pendencias.tsx`), 2 deles com padding `"0 20px"` em vez de `"0 16px"` — essa é a divergência real, não a de raio que a v2.0 original alegava (ver [§16](#16--botões)).
 8. **`.operational-row` não tem cabeçalho de coluna visível** — a grade de colunas fixas existe, mas nada rotula cada coluna para quem chega à lista sem contexto.
-9. **nenhuma confirmação antes de ação administrativa destrutiva** (reprovar cadastro, ações irreversíveis futuras) — sem modal, sem `confirm()`, sem passo intermediário.
+9. **nenhuma confirmação estilizada antes de ação administrativa destrutiva** — existe um precedente nativo isolado (`window.prompt()` na exclusão LGPD, `Admin.tsx`), mas o fluxo de rejeitar cadastro no mesmo arquivo não tem confirmação nenhuma (ver [§24](#24--modais--proposta)).
 10. **15 ícones em `design-system/icons/` sem nenhum uso em código**, e dois deles (`campanhas`, `marcas`) carregando vocabulário de domínio descontinuado.
+11. **`.pendencias-summary` (usada nas 9 telas de página) e `.portal-eyebrow` são dois padrões de "kicker de seção" quase-duplicados**, com valores ligeiramente diferentes (13.6px/maiúsculo/0.08em vs. 13px/minúsculo/0.07em) — não documentado como componente nem como drift até esta auditoria.
+12. **`.portal-section-divider` não está documentado** — usado em `Admin.tsx`, `AdminDashboard.tsx`, `Financeiro.tsx`, `Perfil.tsx` para separar sub-blocos dentro de uma página.
+13. **regra de voz "sem travessão em nenhum contexto" (§05) e o uso real deste documento se contradizem** — o próprio `DESIGN.md` usa "—" centenas de vezes, quase sempre como inciso, não como discurso direto. **decisão aberta, não resolvida aqui** (ver disciplina de não inventar identidade, [§32](#32--governança-do-documento)): se a regra pretende banir só o travessão de fala direta, o documento está conforme; se pretende banir qualquer "—", o documento está em falta desde a v1.0. quem responde pela marca precisa decidir qual das duas leituras vale.
+14. **`textarea:focus-visible` não existe na regra genérica do Portal real** (`portal-frontend/src/index.css`) — só `button, a, input, select`. o campo de observações (`AdminBriefings.tsx`) fica sem foco visível garantido. (corrigido só neste site de documentação, não no Portal — ver [§29](#29--acessibilidade-wcag)).
 
 **apêndice — notas técnicas menores:**
 
@@ -560,7 +564,8 @@ dois projetos independentes, sem workspace compartilhado, cada um com seu própr
 | borda do accordion usa `rgba(237,235,221,.3)` literal em vez de `var(--color-cotton)` | `.accordion-item` (Landing) |
 | copyright do rodapé da Landing fixo em "2022", sem indicação de placeholder | `Cafe.tsx` |
 | `app/README.md` ainda é o boilerplate padrão do template Vite | `app/README.md` |
-| `design-system/README.md` descreve uma origem (`10-knowledge-base`) que não corresponde à forma como este documento foi de fato produzido nesta e na versão anterior (auditoria direta do código) | `design-system/README.md` |
+| viewBox do emblema diverge por 0.1 entre o canônico (`design-system/icon.svg`, `0 0 116.2 127.2`) e as cópias em uso (`app/`/`portal-frontend/`, `0 0 116.3 127.2`) | `*/assets/brand/icon.svg` |
+| nome do arquivo da marca secundária diverge: `design-system/secundário.svg` (com acento, canônico) vs. `secundario.svg` sem acento nas cópias de `app/`/`portal-frontend/` | `*/assets/brand/secundario*.svg` |
 
 ---
 
