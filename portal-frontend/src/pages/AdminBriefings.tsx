@@ -36,6 +36,7 @@ interface Briefing {
 	dataEntrega: string;
 	dataPostagem: string;
 	orientacao: string;
+	dataAprovacaoInterna: string;
 	entregaId: string | null;
 	estadoEntregaVinculada: EstadoEntrega | null;
 }
@@ -430,7 +431,8 @@ function LinhaBriefing({
 
 			<p className="portal-list-row-meta">
 				entrega {formatarData(briefing.dataEntrega)} · postagem{" "}
-				{formatarData(briefing.dataPostagem)}
+				{formatarData(briefing.dataPostagem)} · aprovação interna{" "}
+				{formatarData(briefing.dataAprovacaoInterna)}
 			</p>
 
 			<div className="portal-list-row-actions">

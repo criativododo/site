@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { criarEntregaAdministrativa } from "../conteudo/conteudo.service.js";
 import { entregaRepositorio } from "../conteudo/entrega.repository.js";
 import { alterarStatusParceira, cadastrarParceira } from "../parceira/parceira.service.js";
+import { calcularDataAprovacaoInterna } from "./briefing.calculadoraAprovacao.js";
 import { briefingRepositorio } from "./briefing.repository.js";
 import {
   criarBriefingParaEntrega,
@@ -127,6 +128,21 @@ describe("editarBriefing (Backoffice)", () => {
     const resultado = await editarBriefing(criado.briefing.id, { orientacao: "" });
     expect(resultado).toEqual({ ok: false, motivo: "ORIENTACAO_OBRIGATORIA" });
   });
+
+  it("recalcula dataAprovacaoInterna (RN-01/INV-03) ao editar dataPostagem, nunca herda o valor anterior", async () => {
+    const entrega = await criarEntregaDeTeste("9");
+    const criado = await criarBriefingParaEntrega({ entregaId: entrega.id, ...conteudoValido });
+    if (!criado.ok) throw new Error("fixture inválida");
+    expect(criado.briefing.dataAprovacaoInterna).toBe(calcularDataAprovacaoInterna(conteudoValido.dataPostagem));
+
+    const novaDataPostagem = "2026-07-11"; // sábado — exercita o ajuste RN-01 (+2)
+    const resultado = await editarBriefing(criado.briefing.id, { dataPostagem: novaDataPostagem });
+
+    expect(resultado.ok).toBe(true);
+    if (!resultado.ok) throw new Error("resultado inesperado");
+    expect(resultado.briefing.dataAprovacaoInterna).toBe(calcularDataAprovacaoInterna(novaDataPostagem));
+    expect(resultado.briefing.dataAprovacaoInterna).not.toBe(criado.briefing.dataAprovacaoInterna);
+  });
 });
 
 describe("removerBriefing (Backoffice)", () => {
@@ -168,6 +184,7 @@ describe("removerBriefing (Backoffice)", () => {
       dataEntrega: "2026-07-10",
       dataPostagem: "2026-07-20",
       orientacao: "Orientação órfã.",
+      dataAprovacaoInterna: calcularDataAprovacaoInterna("2026-07-20"),
       dataCriacao: new Date().toISOString(),
       dataAtualizacao: new Date().toISOString(),
     });
@@ -191,6 +208,7 @@ describe("listarBriefingsAdministrativos (Backoffice)", () => {
       dataEntrega: "2026-07-10",
       dataPostagem: "2026-07-20",
       orientacao: "Orientação órfã 2.",
+      dataAprovacaoInterna: calcularDataAprovacaoInterna("2026-07-20"),
       dataCriacao: new Date().toISOString(),
       dataAtualizacao: new Date().toISOString(),
     });

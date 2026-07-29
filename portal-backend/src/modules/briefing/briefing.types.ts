@@ -15,6 +15,8 @@ export interface BlocoBriefing {
   dataEntrega: string;
   dataPostagem: string;
   orientacao: string;
+  /** DataAprovacaoInterna (SPEC-009 RN-01/INV-03): sempre derivada de `dataPostagem`, nunca informada manualmente. */
+  dataAprovacaoInterna: string;
   /** Auditoria mínima (ISO 8601) — mesmo padrão de entrega.types.ts. */
   dataCriacao: string;
   dataAtualizacao: string;

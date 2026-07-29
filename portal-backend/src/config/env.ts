@@ -1,4 +1,15 @@
-import "dotenv/config";
+import dotenv from "dotenv";
+
+dotenv.config();
+/**
+ * Testes (`vitest`, que define `NODE_ENV=test`) usam `.env.test` — banco de dados isolado do
+ * de desenvolvimento, mesma disciplina de nunca misturar dado de teste com dado real. As
+ * demais variáveis (segredos OIDC, etc.) continuam vindas de `.env` — só sobrepomos o que
+ * `.env.test` declarar explicitamente.
+ */
+if (process.env.NODE_ENV === "test") {
+  dotenv.config({ path: ".env.test", override: true });
+}
 
 function obrigatoria(nome: string): string {
   const valor = process.env[nome];
@@ -21,6 +32,9 @@ export const env = {
     .filter(Boolean),
 
   sessionSecret: obrigatoria("SESSION_SECRET"),
+
+  /** Fase 2 do Plano Mestre (persistência real) — string de conexão do PostgreSQL. */
+  databaseUrl: obrigatoria("DATABASE_URL"),
 
   google: {
     clientId: obrigatoria("GOOGLE_CLIENT_ID"),

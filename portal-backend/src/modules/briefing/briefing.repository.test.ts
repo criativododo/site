@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
+import { calcularDataAprovacaoInterna } from "./briefing.calculadoraAprovacao.js";
 import { BriefingRepositorioEmMemoria } from "./briefing.repository.js";
 import type { BlocoBriefing } from "./briefing.types.js";
 
 function bloco(overrides: Partial<BlocoBriefing> = {}): BlocoBriefing {
+  const dataPostagem = overrides.dataPostagem ?? "2026-07-20";
   return {
     id: "briefing-1",
     parceiraId: "parceira-1",
@@ -10,8 +12,9 @@ function bloco(overrides: Partial<BlocoBriefing> = {}): BlocoBriefing {
     formato: "Reel",
     look: "Look 1",
     dataEntrega: "2026-07-10",
-    dataPostagem: "2026-07-20",
+    dataPostagem,
     orientacao: "Orientação de teste.",
+    dataAprovacaoInterna: calcularDataAprovacaoInterna(dataPostagem),
     dataCriacao: "2026-07-01T00:00:00.000Z",
     dataAtualizacao: "2026-07-01T00:00:00.000Z",
     ...overrides,

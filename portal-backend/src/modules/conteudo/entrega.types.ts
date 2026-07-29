@@ -23,6 +23,8 @@ export interface Entrega {
   /** Auditoria mínima (ISO 8601) — preparação para o CRUD administrativo completo (criação/edição/exclusão). */
   dataCriacao: string;
   dataAtualizacao: string;
+  /** RN-04/RNF-03 (SPEC-012): carimbada ao virar PUBLICADO; a partir daí a Entrega é somente leitura (INV-04). */
+  dataArquivamento: string | null;
 }
 
 /** ItemDePendencia (SPEC-027 §6.1): projeção de leitura da Entrega para o Portal. */

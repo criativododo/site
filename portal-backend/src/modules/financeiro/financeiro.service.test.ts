@@ -96,6 +96,7 @@ describe("calcularElegibilidadeMensal (ADR-009/SPEC-020 §9)", () => {
       materialEnviado: null,
       dataCriacao: "2026-07-01T00:00:00.000Z",
       dataAtualizacao: "2026-07-01T00:00:00.000Z",
+      dataArquivamento: null,
     });
     expect(calcularElegibilidadeMensal([entrega("APROVADO")])).toBe(true);
     expect(calcularElegibilidadeMensal([entrega("PUBLICADO")])).toBe(true);
@@ -111,6 +112,7 @@ describe("calcularElegibilidadeMensal (ADR-009/SPEC-020 §9)", () => {
       materialEnviado: null,
       dataCriacao: "2026-07-01T00:00:00.000Z",
       dataAtualizacao: "2026-07-01T00:00:00.000Z",
+      dataArquivamento: null,
     };
     expect(
       calcularElegibilidadeMensal([

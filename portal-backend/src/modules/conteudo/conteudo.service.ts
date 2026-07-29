@@ -171,6 +171,7 @@ export async function criarEntregaAdministrativa(dados: DadosNovaEntrega): Promi
     materialEnviado: null,
     dataCriacao: agora,
     dataAtualizacao: agora,
+    dataArquivamento: null,
   };
 
   return { ok: true, entrega: await entregaRepositorio.criar(entrega) };
@@ -195,5 +196,32 @@ export async function aprovarEntrega(id: string): Promise<ResultadoAprovacao> {
   }
 
   const atualizada = await entregaRepositorio.atualizar({ ...entrega, estado: "APROVADO" });
+  return { ok: true, entrega: atualizada };
+}
+
+export type MotivoRejeicaoPublicacao = "NAO_ENCONTRADA" | "TRANSICAO_INVALIDA";
+export type ResultadoPublicacao = { ok: true; entrega: Entrega } | { ok: false; motivo: MotivoRejeicaoPublicacao };
+
+/**
+ * UC-012.03 (parte 2: publicação) — Backoffice. RN-04/RNF-03 (SPEC-012): só transiciona
+ * `Aprovado → Publicado`; qualquer outro estado de origem é transição inválida. `Publicado` é
+ * terminal e arquiva automaticamente (RN-04), carimbando `dataArquivamento` — a partir daí a
+ * Entrega é somente leitura (INV-04); nenhuma outra função deste módulo aceita mutar uma
+ * Entrega fora de `AGUARDANDO_MATERIAL`/`EM_REVISAO`, então essa garantia já é automática.
+ */
+export async function publicarEntrega(id: string): Promise<ResultadoPublicacao> {
+  const entrega = await entregaRepositorio.buscarPorId(id);
+  if (!entrega) {
+    return { ok: false, motivo: "NAO_ENCONTRADA" };
+  }
+  if (entrega.estado !== "APROVADO") {
+    return { ok: false, motivo: "TRANSICAO_INVALIDA" };
+  }
+
+  const atualizada = await entregaRepositorio.atualizar({
+    ...entrega,
+    estado: "PUBLICADO",
+    dataArquivamento: new Date().toISOString(),
+  });
   return { ok: true, entrega: atualizada };
 }

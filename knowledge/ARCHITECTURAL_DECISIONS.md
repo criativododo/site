@@ -526,6 +526,182 @@ independente do domínio de Perfil/Identidade (que continuam só conhecendo a po
 
 ---
 
+## ADR-014 — Dia útil de `dataAprovacaoInterna` segue calendário operacional próprio, não classificação jurídica
+
+- **Status:** Aceito.
+- **Data:** 2026-07-29.
+- **Autor da decisão:** responsável do projeto.
+- **Relaciona-se com:** SPEC-009 §10 RN-01 (v1.1), `PORTAL_BRIEFING.md` (tabela de RNs),
+  `PORTAL_GLOSSARIO.md` (verbete "Briefing").
+
+### Contexto
+RN-01 original (SPEC-009 v1.0, PRD §7 RN-04) considerava só sábado/domingo como dia não
+útil no cálculo de `dataAprovacaoInterna` — regra herdada do sistema legado
+(`Código.js:317-345`, `calcularDataAprovacao()`), que nunca considerou feriados.
+
+Decisão de negócio do responsável do projeto (2026-07-29): dia não útil passa a ser
+**qualquer dia em que a operação da Criativo Dodô esteja paralisada**, explicitamente:
+sábados, domingos, feriados nacionais, feriados estaduais aplicáveis à operação, feriados
+municipais da cidade-base da operação, e pontos facultativos adotados oficialmente pela
+empresa. O critério é **exclusivamente operacional — nunca a classificação jurídica**
+(feriado × ponto facultativo): por isso Carnaval e Corpus Christi contam sempre como não
+úteis, enquanto outros pontos facultativos só contam quando fizerem parte do calendário
+operacional oficial da empresa.
+
+Essa combinação de fontes (nacional + estadual + municipal + institucional) não é uma
+classificação legal única e não existe como uma única API pública gratuita e confiável —
+diferente do caso de CEP (ADR-013), onde múltiplas APIs públicas cobrem o mesmo dado.
+
+### Decisão
+1. **Abstração:** `ProvedorDeCalendarioOperacional` (interface análoga ao `CepProvider` do
+   ADR-013): `ehDiaUtil(data: Date): boolean` — **síncrona**, já que nenhuma das quatro
+   fontes (ponto 2) faz I/O. Nenhuma regra de domínio (`calcularDataAprovacaoInterna`)
+   conhece a origem de cada fonte — só consome a resposta binária "é dia útil?".
+2. **Composição interna (Strategy, não Chain — todas as fontes são consultadas e unidas,
+   não há "parar no primeiro que responder"):**
+   - **Nacional (fixo + móvel):** calculado localmente, sem dependência externa — datas
+     fixas (1/1, 21/4, 1/5, 7/9, 12/10, 2/11, 15/11, 20/11, 25/12) e datas móveis derivadas
+     do algoritmo da Páscoa (Sexta-feira Santa, Carnaval segunda+terça, Corpus Christi).
+     Determinístico, testável, sem chamada de rede — e, principalmente, **não depende da
+     classificação de nenhuma API de terceiro** (coerente com "critério operacional, não
+     jurídico": Carnaval e Corpus Christi entram nesta lista incondicionalmente, nunca
+     como pergunta a uma fonte externa).
+   - **Estadual aplicável à operação:** lista configurável por estado. Cidade-base definida
+     pelo responsável do projeto em 2026-07-29: **Nova Friburgo/RJ** — configuração padrão
+     inclui hoje só o feriado de 23/04 (Dia de São Jorge, feriado estadual do Rio de
+     Janeiro); demais datas estaduais ficam para revisão futura se necessário.
+   - **Municipal da cidade-base:** lista configurável por cidade — **a data de
+     aniversário/emancipação de Nova Friburgo não foi confirmada** e a lista nasce vazia
+     (ver Pendência abaixo); não bloqueia as demais camadas.
+   - **Pontos facultativos institucionais:** lista própria, mantida manualmente pela
+     Criativo Dodô (não vem de nenhuma fonte pública) — vazia por padrão até ser
+     populada.
+3. **Sem novo fornecedor externo:** ao contrário do rascunho inicial desta decisão (que
+   cogitava reaproveitar BrasilAPI, já em uso para CEP — ADR-013), a versão final não
+   depende de nenhuma API de terceiro: o critério é operacional/institucional, não uma
+   classificação pública, e as quatro fontes acima cobrem o requisito sem chamada de rede.
+4. **Extensão futura:** adicionar uma quinta fonte (ex.: calendário de outra unidade/cidade,
+   se a operação se expandir) é estender a composição interna do provider — a interface
+   consumida pelo domínio não muda.
+
+### Ruptura deliberada com a heurística do sistema legado (confirmada pelo responsável do projeto, 2026-07-29)
+A regra antiga (PRD §7 RN-04) tratava especificamente "cair numa sexta-feira" como gatilho
+de ajuste (+3 dias, para segunda), mesmo sexta sendo dia útil comum — uma heurística
+implícita (provável intenção: "garantir folga antes do fim de semana"), nunca formalizada
+como regra de negócio própria nem como conceito de dia não útil.
+
+**Decisão oficial do projeto:** essa heurística não é preservada. O Calendário Operacional
+(`ProvedorDeCalendarioOperacional`) passa a ser a **única fonte da verdade** para dia útil,
+em qualquer cálculo do Portal. Consequência direta:
+
+- Sexta-feira comum é dia útil — nunca dispara ajuste por si só.
+- Não existe ajuste automático "por ser sexta-feira" ou qualquer outro dia da semana
+  específico fora de sábado/domingo.
+- Somente dias marcados como não operacionais no Calendário Operacional (fim de semana,
+  feriado nacional/estadual/municipal aplicável, ponto facultativo institucional adotado)
+  são ignorados no cálculo.
+- **Princípio permanente para todo o projeto:** qualquer exceção futura ao cálculo de dia
+  útil deve ser registrada como regra de negócio explícita (SPEC + ADR, se arquitetural) —
+  nunca reintroduzida como heurística implícita embutida em código.
+
+### Pendências (declaradas, não presumidas — ADR-003)
+- **Escopo inicial de implementação (decisão do responsável, 2026-07-29):** apenas feriados
+  nacionais + feriados estaduais do RJ + mecanismo configurável de Calendário Operacional.
+  Feriados municipais de Nova Friburgo ficam para quando o calendário operacional oficial da
+  empresa for levantado — lista nasce vazia, não bloqueia as demais camadas (SPEC-009 §21,
+  item D-02).
+- **Lista de pontos facultativos institucionais** (SPEC-009 §21, item D-03) começa vazia;
+  cadastro é responsabilidade operacional do Administrador, não uma lista pré-populada por
+  este ADR.
+
+### Consequências
+- `calcularDataAprovacaoInterna` deixa de ser uma função pura sem dependências — passa a
+  receber um `ProvedorDeCalendarioOperacional` por injeção (parâmetro com valor padrão
+  apontando para o calendário operacional real), testável com um provider fake em memória,
+  sem qualquer chamada de rede em teste. Permanece **síncrona** (ver ponto 1) — nenhum
+  ponto de chamada precisou virar `async`.
+- Sem novo custo, sem novo vendor, sem vendor lock-in — consistente com os critérios de
+  simplicidade e baixo custo já aplicados no restante do projeto.
+- Implementado em `portal-backend/src/shared/calendarioOperacional/` (mesmo padrão de
+  `shared/cep/`): `pascoa.ts` (algoritmo de Gauss/Meeus, validado contra datas de Páscoa
+  conhecidas 2020-2027), `feriadosNacionais.ts`, `configuracaoPadrao.ts` (Nova Friburgo/RJ),
+  `provider.ts` (composição das 4 camadas) — 19 testes próprios, mais 9 testes atualizados
+  em `briefing.calculadoraAprovacao.test.ts` cobrindo os casos de borda de SPEC-009 §16
+  (CB-01 a CB-06).
+
+---
+
+## ADR-015 — Persistência real: PostgreSQL substitui os repositórios em memória (Fase 2 do Plano Mestre)
+
+- **Status:** Aceito.
+- **Data:** 2026-07-29.
+- **Autor da decisão:** responsável do projeto (Fase 2 aprovada em `criativododo-interno/PLANO_MESTRE_IMPLEMENTACAO_PORTAL_DODO.md`).
+- **Relaciona-se com:** `docs/handoff/PROJECT_STATUS.md` (dívida #3 — persistência em
+  memória, P0 antes de go-live), todos os módulos de domínio do backend.
+
+### Contexto
+`portal-backend/` operava com persistência 100% em memória (`*RepositorioEmMemoria`, array
+ou `Map` por módulo) — decisão deliberada até aqui (não uma lacuna), mas bloqueante para
+qualquer ambiente real: reiniciar o processo apagava todo dado. PostgreSQL já era
+infraestrutura confirmada do projeto (VPS Ubuntu), só não usada em código ainda.
+
+### Decisão
+1. **Sem ORM.** Acesso via `pg` (node-postgres) direto, SQL parametrizado manual — mesma
+   disciplina de simplicidade já aplicada em `shared/cep/` e `shared/calendarioOperacional/`
+   (nenhuma dependência pesada onde uma pequena resolve).
+2. **Schema espelha fielmente os `*.types.ts` existentes** (`migrations/0001_init.sql`) —
+   nenhum campo novo, nenhuma regra de negócio nova. Colunas em snake_case; os repositórios
+   fazem o mapeamento para o camelCase dos tipos via alias na própria consulta SQL
+   (`SELECT parceira_id AS "parceiraId", ...`). Objetos aninhados (`condicaoComercial`,
+   `endereco`) viram colunas `jsonb` — são sempre lidos/escritos como unidade, nunca
+   consultados por subcampo no código atual.
+3. **Migração sem ferramenta externa:** `scripts/migrate.ts`, runner mínimo que aplica, em
+   ordem, os `.sql` de `migrations/` ainda não registrados numa tabela de controle
+   (`schema_migrations`) — pequeno o bastante para não justificar uma dependência dedicada.
+4. **Repositórios em memória preservados, não removidos.** Cada módulo mantém sua classe
+   `*RepositorioEmMemoria` (agora não-exportada, uso interno do arquivo) — a suíte de
+   testes unitários (`*.service.test.ts`, `*.repository.test.ts`) que já instanciava essas
+   classes diretamente com fixtures isoladas continua funcionando sem alteração. Só o
+   **singleton exportado** de cada módulo passou a apontar para a nova
+   `*RepositorioPostgres`, então todo o resto do sistema (rotas, `app` do Express, testes de
+   contrato HTTP da Fase 1) passa a rodar contra Postgres real sem precisar saber disso.
+5. **Sem constraint nova de regra de negócio.** Deliberadamente não foram adicionadas
+   constraints de unicidade (ex.: Briefing por chave natural, Obrigação Mensal única por
+   competência) além das chaves primárias já implícitas nos ids — essas regras já são
+   verificadas pelo `*.service.ts` antes de qualquer escrita; adicionar constraint
+   duplicada no banco arriscaria um novo modo de falha (erro de constraint do Postgres em
+   vez da resposta de negócio já testada) fora do escopo desta fase.
+6. **Seed de desenvolvimento** (`scripts/seed.ts`) — mesma trava de `env.parceiraSeed`
+   (inerte em produção), agora com `INSERT ... ON CONFLICT DO NOTHING` para ser
+   idempotente entre execuções.
+7. **Banco de teste isolado do de desenvolvimento:** `.env.test` (`DATABASE_URL` própria,
+   nunca commitado) sobrepõe `.env` quando `NODE_ENV=test` (Vitest já define isso
+   automaticamente). `globalSetup` do Vitest (`scripts/testGlobalSetup.ts`) faz `TRUNCATE`
+   de todas as tabelas de domínio uma única vez antes de toda a suíte.
+8. **Suíte roda com arquivos sequenciais (`fileParallelism: false`).** Muitos
+   `*.service.test.ts` já existentes usam o singleton do repositório diretamente (não uma
+   instância isolada) — antes seguro, porque cada arquivo de teste reimportava um `Map` em
+   memória vazio; com Postgres real (recurso verdadeiramente compartilhado), paralelismo
+   entre arquivos arriscaria corrida. Sequencial elimina o risco sem exigir reescrever a
+   suíte existente.
+
+### Consequências
+- Reiniciar o processo do backend não apaga mais dado — validado por smoke test manual
+  (criar Parceira via API → matar processo → subir de novo → Parceira ainda presente).
+- Nenhuma regra de negócio dos `*.service.ts` foi alterada — só a implementação dos
+  `*.repository.ts`.
+- Suíte completa (36 arquivos, 222 testes) validada 3× consecutivas contra Postgres real,
+  sem nenhuma asserção alterada.
+- `numeric` do Postgres retorna como `string` no `node-postgres` (evita perda de precisão) —
+  `ObrigacaoRepositorioPostgres` converte para `number` na leitura, mantendo o tipo já
+  declarado em `ObrigacaoFinanceira.valor`.
+- Dependências novas: `pg`, `@types/pg` (dev). Nenhuma outra.
+- Ambiente local de desenvolvimento usa PostgreSQL 16 via Homebrew (`brew services start
+  postgresql@16`); produção usa a instância já confirmada na VPS Ubuntu — nenhuma mudança de
+  infraestrutura de produção decidida por este ADR além de apontar `DATABASE_URL` para ela.
+
+---
+
 ## Como usar este documento
 
 Toda decisão arquitetural nova e permanente deste projeto (que não seja um detalhe de

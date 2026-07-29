@@ -1,6 +1,7 @@
 # SPEC-009 · Briefing da Colaboração
 
 **Status:** Refinada — pronta para Gate Arquitetural
+**Versão:** 1.2 (2026-07-29 — RN-01 usa calendário operacional como única fonte da verdade; heurística legada de sexta-feira abandonada, ver §22 Histórico)
 **Módulo:** M3 · Briefing
 **Fase:** 4 · Especificação de Módulos
 **Depende de:** SPEC-005 · Colaboração Mensal
@@ -38,7 +39,7 @@ Não define tecnologia, persistência física, API HTTP ou UI.
 | Documento | Seções | Uso |
 |---|---|---|
 | `PRD.md` | §5.3, §6.3, §7 (RN-04, RN-06), §9 (RF-008, RF-009, RF-010) | Requisitos |
-| `ADR-001` | §2 (regra de cálculo da data de aprovação) | RN-04 |
+| `knowledge/ARCHITECTURAL_DECISIONS.md` | ADR-014 | Calendário operacional (dia útil) de RN-01, v1.1 |
 | `CONTRATO_SOBERANO.md` | §4, §6.3, §8 | Linguagem, agregado, evento `BriefingPublicado` |
 | `ADR — Linguagem Ubíqua` | §4 | `Briefing da Colaboração`, `Entrega` |
 
@@ -131,7 +132,7 @@ Rascunho ──(preenchido e publicado)──▶ Publicado
 
 | ID | Regra | Origem |
 |---|---|---|
-| RN-01 | A data de aprovação interna é 7 dias antes da postagem; se cair em sexta → +3 (segunda), sábado → +2, domingo → +1 | PRD §7 RN-04; ADR-001 §2 |
+| RN-01 | A data de aprovação interna é 7 dias antes da postagem; se a data resultante cair em dia não útil do **calendário operacional** — sábado, domingo, feriado nacional, feriado estadual aplicável à operação, feriado municipal da cidade-base da operação, ou ponto facultativo adotado oficialmente pela Criativo Dodô —, avança dia a dia até o primeiro dia útil seguinte. Critério **exclusivamente operacional, nunca jurídico**: Carnaval e Corpus Christi contam sempre como não úteis; demais pontos facultativos só contam quando fizerem parte do calendário operacional oficial da empresa | PRD §7 RN-04 (regra-base: 7 dias + fim de semana); calendário operacional — decisão do responsável do projeto, 2026-07-29, sem fonte no legado/PRD; ADR-014 |
 | RN-02 | Há um bloco de briefing por formato contratado (Reel, Carrossel, Stories 1, Stories 2) | PRD §7 RN-06 |
 | RN-03 | O briefing é recriado a cada compilação da competência | PRD §5.2 |
 | RN-04 | A data de aprovação é espelhada com a Entrega correspondente (SPEC-012) | PRD §6.3 |
@@ -195,6 +196,9 @@ Nome conforme catálogo (Contrato §8).
 | CB-01 | Data de postagem em fim de semana | Aprovação ajustada por RN-01 |
 | CB-02 | Nova compilação com briefing anterior preenchido | Rascunho anterior limpo antes de novo preenchimento |
 | CB-03 | Parceira sem formato contratado | Nenhum bloco criado |
+| CB-04 | Data resultante cai em sequência de dias não úteis (ex.: feriado numa segunda logo após um fim de semana, ou ponto facultativo institucional emendado a um feriado) | Aprovação avança até o primeiro dia útil real, independentemente de quantos dias não úteis consecutivos existirem |
+| CB-05 | Data resultante cai em Carnaval ou Corpus Christi | Sempre tratado como não útil — critério operacional, não a classificação jurídica de "ponto facultativo" |
+| CB-06 | Data resultante cai em ponto facultativo que não faz parte do calendário operacional oficial da Criativo Dodô | Nenhum ajuste — o dia é considerado útil |
 
 ---
 
@@ -210,7 +214,7 @@ Nome conforme catálogo (Contrato §8).
 ## 18. Rastreabilidade
 | Item | Origem |
 |---|---|
-| RN-01 (aprovação) | PRD §7 RN-04; ADR-001 §2 |
+| RN-01 (aprovação) | PRD §7 RN-04 (regra-base); ADR-014 (calendário operacional, v1.1) |
 | RN-02 (blocos) | PRD §7 RN-06 |
 | Evento | Contrato §8 |
 
@@ -229,7 +233,13 @@ Nome conforme catálogo (Contrato §8).
 | Cenário | Esperado |
 |---|---|
 | Postagem em dia útil | Aprovação = postagem − 7 |
-| Postagem que cai em sexta/sábado/domingo | Ajuste +3/+2/+1 |
+| Postagem cujo cálculo cai em sexta-feira comum, sem feriado | **Nenhum ajuste** — sexta é dia útil; heurística legada do sistema anterior (sexta como gatilho) foi deliberadamente descartada (ADR-014) |
+| Postagem que cai em sábado/domingo | Ajuste até o próximo dia útil |
+| Postagem cujo cálculo cai em feriado nacional isolado | Ajuste +1 dia útil |
+| Postagem cujo cálculo cai em feriado estadual/municipal aplicável à operação | Ajuste avança até o próximo dia útil real |
+| Postagem cujo cálculo cai em Carnaval ou Corpus Christi | Sempre ajustado, mesmo sendo ponto facultativo |
+| Postagem cujo cálculo cai em ponto facultativo institucional **não** adotado pela empresa | Nenhum ajuste — dia considerado útil |
+| Postagem cujo cálculo cai em sequência de dias não úteis (feriado emendado a fim de semana) | Ajuste avança até o primeiro dia útil real |
 | Recompilar competência | Briefing anterior limpo |
 
 ---
@@ -238,6 +248,8 @@ Nome conforme catálogo (Contrato §8).
 | ID | Item | Origem |
 |---|---|---|
 | D-01 | Persistência física do briefing (sem carimbo de mês em `BRIEFING`) | Contrato §7.2; ADR futuro |
+| D-02 | Estado (RJ) e cidade-base (Nova Friburgo) já declarados e implementados; **feriado municipal de Nova Friburgo** ainda não — fica para quando o calendário operacional oficial da empresa for levantado (decisão do responsável, 2026-07-29). Não bloqueia nacional/estadual, já ativos | ADR-014 |
+| D-03 | Lista de pontos facultativos institucionais adotados oficialmente pela Criativo Dodô — calendário próprio, mantido manualmente, ainda não populado | ADR-014 |
 
 ---
 
@@ -245,3 +257,5 @@ Nome conforme catálogo (Contrato §8).
 | Versão | Data | Alteração |
 |---|---|---|
 | 1.0 | 2026-07-14 | Especificação inicial do Briefing (padrão SPEC-005). |
+| 1.1 | 2026-07-29 | RN-01 estendida: dia útil passa a seguir um **calendário operacional** (feriados nacionais, estaduais/municipais aplicáveis, pontos facultativos institucionais), critério exclusivamente operacional — nunca jurídico. Decisão de negócio do responsável do projeto, sem fonte no PRD/legado. Ver ADR-014. |
+| 1.2 | 2026-07-29 | Confirmado e oficializado: a heurística legada de tratar sexta-feira como gatilho de ajuste **não é preservada** — sexta comum é dia útil, sem ajuste automático. Escopo inicial de implementação declarado: feriados nacionais + estaduais do RJ + mecanismo configurável; municipal de Nova Friburgo fica para levantamento oficial futuro. Ver ADR-014. |

@@ -196,7 +196,7 @@ nativo; dashboards de gestão.
 | RN-01 | Toda influenciadora nasce `STATUS = OFF`; ativação é decisão manual da equipe | PRD |
 | RN-02 | Endereço resolvido automaticamente por CEP; CEP automático nunca sobrescreve dado manual | PRD |
 | RN-03 | Só influenciadoras `ON`/`Ativa` entram em novo ciclo mensal ou geração de contrato | PRD |
-| RN-04 | Data de aprovação interna = data de postagem − 7 dias, ajustada em fim de semana/sexta; sempre derivada | PRD |
+| RN-04 | Data de aprovação interna = data de postagem − 7 dias, avançada até o próximo dia útil do **Calendário Operacional** (única fonte da verdade — fim de semana, feriado nacional/estadual/municipal aplicável, ou ponto facultativo institucional adotado pela empresa); critério operacional, não jurídico; heurística legada de sexta-feira como gatilho **abandonada deliberadamente**; sempre derivada | PRD (regra-base, superada quanto à sexta-feira) + SPEC-009 v1.2 (ADR-014) |
 | RN-05 | Texto "mês+ano" interpretado; sem ano, assume o ano corrente | PRD |
 | RN-06 | Uma pendência por unidade contratada de cada formato | PRD |
 | RN-07 | Ciclo de vida da Entrega: 4 estados (`AguardandoMaterial→EmRevisao→Aprovado→Publicado`) | SPEC-012 |

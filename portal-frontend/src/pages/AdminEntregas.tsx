@@ -21,6 +21,7 @@ interface Entrega {
 	materialEnviado: string | null;
 	dataCriacao: string;
 	dataAtualizacao: string;
+	dataArquivamento: string | null;
 }
 
 interface Parceira {
@@ -239,11 +240,13 @@ function LinhaEntrega({
 	nomeParceira,
 	emAcao,
 	aoAprovar,
+	aoPublicar,
 }: {
 	entrega: Entrega;
 	nomeParceira: string;
 	emAcao: boolean;
 	aoAprovar: () => void;
+	aoPublicar: () => void;
 }) {
 	return (
 		<li className="portal-list-row operational-row">
@@ -285,6 +288,20 @@ function LinhaEntrega({
 						style={{ height: 36, padding: "0 16px", fontSize: 13 }}
 					>
 						{emAcao ? "..." : "aprovar"}
+					</button>
+				</div>
+			)}
+
+			{entrega.estado === "APROVADO" && (
+				<div className="portal-list-row-actions">
+					<button
+						type="button"
+						className="btn-primary"
+						disabled={emAcao}
+						onClick={aoPublicar}
+						style={{ height: 36, padding: "0 16px", fontSize: 13 }}
+					>
+						{emAcao ? "..." : "publicar"}
 					</button>
 				</div>
 			)}
@@ -366,6 +383,30 @@ export function AdminEntregasPage() {
 				erroCapturado instanceof ApiError
 					? erroCapturado.message
 					: "não foi possível aprovar a Entrega.",
+			);
+		} finally {
+			setIdEmAcao(null);
+		}
+	}
+
+	async function publicar(entrega: Entrega) {
+		setIdEmAcao(entrega.id);
+		setErro(null);
+		try {
+			const atualizada = await apiFetch<Entrega>(
+				`/api/admin/entregas/${entrega.id}/publicar`,
+				{ method: "PATCH" },
+			);
+			setEntregas((atual) =>
+				atual
+					? atual.map((item) => (item.id === atualizada.id ? atualizada : item))
+					: atual,
+			);
+		} catch (erroCapturado) {
+			setErro(
+				erroCapturado instanceof ApiError
+					? erroCapturado.message
+					: "não foi possível publicar a Entrega.",
 			);
 		} finally {
 			setIdEmAcao(null);
@@ -505,6 +546,7 @@ export function AdminEntregasPage() {
 									}
 									emAcao={idEmAcao === entrega.id}
 									aoAprovar={() => void aprovar(entrega)}
+									aoPublicar={() => void publicar(entrega)}
 								/>
 							))}
 						</ul>

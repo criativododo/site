@@ -40,6 +40,7 @@ function entrega(overrides: Partial<Entrega> = {}): Entrega {
     materialEnviado: null,
     dataCriacao: "2026-07-01T00:00:00.000Z",
     dataAtualizacao: "2026-07-01T00:00:00.000Z",
+    dataArquivamento: null,
     ...overrides,
   };
 }

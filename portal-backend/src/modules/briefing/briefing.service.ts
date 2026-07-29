@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { entregaRepositorio } from "../conteudo/entrega.repository.js";
 import type { Entrega, EstadoEntrega } from "../conteudo/entrega.types.js";
+import { calcularDataAprovacaoInterna } from "./briefing.calculadoraAprovacao.js";
 import { briefingRepositorio } from "./briefing.repository.js";
 import type { BlocoBriefing } from "./briefing.types.js";
 
@@ -120,6 +121,7 @@ export async function criarBriefingParaEntrega(dados: DadosNovoBriefing): Promis
     dataEntrega: dados.dataEntrega,
     dataPostagem: dados.dataPostagem,
     orientacao: dados.orientacao,
+    dataAprovacaoInterna: calcularDataAprovacaoInterna(dados.dataPostagem),
     dataCriacao: agora,
     dataAtualizacao: agora,
   };
@@ -144,11 +146,16 @@ export async function editarBriefing(
     return { ok: false, motivo: "NAO_ENCONTRADO" };
   }
 
-  const candidato: BlocoBriefing = { ...existente, ...campos };
+  const candidato: BlocoBriefing = {
+    ...existente,
+    ...campos,
+  };
   const validacao = validarConteudo(candidato);
   if (!validacao.ok) {
     return validacao;
   }
+  /** RN-01/INV-03: recalculada a cada edição — nunca herdada do valor anterior, mesmo se `dataPostagem` não mudou. */
+  candidato.dataAprovacaoInterna = calcularDataAprovacaoInterna(candidato.dataPostagem);
 
   const atualizado = await briefingRepositorio.atualizar(candidato);
   const entregas = await entregaRepositorio.listarTodas();

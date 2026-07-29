@@ -36,8 +36,12 @@ Parceira não afete competências já compiladas. *(`ADR-002`)*
 **Briefing** (ou **Briefing da Colaboração**) — registro por formato (Reel/Carrossel/
 Stories 1/Stories 2) com look, data de entrega, data de postagem e orientação criativa; 1:1
 por Colaboração Mensal, até 4 blocos por formato. Data de aprovação interna é sempre
-calculada automaticamente (postagem − 7 dias, ajustada em fim de semana/sexta), nunca
-editável manualmente. *(`CONTRATO_SOBERANO.md` §4; SPEC-009; PRD RN-04)*
+calculada automaticamente (postagem − 7 dias, avançada até o próximo dia útil do
+**calendário operacional** — fim de semana, feriado nacional/estadual/municipal aplicável à
+operação, ou ponto facultativo adotado oficialmente pela Criativo Dodô; critério
+exclusivamente operacional, nunca a classificação jurídica), nunca editável manualmente.
+*(`CONTRATO_SOBERANO.md` §4; SPEC-009 v1.2; PRD RN-04 — regra-base, superada quanto à
+heurística de sexta-feira; ADR-014)*
 
 **Entrega** — unidade de conteúdo contratada num formato; uma por unidade contratada.
 Máquina de 4 estados: `AguardandoMaterial → EmRevisao → Aprovado → Publicado` (terminal,

@@ -4,8 +4,10 @@ import {
   aprovarEntrega,
   criarEntregaAdministrativa,
   listarTodasEntregas,
+  publicarEntrega,
   type MotivoRejeicaoAprovacao,
   type MotivoRejeicaoNovaEntrega,
+  type MotivoRejeicaoPublicacao,
 } from "./conteudo.service.js";
 
 export const entregaAdminRoutes = Router();
@@ -31,6 +33,15 @@ function mensagemDeErroAprovacao(motivo: MotivoRejeicaoAprovacao): string {
       return "Entrega não encontrada.";
     case "TRANSICAO_INVALIDA":
       return "só é possível aprovar uma Entrega que esteja 'em revisão'.";
+  }
+}
+
+function mensagemDeErroPublicacao(motivo: MotivoRejeicaoPublicacao): string {
+  switch (motivo) {
+    case "NAO_ENCONTRADA":
+      return "Entrega não encontrada.";
+    case "TRANSICAO_INVALIDA":
+      return "só é possível publicar uma Entrega que esteja 'aprovada'.";
   }
 }
 
@@ -73,6 +84,19 @@ entregaAdminRoutes.patch("/:id/aprovar", async (req, res) => {
   if (!resultado.ok) {
     const status = resultado.motivo === "NAO_ENCONTRADA" ? 404 : 409;
     res.status(status).json({ error: mensagemDeErroAprovacao(resultado.motivo) });
+    return;
+  }
+
+  res.json(resultado.entrega);
+});
+
+/** Backoffice — publicação (APROVADO → PUBLICADO, UC-012.03 parte 2; arquiva automaticamente, RN-04/RNF-03). */
+entregaAdminRoutes.patch("/:id/publicar", async (req, res) => {
+  const resultado = await publicarEntrega(req.params.id);
+
+  if (!resultado.ok) {
+    const status = resultado.motivo === "NAO_ENCONTRADA" ? 404 : 409;
+    res.status(status).json({ error: mensagemDeErroPublicacao(resultado.motivo) });
     return;
   }
 

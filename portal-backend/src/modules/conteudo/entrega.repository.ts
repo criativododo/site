@@ -1,15 +1,14 @@
+import type { Pool } from "pg";
+import { pool } from "../../config/database.js";
 import { env } from "../../config/env.js";
 import { competenciaCorrente } from "./competencia.js";
 import type { Entrega } from "./entrega.types.js";
 
 /**
- * Armazenamento em memória — placeholder deliberado (mesma decisão de
- * identidade.repository.ts): nenhuma tecnologia de persistência foi decidida para o Portal.
- * Seed inicial existe só para dar dado real à Parceira de dev/QA (env.parceiraSeed), já que
- * SPEC-012 (Entrega) não está implementada fisicamente neste repositório (PORTAL_BACKLOG.md
- * EPIC 2 permite dado gerado por seed).
+ * Seed de desenvolvimento/QA (EPIC 2) — usado pela versão em memória (fixtures de teste) e
+ * reaproveitado pelo script de seed do Postgres (Fase 2, `scripts/seed.ts`).
  */
-function seedInicial(): Entrega[] {
+export function seedInicialEntregas(): Entrega[] {
   if (!env.parceiraSeed.id) {
     return [];
   }
@@ -27,6 +26,7 @@ function seedInicial(): Entrega[] {
       materialEnviado: null,
       dataCriacao: agora,
       dataAtualizacao: agora,
+      dataArquivamento: null,
     },
     {
       id: "entrega-seed-2",
@@ -38,6 +38,7 @@ function seedInicial(): Entrega[] {
       materialEnviado: null,
       dataCriacao: agora,
       dataAtualizacao: agora,
+      dataArquivamento: null,
     },
     {
       id: "entrega-seed-3",
@@ -49,15 +50,16 @@ function seedInicial(): Entrega[] {
       materialEnviado: null,
       dataCriacao: agora,
       dataAtualizacao: agora,
+      dataArquivamento: null,
     },
   ];
 }
 
 /** Exportada (não só a instância) para permitir teste de RN-01/CB-02 com fixtures isoladas. */
-export class EntregaRepositorioEmMemoria {
+class EntregaRepositorioEmMemoria {
   private entregas: Entrega[];
 
-  constructor(entregas: Entrega[] = seedInicial()) {
+  constructor(entregas: Entrega[] = seedInicialEntregas()) {
     this.entregas = entregas;
   }
 
@@ -78,21 +80,11 @@ export class EntregaRepositorioEmMemoria {
     return this.entregas.find((entrega) => entrega.id === id) ?? null;
   }
 
-  /**
-   * Criação administrativa (Backoffice). Persistência pura — validação de Parceira/formato é
-   * responsabilidade do service (conteudo.service.ts::criarEntregaAdministrativa).
-   */
   async criar(entrega: Entrega): Promise<Entrega> {
     this.entregas.push(entrega);
     return entrega;
   }
 
-  /**
-   * Substitui a Entrega pelo seu id. Persistência pura — a regra de qual transição é válida
-   * (RN-02/CT-03) é responsabilidade do service (conteudo.service.ts), não deste repositório.
-   * `dataAtualizacao` é carimbada aqui (analogia a `updated_at` de banco) para que nenhum
-   * chamador precise lembrar de tocar o timestamp manualmente.
-   */
   async atualizar(entregaAtualizada: Entrega): Promise<Entrega> {
     const indice = this.entregas.findIndex((entrega) => entrega.id === entregaAtualizada.id);
     if (indice === -1) {
@@ -104,4 +96,108 @@ export class EntregaRepositorioEmMemoria {
   }
 }
 
-export const entregaRepositorio = new EntregaRepositorioEmMemoria();
+interface LinhaEntrega {
+  id: string;
+  parceiraId: string;
+  mesReferencia: string;
+  formato: Entrega["formato"];
+  estado: Entrega["estado"];
+  dataEntrega: string;
+  materialEnviado: string | null;
+  dataCriacao: Date;
+  dataAtualizacao: Date;
+  dataArquivamento: Date | null;
+}
+
+function paraEntrega(linha: LinhaEntrega): Entrega {
+  return {
+    id: linha.id,
+    parceiraId: linha.parceiraId,
+    mesReferencia: linha.mesReferencia,
+    formato: linha.formato,
+    estado: linha.estado,
+    dataEntrega: linha.dataEntrega,
+    materialEnviado: linha.materialEnviado,
+    dataCriacao: linha.dataCriacao.toISOString(),
+    dataAtualizacao: linha.dataAtualizacao.toISOString(),
+    dataArquivamento: linha.dataArquivamento ? linha.dataArquivamento.toISOString() : null,
+  };
+}
+
+const SELECT_COLUNAS = `
+  id, parceira_id AS "parceiraId", mes_referencia AS "mesReferencia", formato, estado,
+  data_entrega AS "dataEntrega", material_enviado AS "materialEnviado",
+  data_criacao AS "dataCriacao", data_atualizacao AS "dataAtualizacao",
+  data_arquivamento AS "dataArquivamento"
+`;
+
+/** Fase 2 do Plano Mestre (ADR-015): mesma interface pública da versão em memória. */
+export class EntregaRepositorioPostgres {
+  constructor(private readonly db: Pool) {}
+
+  async listarTodas(): Promise<Entrega[]> {
+    const resultado = await this.db.query<LinhaEntrega>(`SELECT ${SELECT_COLUNAS} FROM entregas`);
+    return resultado.rows.map(paraEntrega);
+  }
+
+  async listarPorParceira(parceiraId: string): Promise<Entrega[]> {
+    const resultado = await this.db.query<LinhaEntrega>(
+      `SELECT ${SELECT_COLUNAS} FROM entregas WHERE parceira_id = $1`,
+      [parceiraId],
+    );
+    return resultado.rows.map(paraEntrega);
+  }
+
+  async listarPorParceiraECompetencia(parceiraId: string, mesReferencia: string): Promise<Entrega[]> {
+    const resultado = await this.db.query<LinhaEntrega>(
+      `SELECT ${SELECT_COLUNAS} FROM entregas WHERE parceira_id = $1 AND mes_referencia = $2`,
+      [parceiraId, mesReferencia],
+    );
+    return resultado.rows.map(paraEntrega);
+  }
+
+  async buscarPorId(id: string): Promise<Entrega | null> {
+    const resultado = await this.db.query<LinhaEntrega>(`SELECT ${SELECT_COLUNAS} FROM entregas WHERE id = $1`, [id]);
+    return resultado.rows[0] ? paraEntrega(resultado.rows[0]) : null;
+  }
+
+  async criar(entrega: Entrega): Promise<Entrega> {
+    const resultado = await this.db.query<LinhaEntrega>(
+      `INSERT INTO entregas
+         (id, parceira_id, mes_referencia, formato, estado, data_entrega, material_enviado, data_criacao, data_atualizacao, data_arquivamento)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+       RETURNING ${SELECT_COLUNAS}`,
+      [
+        entrega.id,
+        entrega.parceiraId,
+        entrega.mesReferencia,
+        entrega.formato,
+        entrega.estado,
+        entrega.dataEntrega,
+        entrega.materialEnviado,
+        entrega.dataCriacao,
+        entrega.dataAtualizacao,
+        entrega.dataArquivamento,
+      ],
+    );
+    return paraEntrega(resultado.rows[0]);
+  }
+
+  /** `data_atualizacao` sempre carimbada com `now()` no banco — mesma disciplina da versão em memória. */
+  async atualizar(entregaAtualizada: Entrega): Promise<Entrega> {
+    const resultado = await this.db.query<LinhaEntrega>(
+      `UPDATE entregas SET
+         estado = $2, material_enviado = $3, data_arquivamento = $4, data_atualizacao = now()
+       WHERE id = $1
+       RETURNING ${SELECT_COLUNAS}`,
+      [entregaAtualizada.id, entregaAtualizada.estado, entregaAtualizada.materialEnviado, entregaAtualizada.dataArquivamento],
+    );
+    if (!resultado.rows[0]) {
+      throw new Error(`Entrega inexistente para atualização: ${entregaAtualizada.id}`);
+    }
+    return paraEntrega(resultado.rows[0]);
+  }
+}
+
+export { EntregaRepositorioEmMemoria };
+export const entregaRepositorio = new EntregaRepositorioPostgres(pool);

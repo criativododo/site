@@ -1,14 +1,14 @@
-import { competenciaAnterior, competenciaCorrente } from "../conteudo/competencia.js";
+import type { Pool } from "pg";
+import { pool } from "../../config/database.js";
 import { env } from "../../config/env.js";
+import { competenciaAnterior, competenciaCorrente } from "../conteudo/competencia.js";
 import type { ObrigacaoFinanceira } from "./obrigacao.types.js";
 
 /**
- * Armazenamento em memória — mesma decisão de entrega.repository.ts. Seed cobre a
- * competência corrente (ainda `EM_ABERTO`, alinhada às Entregas seedadas em
- * conteudo/entrega.repository.ts) e a anterior (já `PAGO`), para exercitar seleção de
- * período (Feature 3.1) com mais de uma competência real.
+ * Seed de desenvolvimento/QA — usado pela versão em memória (fixtures de teste) e
+ * reaproveitado pelo script de seed do Postgres (Fase 2, `scripts/seed.ts`).
  */
-function seedInicial(): ObrigacaoFinanceira[] {
+export function seedInicialObrigacoes(): ObrigacaoFinanceira[] {
   if (!env.parceiraSeed.id) {
     return [];
   }
@@ -44,10 +44,10 @@ function seedInicial(): ObrigacaoFinanceira[] {
 }
 
 /** Exportada (não só a instância) para permitir teste com fixtures isoladas. */
-export class ObrigacaoRepositorioEmMemoria {
+class ObrigacaoRepositorioEmMemoria {
   private obrigacoes: ObrigacaoFinanceira[];
 
-  constructor(obrigacoes: ObrigacaoFinanceira[] = seedInicial()) {
+  constructor(obrigacoes: ObrigacaoFinanceira[] = seedInicialObrigacoes()) {
     this.obrigacoes = obrigacoes;
   }
 
@@ -59,10 +59,7 @@ export class ObrigacaoRepositorioEmMemoria {
     return this.obrigacoes.filter((obrigacao) => obrigacao.parceiraId === parceiraId);
   }
 
-  async listarPorParceiraECompetencia(
-    parceiraId: string,
-    mesReferencia: string,
-  ): Promise<ObrigacaoFinanceira[]> {
+  async listarPorParceiraECompetencia(parceiraId: string, mesReferencia: string): Promise<ObrigacaoFinanceira[]> {
     const doPeriodo = await this.listarPorParceira(parceiraId);
     return doPeriodo.filter((obrigacao) => obrigacao.mesReferencia === mesReferencia);
   }
@@ -71,13 +68,11 @@ export class ObrigacaoRepositorioEmMemoria {
     return this.obrigacoes.find((obrigacao) => obrigacao.id === id) ?? null;
   }
 
-  /** Lançamento administrativo (Backoffice). Persistência pura — validações no service. */
   async criar(obrigacao: ObrigacaoFinanceira): Promise<ObrigacaoFinanceira> {
     this.obrigacoes.push(obrigacao);
     return obrigacao;
   }
 
-  /** Carimba `dataAtualizacao` aqui, mesma disciplina de entrega.repository.ts/briefing.repository.ts. */
   async atualizar(obrigacaoAtualizada: ObrigacaoFinanceira): Promise<ObrigacaoFinanceira> {
     const indice = this.obrigacoes.findIndex((obrigacao) => obrigacao.id === obrigacaoAtualizada.id);
     if (indice === -1) {
@@ -88,7 +83,6 @@ export class ObrigacaoRepositorioEmMemoria {
     return atualizada;
   }
 
-  /** Remoção administrativa (RN de "quando permitido" é responsabilidade do service). */
   async remover(id: string): Promise<void> {
     const indice = this.obrigacoes.findIndex((obrigacao) => obrigacao.id === id);
     if (indice === -1) {
@@ -98,4 +92,118 @@ export class ObrigacaoRepositorioEmMemoria {
   }
 }
 
-export const obrigacaoRepositorio = new ObrigacaoRepositorioEmMemoria();
+interface LinhaObrigacao {
+  id: string;
+  parceiraId: string;
+  mesReferencia: string;
+  valor: string; // numeric do Postgres vem como string por padrão no node-postgres
+  estado: ObrigacaoFinanceira["estado"];
+  tipo: ObrigacaoFinanceira["tipo"];
+  dataCriacao: Date;
+  dataAtualizacao: Date;
+  dataArquivamento: Date | null;
+}
+
+function paraObrigacao(linha: LinhaObrigacao): ObrigacaoFinanceira {
+  return {
+    id: linha.id,
+    parceiraId: linha.parceiraId,
+    mesReferencia: linha.mesReferencia,
+    valor: Number(linha.valor),
+    estado: linha.estado,
+    tipo: linha.tipo,
+    dataCriacao: linha.dataCriacao.toISOString(),
+    dataAtualizacao: linha.dataAtualizacao.toISOString(),
+    dataArquivamento: linha.dataArquivamento ? linha.dataArquivamento.toISOString() : null,
+  };
+}
+
+const SELECT_COLUNAS = `
+  id, parceira_id AS "parceiraId", mes_referencia AS "mesReferencia", valor, estado, tipo,
+  data_criacao AS "dataCriacao", data_atualizacao AS "dataAtualizacao",
+  data_arquivamento AS "dataArquivamento"
+`;
+
+/** Fase 2 do Plano Mestre (ADR-015): mesma interface pública da versão em memória. */
+export class ObrigacaoRepositorioPostgres {
+  constructor(private readonly db: Pool) {}
+
+  async listarTodas(): Promise<ObrigacaoFinanceira[]> {
+    const resultado = await this.db.query<LinhaObrigacao>(`SELECT ${SELECT_COLUNAS} FROM obrigacoes_financeiras`);
+    return resultado.rows.map(paraObrigacao);
+  }
+
+  async listarPorParceira(parceiraId: string): Promise<ObrigacaoFinanceira[]> {
+    const resultado = await this.db.query<LinhaObrigacao>(
+      `SELECT ${SELECT_COLUNAS} FROM obrigacoes_financeiras WHERE parceira_id = $1`,
+      [parceiraId],
+    );
+    return resultado.rows.map(paraObrigacao);
+  }
+
+  async listarPorParceiraECompetencia(parceiraId: string, mesReferencia: string): Promise<ObrigacaoFinanceira[]> {
+    const resultado = await this.db.query<LinhaObrigacao>(
+      `SELECT ${SELECT_COLUNAS} FROM obrigacoes_financeiras WHERE parceira_id = $1 AND mes_referencia = $2`,
+      [parceiraId, mesReferencia],
+    );
+    return resultado.rows.map(paraObrigacao);
+  }
+
+  async buscarPorId(id: string): Promise<ObrigacaoFinanceira | null> {
+    const resultado = await this.db.query<LinhaObrigacao>(
+      `SELECT ${SELECT_COLUNAS} FROM obrigacoes_financeiras WHERE id = $1`,
+      [id],
+    );
+    return resultado.rows[0] ? paraObrigacao(resultado.rows[0]) : null;
+  }
+
+  async criar(obrigacao: ObrigacaoFinanceira): Promise<ObrigacaoFinanceira> {
+    const resultado = await this.db.query<LinhaObrigacao>(
+      `INSERT INTO obrigacoes_financeiras
+         (id, parceira_id, mes_referencia, valor, estado, tipo, data_criacao, data_atualizacao, data_arquivamento)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+       RETURNING ${SELECT_COLUNAS}`,
+      [
+        obrigacao.id,
+        obrigacao.parceiraId,
+        obrigacao.mesReferencia,
+        obrigacao.valor,
+        obrigacao.estado,
+        obrigacao.tipo,
+        obrigacao.dataCriacao,
+        obrigacao.dataAtualizacao,
+        obrigacao.dataArquivamento,
+      ],
+    );
+    return paraObrigacao(resultado.rows[0]);
+  }
+
+  async atualizar(obrigacaoAtualizada: ObrigacaoFinanceira): Promise<ObrigacaoFinanceira> {
+    const resultado = await this.db.query<LinhaObrigacao>(
+      `UPDATE obrigacoes_financeiras SET
+         valor = $2, estado = $3, data_arquivamento = $4, data_atualizacao = now()
+       WHERE id = $1
+       RETURNING ${SELECT_COLUNAS}`,
+      [
+        obrigacaoAtualizada.id,
+        obrigacaoAtualizada.valor,
+        obrigacaoAtualizada.estado,
+        obrigacaoAtualizada.dataArquivamento,
+      ],
+    );
+    if (!resultado.rows[0]) {
+      throw new Error(`Obrigação Financeira inexistente para atualização: ${obrigacaoAtualizada.id}`);
+    }
+    return paraObrigacao(resultado.rows[0]);
+  }
+
+  async remover(id: string): Promise<void> {
+    const resultado = await this.db.query(`DELETE FROM obrigacoes_financeiras WHERE id = $1`, [id]);
+    if (resultado.rowCount === 0) {
+      throw new Error(`Obrigação Financeira inexistente para remoção: ${id}`);
+    }
+  }
+}
+
+export { ObrigacaoRepositorioEmMemoria };
+export const obrigacaoRepositorio = new ObrigacaoRepositorioPostgres(pool);
