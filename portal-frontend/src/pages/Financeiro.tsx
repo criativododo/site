@@ -1,16 +1,12 @@
 import { useEffect, useState } from "react";
 import { ApiError, apiFetch } from "../lib/api";
+import { formatadorMoeda } from "../lib/formatters";
 
 interface ResumoFinanceiro {
 	mesReferencia: string;
 	previsto: number;
 	pago: number;
 }
-
-const formatadorMoeda = new Intl.NumberFormat("pt-BR", {
-	style: "currency",
-	currency: "BRL",
-});
 
 function ResumoDoPeriodo({ mesReferencia }: { mesReferencia: string }) {
 	const [resumo, setResumo] = useState<ResumoFinanceiro | null>(null);
@@ -29,7 +25,7 @@ function ResumoDoPeriodo({ mesReferencia }: { mesReferencia: string }) {
 				setErro(
 					erroCapturado instanceof ApiError
 						? erroCapturado.message
-						: "Não foi possível carregar o financeiro do período.",
+						: "não foi possível carregar o financeiro do período.",
 				);
 			})
 			.finally(() => ativo && setCarregando(false));
@@ -142,7 +138,7 @@ function HistoricoDoPeriodo({ mesReferencia }: { mesReferencia: string }) {
 				setErro(
 					erroCapturado instanceof ApiError
 						? erroCapturado.message
-						: "Não foi possível carregar o histórico do período.",
+						: "não foi possível carregar o histórico do período.",
 				);
 			})
 			.finally(() => ativo && setCarregando(false));
@@ -255,7 +251,7 @@ export function FinanceiroPage() {
 				setErro(
 					erroCapturado instanceof ApiError
 						? erroCapturado.message
-						: "Não foi possível carregar os períodos.",
+						: "não foi possível carregar os períodos.",
 				);
 			})
 			.finally(() => ativo && setCarregando(false));

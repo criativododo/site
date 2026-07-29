@@ -4,9 +4,9 @@ import { PageHeaderProvider, usePageHeaderSlots } from "../lib/pageHeader";
 import { useSession } from "../lib/session";
 
 const navItems = [
-	{ to: "/pendencias", label: "Pendências" },
-	{ to: "/financeiro", label: "Financeiro" },
-	{ to: "/perfil", label: "Perfil" },
+	{ to: "/pendencias", label: "pendências" },
+	{ to: "/financeiro", label: "financeiro" },
+	{ to: "/perfil", label: "perfil" },
 ];
 
 function PortalMain() {
@@ -51,16 +51,18 @@ function PortalMain() {
 
 export function PortalLayout() {
 	const { sessao, logout } = useSession();
+	// Administrador não possui `parceiraId` de sessão (ADR-008, single-tenant): rotas de
+	// self-service da Parceira (`navItems`) sempre falham para este papel (`parceiraDaSessao`
+	// lança erro sem `parceiraId` — ver middleware/isolamento.ts), então nunca aparecem aqui.
 	const itensNav =
 		sessao?.papelAtor === "ADMINISTRADOR"
 			? [
-					{ to: "/admin/dashboard", label: "Dashboard" },
-					{ to: "/admin/parceiras", label: "Parceiras" },
-					{ to: "/admin/entregas", label: "Entregas" },
-					{ to: "/admin/briefings", label: "Briefings" },
-					{ to: "/admin/financeiro", label: "Obrigações" },
-					...navItems,
-					{ to: "/admin", label: "Moderação" },
+					{ to: "/admin/dashboard", label: "painel" },
+					{ to: "/admin/parceiras", label: "parceiras" },
+					{ to: "/admin/entregas", label: "entregas" },
+					{ to: "/admin/briefings", label: "briefings" },
+					{ to: "/admin/financeiro", label: "obrigações" },
+					{ to: "/admin", label: "moderação" },
 				]
 			: navItems;
 
@@ -72,7 +74,7 @@ export function PortalLayout() {
 						<img
 							className="portal-logo"
 							src={logoPrincipal}
-							alt="Criativo DODÔ"
+							alt="Criativo Dodô"
 						/>
 					</Link>
 
@@ -98,7 +100,7 @@ export function PortalLayout() {
 						className="btn-primary"
 						onClick={() => void logout()}
 					>
-						Sair
+						sair
 					</button>
 				</div>
 			</aside>

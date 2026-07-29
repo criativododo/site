@@ -1,6 +1,7 @@
 import type { ChangeEvent } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { ApiError, apiFetch } from "../lib/api";
+import { formatarData } from "../lib/formatters";
 import { useSession } from "../lib/session";
 
 type FormatoEntrega = "Reel" | "Carrossel" | "Stories1" | "Stories2";
@@ -59,10 +60,6 @@ const LABEL_ESTADO: Record<EstadoEntrega, string> = {
 	APROVADO: "aprovado",
 	PUBLICADO: "publicado",
 };
-
-function formatarData(dataIso: string): string {
-	return new Date(dataIso).toLocaleDateString("pt-BR");
-}
 
 /** Remoção só é permitida sem Entrega vinculada, ou enquanto ela ainda está AGUARDANDO_MATERIAL (briefing.service.ts::removerBriefing). */
 function remocaoPermitida(
@@ -210,7 +207,7 @@ function FormularioNovoBriefing({
 			setErro(
 				erroCapturado instanceof ApiError
 					? erroCapturado.message
-					: "não foi possível criar o Briefing.",
+					: "não foi possível criar o briefing.",
 			);
 		} finally {
 			setSalvando(false);
@@ -233,8 +230,8 @@ function FormularioNovoBriefing({
 					className="portal-page-feedback is-error"
 					style={{ margin: 0, gridColumn: "1 / -1" }}
 				>
-					todas as Entregas já têm Briefing — crie uma nova Entrega antes de
-					criar outro Briefing.
+					todas as entregas já têm briefing — crie uma nova entrega antes de
+					criar outro briefing.
 				</p>
 			) : (
 				<>
@@ -451,7 +448,7 @@ function LinhaBriefing({
 					title={
 						podeRemover
 							? undefined
-							: "a Entrega vinculada já saiu de 'aguardando material' — remover perderia o rastro do que a orientou."
+							: "a entrega vinculada já saiu de 'aguardando material' — remover perderia o rastro do que a orientou."
 					}
 					style={estiloBotaoOutlineCherry}
 				>
@@ -508,7 +505,7 @@ export function AdminBriefingsPage() {
 				setErro(
 					erroCapturado instanceof ApiError
 						? erroCapturado.message
-						: "não foi possível carregar os Briefings.",
+						: "não foi possível carregar os briefings.",
 				);
 			})
 			.finally(() => ativo && setCarregando(false));
@@ -578,7 +575,7 @@ export function AdminBriefingsPage() {
 			setErro(
 				erroCapturado instanceof ApiError
 					? erroCapturado.message
-					: "não foi possível remover o Briefing.",
+					: "não foi possível remover o briefing.",
 			);
 		} finally {
 			setIdRemovendo(null);
@@ -598,12 +595,12 @@ export function AdminBriefingsPage() {
 			<p className="portal-eyebrow">administração</p>
 			<h1 className="title-editorial portal-page-title">briefings</h1>
 			<p className="portal-page-intro">
-				crie o Briefing de cada Entrega para que a Parceira saiba o que
+				crie o briefing de cada entrega para que a parceira saiba o que
 				produzir, e mantenha o conteúdo atualizado.
 			</p>
 
 			{carregando && (
-				<p className="portal-page-feedback">carregando Briefings...</p>
+				<p className="portal-page-feedback">carregando briefings...</p>
 			)}
 			{!carregando && erro && (
 				<p className="portal-page-feedback is-error">{erro}</p>
@@ -667,8 +664,8 @@ export function AdminBriefingsPage() {
 					{filtrados.length === 0 && (
 						<p className="portal-page-feedback">
 							{briefings.length === 0
-								? "nenhum Briefing criado ainda."
-								: "nenhum Briefing encontrado para essa busca."}
+								? "nenhum briefing criado ainda."
+								: "nenhum briefing encontrado para essa busca."}
 						</p>
 					)}
 

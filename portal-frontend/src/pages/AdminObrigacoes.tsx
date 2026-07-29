@@ -1,6 +1,11 @@
 import type { ChangeEvent } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { ApiError, apiFetch } from "../lib/api";
+import {
+	formatadorMoeda,
+	formatarData,
+	mesReferenciaCorrente,
+} from "../lib/formatters";
 import { useSession } from "../lib/session";
 
 type FormatoEntrega = "Reel" | "Carrossel" | "Stories1" | "Stories2";
@@ -64,21 +69,6 @@ const LABEL_ESTADO_ENTREGA: Record<EstadoEntrega, string> = {
 	PUBLICADO: "publicado",
 };
 
-const formatadorMoeda = new Intl.NumberFormat("pt-BR", {
-	style: "currency",
-	currency: "BRL",
-});
-
-function formatarData(dataIso: string): string {
-	return new Date(dataIso).toLocaleDateString("pt-BR");
-}
-
-function mesReferenciaCorrente(): string {
-	const agora = new Date();
-	const ano = agora.getUTCFullYear();
-	const mes = String(agora.getUTCMonth() + 1).padStart(2, "0");
-	return `${ano}-${mes}`;
-}
 
 const estiloInput = {
 	height: 40,
@@ -186,7 +176,7 @@ function FormularioNovaObrigacao({
 			setErro(
 				erroCapturado instanceof ApiError
 					? erroCapturado.message
-					: "não foi possível lançar a Obrigação.",
+					: "não foi possível lançar a obrigação.",
 			);
 		} finally {
 			setSalvando(false);
@@ -224,8 +214,8 @@ function FormularioNovaObrigacao({
 					style={{ margin: 0, gridColumn: "1 / -1" }}
 				>
 					{tipo === "MENSAL"
-						? "nenhuma Parceira ATIVA cadastrada — ative uma Parceira antes de lançar Obrigação Mensal."
-						: "nenhuma Parceira cadastrada ainda."}
+						? "nenhuma parceira ativa cadastrada — ative uma parceira antes de lançar obrigação mensal."
+						: "nenhuma parceira cadastrada ainda."}
 				</p>
 			) : (
 				<label style={estiloLabel}>
@@ -418,7 +408,7 @@ function LinhaObrigacao({
 		obrigacao.estado === "EM_ABERTO" && obrigacao.elegivelParaLiberacao;
 	const motivoBloqueioLiberacao =
 		obrigacao.tipo === "MENSAL" && !obrigacao.elegivelParaLiberacao
-			? "há Entregas da competência ainda não Aprovadas/Publicadas."
+			? "há entregas da competência ainda não aprovadas/publicadas."
 			: undefined;
 
 	return (
@@ -529,7 +519,7 @@ function LinhaObrigacao({
 					</p>
 					{obrigacao.entregasDaCompetencia.length === 0 ? (
 						<p className="portal-list-row-meta">
-							nenhuma Entrega nesta competência.
+							nenhuma entrega nesta competência.
 						</p>
 					) : (
 						<ul style={{ display: "flex", flexDirection: "column", gap: 4 }}>
@@ -595,7 +585,7 @@ export function AdminObrigacoesPage() {
 				setErro(
 					erroCapturado instanceof ApiError
 						? erroCapturado.message
-						: "não foi possível carregar as Obrigações.",
+						: "não foi possível carregar as obrigações.",
 				);
 			})
 			.finally(() => ativo && setCarregando(false));
@@ -636,7 +626,7 @@ export function AdminObrigacoesPage() {
 			setErro(
 				erroCapturado instanceof ApiError
 					? erroCapturado.message
-					: "não foi possível liberar a Obrigação.",
+					: "não foi possível liberar a obrigação.",
 			);
 		} finally {
 			setIdEmAcao(null);
@@ -677,7 +667,7 @@ export function AdminObrigacoesPage() {
 			setErro(
 				erroCapturado instanceof ApiError
 					? erroCapturado.message
-					: "não foi possível remover a Obrigação.",
+					: "não foi possível remover a obrigação.",
 			);
 		} finally {
 			setIdEmAcao(null);
@@ -714,12 +704,12 @@ export function AdminObrigacoesPage() {
 			<p className="portal-eyebrow">administração</p>
 			<h1 className="title-editorial portal-page-title">obrigações</h1>
 			<p className="portal-page-intro">
-				lance, acompanhe e libere as Obrigações Financeiras de cada Parceira por
+				lance, acompanhe e libere as obrigações financeiras de cada parceira por
 				competência.
 			</p>
 
 			{carregando && (
-				<p className="portal-page-feedback">carregando Obrigações...</p>
+				<p className="portal-page-feedback">carregando obrigações...</p>
 			)}
 			{!carregando && erro && (
 				<p className="portal-page-feedback is-error">{erro}</p>
@@ -799,8 +789,8 @@ export function AdminObrigacoesPage() {
 					{filtradas.length === 0 && (
 						<p className="portal-page-feedback">
 							{obrigacoes.length === 0
-								? "nenhuma Obrigação lançada ainda."
-								: "nenhuma Obrigação encontrada para esse filtro."}
+								? "nenhuma obrigação lançada ainda."
+								: "nenhuma obrigação encontrada para esse filtro."}
 						</p>
 					)}
 

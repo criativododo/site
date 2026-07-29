@@ -256,7 +256,7 @@ function BriefingDoItem({ entregaId }: { entregaId: string }) {
 				setErro(
 					erroCapturado instanceof ApiError
 						? erroCapturado.message
-						: "Não foi possível carregar o briefing.",
+						: "não foi possível carregar o briefing.",
 				);
 			})
 			.finally(() => ativo && setCarregando(false));
@@ -385,7 +385,7 @@ export function PendenciasPage() {
 				setErro(
 					erroCapturado instanceof ApiError
 						? erroCapturado.message
-						: "Não foi possível carregar as pendências.",
+						: "não foi possível carregar as pendências.",
 				);
 			} finally {
 				if (ativo) {

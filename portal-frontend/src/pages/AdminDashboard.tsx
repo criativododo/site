@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { ApiError, apiFetch } from "../lib/api";
+import { formatadorMoeda } from "../lib/formatters";
 import { useSession } from "../lib/session";
 
 interface IndicadoresAdministrativos {
@@ -9,11 +10,6 @@ interface IndicadoresAdministrativos {
 	lgpd: { solicitacoesExclusaoPendentes: number };
 	moderacao: { contasPendentes: number };
 }
-
-const formatadorMoeda = new Intl.NumberFormat("pt-BR", {
-	style: "currency",
-	currency: "BRL",
-});
 
 function Indicador({
 	label,
@@ -52,7 +48,7 @@ export function AdminDashboardPage() {
 				setErro(
 					erroCapturado instanceof ApiError
 						? erroCapturado.message
-						: "Não foi possível carregar o painel.",
+						: "não foi possível carregar o painel.",
 				);
 			})
 			.finally(() => ativo && setCarregando(false));

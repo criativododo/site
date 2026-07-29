@@ -39,7 +39,7 @@ function FilaDeExclusao({
 				setErro(
 					erroCapturado instanceof ApiError
 						? erroCapturado.message
-						: "Falha ao carregar.",
+						: "não foi possível carregar as solicitações de exclusão.",
 				);
 			})
 			.finally(() => setCarregando(false));
@@ -52,8 +52,8 @@ function FilaDeExclusao({
 	async function decidir(id: string, aprovada: boolean) {
 		const fundamentoJuridico = window.prompt(
 			aprovada
-				? "Fundamento jurídico da aprovação (ex.: sem obrigação legal de retenção):"
-				: "Fundamento jurídico da negativa (ex.: obrigação fiscal de retenção por 5 anos):",
+				? "fundamento jurídico da aprovação (ex.: sem obrigação legal de retenção):"
+				: "fundamento jurídico da negativa (ex.: obrigação fiscal de retenção por 5 anos):",
 		);
 		if (!fundamentoJuridico) return;
 
@@ -72,7 +72,7 @@ function FilaDeExclusao({
 			setErro(
 				erroCapturado instanceof ApiError
 					? erroCapturado.message
-					: "Falha ao decidir.",
+					: "não foi possível registrar a decisão sobre a exclusão.",
 			);
 		} finally {
 			setEmAcao(null);
@@ -159,7 +159,7 @@ export function AdminPage() {
 				setErro(
 					erroCapturado instanceof ApiError
 						? erroCapturado.message
-						: "Falha ao carregar.",
+						: "não foi possível carregar os cadastros pendentes.",
 				);
 			})
 			.finally(() => setCarregando(false));
@@ -180,7 +180,7 @@ export function AdminPage() {
 			setErro(
 				erroCapturado instanceof ApiError
 					? erroCapturado.message
-					: "Falha ao decidir.",
+					: "não foi possível registrar a decisão sobre o cadastro.",
 			);
 		} finally {
 			setEmAcao(null);

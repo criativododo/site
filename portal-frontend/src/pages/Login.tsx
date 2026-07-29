@@ -12,7 +12,7 @@ export function LoginPage() {
 				<img
 					className="portal-login-logo"
 					src={logoPrincipal}
-					alt="criativo dodô"
+					alt="Criativo Dodô"
 				/>
 				<span className="portal-login-loader" aria-hidden="true" />
 				<p>verificando seu acesso…</p>
@@ -31,7 +31,7 @@ export function LoginPage() {
 				<img
 					className="portal-login-logo"
 					src={logoPrincipal}
-					alt="criativo dodô"
+					alt="Criativo Dodô"
 				/>
 				<span>portal da parceira</span>
 			</header>
