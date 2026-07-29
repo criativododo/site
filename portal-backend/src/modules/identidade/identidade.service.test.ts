@@ -1,6 +1,12 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
+import { env } from "../../config/env.js";
 import { identidadeRepositorio } from "./identidade.repository.js";
-import { aprovarConta, listarContasPendentes, rejeitarConta } from "./identidade.service.js";
+import {
+  aprovarConta,
+  listarContasPendentes,
+  rejeitarConta,
+  resolverOuCriarIdentidade,
+} from "./identidade.service.js";
 import type { Identidade } from "./identidade.types.js";
 
 function identidade(overrides: Partial<Identidade> = {}): Identidade {
@@ -58,5 +64,75 @@ describe("moderação administrativa (Feature 5.3, RN-04)", () => {
   it("retorna NAO_ENCONTRADA para subProvider inexistente", async () => {
     const resultado = await aprovarConta("sub-nao-existe");
     expect(resultado).toEqual({ ok: false, motivo: "NAO_ENCONTRADA" });
+  });
+});
+
+describe("bootstrap de Administrador (ADR-012)", () => {
+  afterEach(() => {
+    env.adminBootstrapEmails.length = 0;
+  });
+
+  it("promove a ADMINISTRADOR ACTIVE uma identidade existente cujo e-mail entrou depois em ADMIN_BOOTSTRAP_EMAILS", async () => {
+    await identidadeRepositorio.salvar(
+      identidade({
+        subProvider: "sub-influenciadora-antiga",
+        emailPerfil: "admin@dodo.dev",
+        papelAtor: "INFLUENCIADORA",
+        estadoConta: "PENDING",
+      }),
+    );
+    env.adminBootstrapEmails.push("admin@dodo.dev");
+
+    const resolvida = await resolverOuCriarIdentidade({
+      sub: "sub-influenciadora-antiga",
+      email: "admin@dodo.dev",
+      emailVerificado: true,
+      nome: "Admin",
+    });
+
+    expect(resolvida.papelAtor).toBe("ADMINISTRADOR");
+    expect(resolvida.estadoConta).toBe("ACTIVE");
+  });
+
+  it("não rebaixa uma identidade ADMINISTRADOR ACTIVE quando o e-mail sai de ADMIN_BOOTSTRAP_EMAILS", async () => {
+    await identidadeRepositorio.salvar(
+      identidade({
+        subProvider: "sub-admin-removido-da-lista",
+        emailPerfil: "ex-admin@dodo.dev",
+        papelAtor: "ADMINISTRADOR",
+        estadoConta: "ACTIVE",
+      }),
+    );
+
+    const resolvida = await resolverOuCriarIdentidade({
+      sub: "sub-admin-removido-da-lista",
+      email: "ex-admin@dodo.dev",
+      emailVerificado: true,
+      nome: "Ex Admin",
+    });
+
+    expect(resolvida.papelAtor).toBe("ADMINISTRADOR");
+    expect(resolvida.estadoConta).toBe("ACTIVE");
+  });
+
+  it("não altera papel/estado de identidade existente cujo e-mail não está em ADMIN_BOOTSTRAP_EMAILS", async () => {
+    await identidadeRepositorio.salvar(
+      identidade({
+        subProvider: "sub-influenciadora-comum",
+        emailPerfil: "parceira@dodo.dev",
+        papelAtor: "INFLUENCIADORA",
+        estadoConta: "PENDING",
+      }),
+    );
+
+    const resolvida = await resolverOuCriarIdentidade({
+      sub: "sub-influenciadora-comum",
+      email: "parceira@dodo.dev",
+      emailVerificado: true,
+      nome: "Parceira",
+    });
+
+    expect(resolvida.papelAtor).toBe("INFLUENCIADORA");
+    expect(resolvida.estadoConta).toBe("PENDING");
   });
 });

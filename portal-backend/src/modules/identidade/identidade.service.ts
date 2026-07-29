@@ -17,7 +17,12 @@ export interface ClaimsGoogle {
 /**
  * Implementa o fluxo de resolução de identidade de SPEC-035 Cap. 5/9-10 (ADR-007/ADR-011):
  *
- *   sub existente             → conta já resolvida, só atualiza último acesso.
+ *   sub existente             → conta já resolvida, só atualiza último acesso — EXCETO se o
+ *                                e-mail estiver na lista de bootstrap e a conta ainda não for
+ *                                ADMINISTRADOR ACTIVE, caso em que é promovida nesse mesmo
+ *                                login (ADR-012). Promoção nunca é revertida automaticamente
+ *                                — sair da lista não rebaixa ninguém; rebaixar continua sendo
+ *                                ação manual do Administrador (RN-04/RN-05).
  *   sub inexistente            → nasce AGUARDANDO_CADASTRO (INFLUENCIADORA), EXCETO se o
  *                                e-mail estiver na lista de bootstrap (RN-07), caso em que
  *                                nasce ACTIVE como ADMINISTRADOR. Se vier de um link de
@@ -37,14 +42,20 @@ export async function resolverOuCriarIdentidade(
   const existente = await identidadeRepositorio.buscarPorSub(claims.sub);
   const agora = new Date().toISOString();
 
-  if (existente) {
-    const atualizada: Identidade = { ...existente, ultimoAcesso: agora };
-    return identidadeRepositorio.salvar(atualizada);
-  }
-
   const ehBootstrapAdministrador = env.adminBootstrapEmails.includes(
     claims.email.trim().toLowerCase(),
   );
+
+  if (existente) {
+    const precisaPromoverBootstrap =
+      ehBootstrapAdministrador &&
+      (existente.papelAtor !== "ADMINISTRADOR" || existente.estadoConta !== "ACTIVE");
+
+    const atualizada: Identidade = precisaPromoverBootstrap
+      ? { ...existente, papelAtor: "ADMINISTRADOR", estadoConta: "ACTIVE", ultimoAcesso: agora }
+      : { ...existente, ultimoAcesso: agora };
+    return identidadeRepositorio.salvar(atualizada);
+  }
 
   // Seed de dev/QA (env.parceiraSeed, ver config/env.ts) — substitui, só para este e-mail
   // fixo, o fluxo real de vinculação de SPEC-035 §5.1-A que ainda não existe fisicamente.

@@ -410,6 +410,50 @@ acesso pré-aprovado para parceiras já combinadas fora do Portal.
 
 ---
 
+## ADR-012 — `ADMIN_BOOTSTRAP_EMAILS` promove identidades já existentes, nunca rebaixa
+
+- **Status:** Aceito.
+- **Data:** 2026-07-29.
+- **Autor da decisão:** responsável do projeto.
+- **Relaciona-se com:** SPEC-035 RN-07 (bootstrap do primeiro Administrador), ADR-011
+  (fluxo de cadastro self-service).
+
+### Contexto
+`resolverOuCriarIdentidade` (`portal-backend/src/modules/identidade/identidade.service.ts`)
+só consultava `env.adminBootstrapEmails` no ramo de **criação** de uma nova `Identidade`
+(`sub` inexistente). Uma vez que o registro já existia no repositório — por exemplo, uma
+conta que fez login e completou o cadastro como `INFLUENCIADORA` antes de seu e-mail ser
+incluído em `ADMIN_BOOTSTRAP_EMAILS`, ou antes do próximo restart do processo — logins
+seguintes só atualizavam `ultimoAcesso`; `papelAtor`/`estadoConta` gravados na criação
+ficavam permanentes, e incluir o e-mail na variável de ambiente depois não tinha nenhum
+efeito. Foi o que causou, em produção (2026-07-29), a conta bootstrap
+`criativododo@gmail.com` ver a tela de "acesso em análise" (`estadoConta = PENDING`) em vez
+do painel administrativo.
+
+### Decisão
+1. `ADMIN_BOOTSTRAP_EMAILS` passa a ser reavaliado em **todo login**, inclusive para
+   identidades já existentes: se o e-mail estiver na lista e a conta ainda não for
+   `ADMINISTRADOR`/`ACTIVE`, ela é promovida nesse mesmo login.
+2. A promoção **nunca é revertida automaticamente**: remover um e-mail de
+   `ADMIN_BOOTSTRAP_EMAILS` não rebaixa a conta correspondente. Rebaixar um Administrador
+   continua sendo ação manual explícita (mesmo modelo de `moderarConta`, RN-04/RN-05) — fora
+   do escopo desta decisão, pois não existe hoje um fluxo de rebaixamento de Administrador.
+3. `ADMIN_BOOTSTRAP_EMAILS` funciona, portanto, como mecanismo tanto de bootstrap (primeiro
+   Administrador, RN-07) quanto de **recuperação administrativa** (reconceder o papel a uma
+   conta que o perdeu ou nunca o teve, sem depender de acesso direto ao armazenamento).
+
+### Consequências
+- `resolverOuCriarIdentidade` promove no ramo de identidade existente, não só no de criação;
+  coberto por teste em `identidade.service.test.ts` (promove, não rebaixa ao sair da lista,
+  não altera conta fora da lista).
+- Continua não existindo fluxo de rebaixamento automático ou manual de Administrador —
+  qualquer necessidade futura disso é uma decisão nova, fora desta ADR.
+- Como o repositório de identidade é em memória (placeholder, ver ADR-011), a promoção não
+  sobrevive a um restart do processo por si só — mas passa a ser reaplicada automaticamente
+  no próximo login após qualquer restart, o que resolve o cenário observado em produção.
+
+---
+
 ## Como usar este documento
 
 Toda decisão arquitetural nova e permanente deste projeto (que não seja um detalhe de
