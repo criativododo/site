@@ -3,6 +3,7 @@ import * as client from "openid-client";
 import { env } from "../../config/env.js";
 import { requireAuth } from "../../middleware/requireAuth.js";
 import { encerrarSessao, iniciarSessao } from "../../middleware/session.js";
+import type { EstadoConta, PapelAtor } from "./identidade.types.js";
 import { resolverOuCriarIdentidade } from "./identidade.service.js";
 import { obterConfiguracaoGoogle } from "./oidc.js";
 
@@ -103,6 +104,42 @@ authRoutes.get("/google/callback", async (req, res) => {
     // Nunca vazar detalhe interno do erro OIDC para o cliente (aud/iss/exp inválidos, etc.).
     res.status(401).json({ error: "Não foi possível concluir o login com o Google." });
   }
+});
+
+/**
+ * Atalho de QA local — nunca ativo em produção (dupla trava: convém não montar isto num
+ * ambiente de produção real, e o handler recusa mesmo assim caso a variável de ambiente seja
+ * lida incorretamente, mesmo padrão de env.parceiraSeed em config/env.ts). Popula a sessão
+ * diretamente, sem round-trip ao Google, só para exercitar o Portal com dados de teste.
+ */
+authRoutes.get("/dev-login", async (req, res) => {
+  if (env.isProduction) {
+    res.status(404).end();
+    return;
+  }
+
+  const { email, nome, papelAtor, estadoConta, parceiraId } = req.query;
+  if (
+    typeof email !== "string" ||
+    typeof nome !== "string" ||
+    typeof papelAtor !== "string" ||
+    typeof estadoConta !== "string"
+  ) {
+    res.status(400).json({ error: "Parâmetros obrigatórios: email, nome, papelAtor, estadoConta." });
+    return;
+  }
+
+  iniciarSessao(res, {
+    subProvider: `dev-qa:${email}`,
+    parceiraId: typeof parceiraId === "string" ? parceiraId : null,
+    papelAtor: papelAtor as PapelAtor,
+    estadoConta: estadoConta as EstadoConta,
+    email,
+    nome,
+  });
+
+  const destino = papelAtor === "ADMINISTRADOR" ? "/admin/dashboard" : "/pendencias";
+  res.redirect(`${env.frontendUrl}${destino}`);
 });
 
 authRoutes.get("/me", requireAuth, (req, res) => {
