@@ -495,10 +495,24 @@ textarea:focus-visible {
 	line-height: 1.5;
 }
 .portal-login-footer {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px 24px;
 	padding: 28px clamp(24px, 6vw, 96px);
 	border-top: 1px solid rgba(27, 23, 23, 0.1);
 	color: rgba(27, 23, 23, 0.7);
 	font-size: 13px;
+}
+.portal-login-footer a {
+	color: var(--color-cherry);
+	font-weight: 600;
+	white-space: nowrap;
+}
+.portal-login-footer a:hover {
+	text-decoration: underline;
+	text-underline-offset: 3px;
 }
 .portal-login-loading {
 	display: flex;

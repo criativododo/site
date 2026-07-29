@@ -11,10 +11,20 @@ const API_BASE_URL =
 	import.meta.env.VITE_API_BASE_URL ?? "http://localhost:4000";
 
 /**
- * Espelha o estado de conta de SPEC-035 Cap. 7 (ADR-007): toda conta nasce PENDING e só
- * passa a ACTIVE por ação de um Administrador. INACTIVE/REJECTED bloqueiam acesso.
+ * Espelha o estado de conta de SPEC-035 Cap. 7 (ADR-007/ADR-011): toda conta nasce
+ * AGUARDANDO_CADASTRO, passa a PENDING ao enviar o formulário de cadastro (ou direto a ACTIVE,
+ * se veio de um convite pré-aprovado) e só passa a ACTIVE por ação de um Administrador nos
+ * demais casos. INACTIVE/REJECTED bloqueiam acesso.
  */
-export type EstadoConta = "PENDING" | "ACTIVE" | "INACTIVE" | "REJECTED";
+export type EstadoConta =
+	| "AGUARDANDO_CADASTRO"
+	| "PENDING"
+	| "ACTIVE"
+	| "INACTIVE"
+	| "REJECTED";
+
+/** ADR-011: chave usada para carregar o token de convite (`/convite/:token`) até o login. */
+export const CHAVE_CONVITE_TOKEN = "dodo_convite_token";
 
 export type PapelAtor = "ADMINISTRADOR" | "INFLUENCIADORA";
 
@@ -64,8 +74,12 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
 	function login() {
 		// Authorization Code Flow + PKCE (ADR-007) começa e termina no backend;
-		// o frontend só redireciona, nunca manipula token OIDC diretamente.
-		window.location.href = `${API_BASE_URL}/auth/google/login`;
+		// o frontend só redireciona, nunca manipula token OIDC diretamente. Se a visita veio de
+		// um link de convite (ADR-011, `/convite/:token`), o token guardado viaja como query
+		// param — o backend o carrega no handshake OIDC e o repassa até a criação da conta.
+		const conviteToken = sessionStorage.getItem(CHAVE_CONVITE_TOKEN);
+		const query = conviteToken ? `?convite=${encodeURIComponent(conviteToken)}` : "";
+		window.location.href = `${API_BASE_URL}/auth/google/login${query}`;
 	}
 
 	async function logout() {

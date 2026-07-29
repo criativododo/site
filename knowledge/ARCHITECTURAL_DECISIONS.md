@@ -366,6 +366,50 @@ projeto**, seguindo a LGPD por padrão (**Privacy by Design e Privacy by Default
 
 ---
 
+## ADR-011 — Fluxo de cadastro (self-service) da Influenciadora e links de convite pré-aprovado
+
+- **Status:** Aceito.
+- **Data:** 2026-07-29.
+- **Autor da decisão:** responsável do projeto.
+- **Relaciona-se com:** SPEC-035 Cap. 5/7/9-10, ADR-007 (fluxo `PENDING→ACTIVE`), ADR-008
+  (agregado Parceira modelado no Backoffice Administrativo).
+
+### Contexto
+O fluxo original de ADR-007 (`PENDING→ACTIVE`) fazia toda conta nova nascer `PENDING` já no
+primeiro login com Google, sem nenhum dado além de nome/e-mail do provedor — não existia
+etapa de preenchimento de cadastro antes da moderação, e o Administrador não tinha como gerar
+acesso pré-aprovado para parceiras já combinadas fora do Portal.
+
+### Decisão
+1. **Novo estado `AGUARDANDO_CADASTRO`**, anterior a `PENDING`: toda conta nova (exceto
+   bootstrap de Administrador/seed de QA) nasce aqui após o primeiro login com Google, e só
+   avança ao enviar o formulário de cadastro (nome, chave/nome artístico, cnpj, pix,
+   endereço).
+2. **Ao enviar o cadastro**, o Portal cria fisicamente o agregado Parceira (nasce `INATIVA`,
+   RN-01 inalterada) e o Perfil (pix/endereço) correspondentes, vincula `parceiraId` à
+   Identidade, e decide o próximo estado:
+   - `PENDING` no caminho padrão (aguarda moderação do Administrador, como já era).
+   - `ACTIVE` direto, se a conta nasceu a partir de um link de convite pré-aprovado (item 3).
+3. **Links de convite pré-aprovado**: o Administrador gera um token de uso único
+   (`/api/admin/convites`); quem acessa `/convite/:token`, faz login com Google e envia o
+   cadastro pula a fila de moderação manual.
+4. **A Condição Comercial da Parceira** (valor mensal, entregáveis contratados) não é
+   preenchida pela própria Influenciadora — nasce zerada no cadastro e é ajustada pelo
+   Administrador depois, no mesmo fluxo de edição já existente em `AdminParceiras`.
+
+### Consequências
+- `EstadoConta` passa a ter 5 valores (`AGUARDANDO_CADASTRO | PENDING | ACTIVE | INACTIVE |
+  REJECTED`); qualquer código que trate `estadoConta` de forma exaustiva precisa considerar o
+  novo valor.
+- A vinculação Identidade↔Parceira deixa de ser uma lacuna do EPIC 1 (ver §5.1-A citado em
+  `identidade.service.ts`) para o caminho de auto-cadastro — a vinculação por confirmação
+  manual explícita (parceira pré-existente por e-mail coincidente) continua não implementada e
+  continua fora de escopo desta decisão.
+- Links de convite são armazenados em memória (mesmo placeholder de persistência do restante
+  do módulo de identidade) — não sobrevivem a um restart do processo.
+
+---
+
 ## Como usar este documento
 
 Toda decisão arquitetural nova e permanente deste projeto (que não seja um detalhe de

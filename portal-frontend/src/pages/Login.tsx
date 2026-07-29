@@ -1,6 +1,6 @@
 import { Navigate } from "react-router-dom";
 import emblema from "../assets/brand/icon.svg";
-import logoPrincipal from "../assets/brand/principal.svg";
+import logoPrincipal from "../assets/brand/principal-cherry.svg";
 import { useSession } from "../lib/session";
 
 export function LoginPage() {
@@ -24,6 +24,10 @@ export function LoginPage() {
 		return <Navigate to="/pendencias" replace />;
 	}
 
+	if (sessao?.estadoConta === "AGUARDANDO_CADASTRO") {
+		return <Navigate to="/cadastro" replace />;
+	}
+
 	return (
 		<main className="portal-login">
 			<img className="portal-login-emblem" src={emblema} alt="" aria-hidden="true" />
@@ -33,7 +37,6 @@ export function LoginPage() {
 					src={logoPrincipal}
 					alt="Criativo Dodô"
 				/>
-				<span>portal da parceira</span>
 			</header>
 
 			<section
@@ -42,7 +45,7 @@ export function LoginPage() {
 			>
 				{!sessao && (
 					<>
-						<p className="portal-login-overline">acesso da parceira</p>
+						<p className="portal-login-overline">acesso ao portal</p>
 						<h1 id="portal-login-title" className="portal-login-title">
 							bem-vinda de volta.
 						</h1>
@@ -92,7 +95,8 @@ export function LoginPage() {
 			</section>
 
 			<footer className="portal-login-footer">
-				precisa de ajuda? fale com a equipe criativo dodô.
+				<span>precisa de ajuda? fale com a equipe criativo dodô.</span>
+				<a href="/privacidade">política de privacidade (lgpd)</a>
 			</footer>
 		</main>
 	);

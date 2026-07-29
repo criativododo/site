@@ -7,15 +7,21 @@ import { AdminDashboardPage } from "./pages/AdminDashboard";
 import { AdminEntregasPage } from "./pages/AdminEntregas";
 import { AdminObrigacoesPage } from "./pages/AdminObrigacoes";
 import { AdminParceirasPage } from "./pages/AdminParceiras";
+import { CadastroPage } from "./pages/Cadastro";
+import { ConvitePage } from "./pages/Convite";
 import { FinanceiroPage } from "./pages/Financeiro";
 import { LoginPage } from "./pages/Login";
 import { PendenciasPage } from "./pages/Pendencias";
 import { PerfilPage } from "./pages/Perfil";
+import { PrivacidadePage } from "./pages/Privacidade";
 
 function App() {
 	return (
 		<Routes>
 			<Route path="/login" element={<LoginPage />} />
+			<Route path="/cadastro" element={<CadastroPage />} />
+			<Route path="/convite/:token" element={<ConvitePage />} />
+			<Route path="/privacidade" element={<PrivacidadePage />} />
 
 			<Route
 				element={

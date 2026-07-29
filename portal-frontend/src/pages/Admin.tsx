@@ -17,6 +17,118 @@ interface SolicitacaoExclusao {
 	status: "PENDENTE" | "APROVADA" | "NEGADA";
 }
 
+interface Convite {
+	token: string;
+	url: string;
+	criadoEm: string;
+	usadoEm: string | null;
+}
+
+/** ADR-011 · Gera links de convite pré-aprovado: quem se cadastra por eles pula a moderação. */
+function GerarConvite() {
+	const [convites, setConvites] = useState<Convite[] | null>(null);
+	const [gerando, setGerando] = useState(false);
+	const [copiado, setCopiado] = useState<string | null>(null);
+	const [erro, setErro] = useState<string | null>(null);
+
+	function carregar() {
+		apiFetch<{ itens: Convite[] }>("/api/admin/convites")
+			.then((dados) => setConvites(dados.itens))
+			.catch(() => setConvites([]));
+	}
+
+	useEffect(() => {
+		carregar();
+	}, []);
+
+	async function gerar() {
+		setGerando(true);
+		setErro(null);
+		try {
+			await apiFetch<Convite>("/api/admin/convites", { method: "POST" });
+			carregar();
+		} catch (erroCapturado) {
+			setErro(
+				erroCapturado instanceof ApiError
+					? erroCapturado.message
+					: "não foi possível gerar o convite.",
+			);
+		} finally {
+			setGerando(false);
+		}
+	}
+
+	async function copiar(url: string) {
+		await navigator.clipboard.writeText(url);
+		setCopiado(url);
+		setTimeout(() => setCopiado(null), 2000);
+	}
+
+	return (
+		<div className="portal-section-divider">
+			<p className="pendencias-summary is-quiet">links de convite pré-aprovado</p>
+			<p className="portal-page-feedback" style={{ marginTop: 4, marginBottom: 12 }}>
+				quem se cadastra por um destes links entra direto, sem passar pela fila de
+				aprovação abaixo.
+			</p>
+
+			<button
+				type="button"
+				className="btn-primary"
+				disabled={gerando}
+				onClick={() => void gerar()}
+				style={{ height: 36, padding: "0 20px", fontSize: 13 }}
+			>
+				{gerando ? "gerando..." : "gerar novo link"}
+			</button>
+
+			{erro && <p className="portal-page-feedback is-error">{erro}</p>}
+
+			{convites && convites.length > 0 && (
+				<ul className="portal-list" style={{ marginTop: 16 }}>
+					{convites.map((convite) => (
+						<li key={convite.token} className="portal-list-row">
+							<div style={{ minWidth: 0, width: "100%", maxWidth: "100%" }}>
+								<strong
+									className="portal-list-row-title"
+									style={{
+										display: "block",
+										maxWidth: "100%",
+										overflow: "hidden",
+										textOverflow: "ellipsis",
+										whiteSpace: "nowrap",
+									}}
+								>
+									{convite.url}
+								</strong>
+								<p className="portal-list-row-meta">
+									{convite.usadoEm ? "já utilizado" : "ainda não utilizado"}
+								</p>
+							</div>
+							<div className="portal-list-row-actions">
+								<button
+									type="button"
+									onClick={() => void copiar(convite.url)}
+									style={{
+										height: 36,
+										padding: "0 20px",
+										fontSize: 13,
+										borderRadius: 24,
+										border: "1px solid rgba(27, 23, 23, 0.2)",
+										background: "none",
+									}}
+								>
+									{copiado === convite.url ? "copiado!" : "copiar"}
+								</button>
+							</div>
+						</li>
+					))}
+				</ul>
+			)}
+		</div>
+	);
+}
+
 function FilaDeExclusao({
 	responsavelAnalise,
 }: {
@@ -204,6 +316,8 @@ export function AdminPage() {
 			<p className="portal-page-intro">
 				aprove ou rejeite contas novas e pedidos de exclusão.
 			</p>
+
+			<GerarConvite />
 
 			{carregando && <p className="portal-page-feedback">carregando...</p>}
 			{!carregando && erro && (

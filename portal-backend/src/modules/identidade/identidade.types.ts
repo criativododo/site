@@ -5,7 +5,18 @@
 
 export type PapelAtor = "ADMINISTRADOR" | "INFLUENCIADORA";
 
-export type EstadoConta = "PENDING" | "ACTIVE" | "INACTIVE" | "REJECTED";
+/**
+ * `AGUARDANDO_CADASTRO` (ADR-011): primeiro login com Google feito, mas o formulário de
+ * cadastro ainda não foi enviado — precede `PENDING` no fluxo padrão. Toda conta nova nasce
+ * aqui, exceto bootstrap de Administrador/seed de QA (que nascem `ACTIVE` diretamente).
+ */
+export type EstadoConta = "AGUARDANDO_CADASTRO" | "PENDING" | "ACTIVE" | "INACTIVE" | "REJECTED";
+
+/**
+ * ADR-011: de onde veio o acesso. `CONVITE_PREAPROVADO` pula a moderação manual — ao enviar o
+ * cadastro, a conta vai direto para `ACTIVE` em vez de passar por `PENDING`.
+ */
+export type OrigemAcesso = "PADRAO" | "CONVITE_PREAPROVADO";
 
 export interface Identidade {
   /** Claim `sub` do ID Token do Google — identificador imutável do provedor. */
@@ -14,10 +25,10 @@ export interface Identidade {
   nomeCompleto: string;
   papelAtor: PapelAtor;
   estadoConta: EstadoConta;
+  origemAcesso: OrigemAcesso;
   /**
    * Só relevante para papel INFLUENCIADORA. Nulo enquanto a conta não for vinculada a uma
-   * Parceira (ver ADR-006/ADR-008 — modelo de Parceira ainda não existe fisicamente neste
-   * EPIC; a vinculação real fica para o EPIC em que Parceira for modelada).
+   * Parceira — passa a ter valor quando o cadastro (ADR-011) é enviado e a Parceira é criada.
    */
   parceiraId: string | null;
   dataCriacao: string;

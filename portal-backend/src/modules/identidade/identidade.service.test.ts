@@ -10,6 +10,7 @@ function identidade(overrides: Partial<Identidade> = {}): Identidade {
     nomeCompleto: "Teste",
     papelAtor: "INFLUENCIADORA",
     estadoConta: "PENDING",
+    origemAcesso: "PADRAO",
     parceiraId: null,
     dataCriacao: new Date().toISOString(),
     ultimoAcesso: new Date().toISOString(),

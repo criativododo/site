@@ -57,7 +57,7 @@ export function PortalLayout() {
 	const itensNav =
 		sessao?.papelAtor === "ADMINISTRADOR"
 			? [
-					{ to: "/admin/dashboard", label: "painel" },
+					{ to: "/admin/dashboard", label: "dashboard" },
 					{ to: "/admin/parceiras", label: "parceiras" },
 					{ to: "/admin/entregas", label: "entregas" },
 					{ to: "/admin/briefings", label: "briefings" },
