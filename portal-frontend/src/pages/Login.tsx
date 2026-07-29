@@ -4,7 +4,7 @@ import logoPrincipal from "../assets/brand/principal-cherry.svg";
 import { useSession } from "../lib/session";
 
 export function LoginPage() {
-	const { sessao, carregando, login } = useSession();
+	const { sessao, carregando, login, logout } = useSession();
 
 	if (carregando) {
 		return (
@@ -76,6 +76,13 @@ export function LoginPage() {
 							assim que a equipe aprovar seu cadastro, você poderá entrar por
 							aqui com a mesma conta google.
 						</p>
+						<button
+							type="button"
+							className="btn-outline portal-login-retry"
+							onClick={logout}
+						>
+							sair e tentar novamente
+						</button>
 					</>
 				)}
 
@@ -90,6 +97,13 @@ export function LoginPage() {
 							fale com a equipe criativo dodô para confirmar os dados do seu
 							cadastro.
 						</p>
+						<button
+							type="button"
+							className="btn-outline portal-login-retry"
+							onClick={logout}
+						>
+							sair e tentar novamente
+						</button>
 					</>
 				)}
 			</section>

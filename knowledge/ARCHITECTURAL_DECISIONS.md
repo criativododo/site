@@ -451,6 +451,13 @@ do painel administrativo.
 - Como o repositório de identidade é em memória (placeholder, ver ADR-011), a promoção não
   sobrevive a um restart do processo por si só — mas passa a ser reaplicada automaticamente
   no próximo login após qualquer restart, o que resolve o cenário observado em produção.
+- **Correção complementar (mesma data, validada em produção):** a promoção só se aplica num
+  login novo (`/auth/google/callback`), mas `portal-frontend/src/pages/Login.tsx` só exibia o
+  botão "continuar com google" quando não havia nenhuma sessão (`!sessao`) — uma conta presa
+  em `PENDING` (sessão de cookie deslizante de até 6h) nunca conseguia disparar um login novo
+  pela própria tela, mesmo já promovível pela lista de bootstrap. Corrigido com um botão "sair
+  e tentar novamente" nos estados `PENDING`/`INACTIVE`/`REJECTED`, que só encerra a sessão
+  (reaproveita `logout()` já existente) — não antecipa nem contorna a promoção em si.
 
 ---
 

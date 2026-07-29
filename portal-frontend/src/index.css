@@ -484,6 +484,10 @@ textarea:focus-visible {
 	width: 100%;
 	margin-top: 36px;
 }
+.portal-login-retry {
+	width: 100%;
+	margin-top: 24px;
+}
 .portal-login-button span {
 	font-size: 18px;
 	line-height: 1;
