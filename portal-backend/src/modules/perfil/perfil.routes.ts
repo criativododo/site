@@ -23,10 +23,6 @@ perfilRoutes.patch("/contato", async (req, res) => {
   const resultado = await atualizarContato(parceiraId, req.body ?? {});
 
   if (!resultado.ok) {
-    if (resultado.motivo === "PERFIL_NAO_ENCONTRADO") {
-      res.status(404).json({ error: "Perfil não encontrado." });
-      return;
-    }
     res.status(400).json({ error: `Campo não permitido: '${resultado.campo}'.` });
     return;
   }
@@ -44,11 +40,6 @@ perfilRoutes.patch("/endereco", async (req, res) => {
     numero: typeof numero === "string" ? numero : "",
     complemento: typeof complemento === "string" ? complemento : "",
   });
-
-  if (!resultado.ok) {
-    res.status(404).json({ error: "Perfil não encontrado." });
-    return;
-  }
 
   res.json({ perfil: resultado.perfil, cepResolvido: resultado.cepResolvido });
 });

@@ -399,6 +399,14 @@ export function PerfilPage() {
 			.then((dados) => ativo && setPerfil(dados))
 			.catch((erroCapturado) => {
 				if (!ativo) return;
+				// 404 aqui é "perfil ainda não configurado", não uma falha real — o backend só
+				// grava um registro de Perfil no primeiro PATCH (contato/endereço), então toda
+				// Parceira nova chega sem um até editar pela primeira vez. Trata como formulário
+				// vazio editável em vez de erro sem saída.
+				if (erroCapturado instanceof ApiError && erroCapturado.status === 404) {
+					setPerfil({ parceiraId: "", pix: "", email: "", endereco: null });
+					return;
+				}
 				setErro(
 					erroCapturado instanceof ApiError
 						? erroCapturado.message

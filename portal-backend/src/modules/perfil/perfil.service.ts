@@ -16,10 +16,16 @@ const CAMPOS_CONTATO_PERMITIDOS = ["pix", "email"] as const;
 
 export type ResultadoAtualizarContato =
   | { ok: true; perfil: PerfilParceira }
-  | { ok: false; motivo: "PERFIL_NAO_ENCONTRADO" }
   | { ok: false; motivo: "CAMPO_NAO_PERMITIDO"; campo: string };
 
-/** UC-032.02 · Editar PIX/e-mail. */
+/**
+ * UC-032.02 · Editar PIX/e-mail. Sem Parceira (SPEC-002) implementada neste EPIC, o único
+ * jeito de uma Parceira real ganhar um registro de Perfil é este primeiro PATCH — por isso
+ * "ainda não existe Perfil" vira criação (upsert), nunca rejeição. Sem isso, toda Parceira
+ * fora do único PARCEIRA_SEED_ID de desenvolvimento ficaria permanentemente incapaz de
+ * configurar PIX/e-mail (achado de QA, não presente antes: `perfilAtual` inexistente
+ * retornava PERFIL_NAO_ENCONTRADO, um beco sem saída para qualquer conta real).
+ */
 export async function atualizarContato(
   parceiraId: string,
   dados: Record<string, unknown>,
@@ -30,10 +36,12 @@ export async function atualizarContato(
     }
   }
 
-  const perfilAtual = await perfilRepositorio.buscarPorParceira(parceiraId);
-  if (!perfilAtual) {
-    return { ok: false, motivo: "PERFIL_NAO_ENCONTRADO" };
-  }
+  const perfilAtual = (await perfilRepositorio.buscarPorParceira(parceiraId)) ?? {
+    parceiraId,
+    pix: "",
+    email: "",
+    endereco: null,
+  };
 
   const atualizado: PerfilParceira = {
     ...perfilAtual,
@@ -65,19 +73,22 @@ export function montarEndereco(
   };
 }
 
-export type ResultadoAtualizarEndereco =
-  | { ok: true; perfil: PerfilParceira; cepResolvido: boolean }
-  | { ok: false; motivo: "PERFIL_NAO_ENCONTRADO" };
+export type ResultadoAtualizarEndereco = { ok: true; perfil: PerfilParceira; cepResolvido: boolean };
 
-/** UC-032.03 · Editar endereço por CEP. */
+/**
+ * UC-032.03 · Editar endereço por CEP. Mesmo raciocínio de upsert de `atualizarContato`:
+ * ainda sem Perfil vira criação, nunca rejeição (ver comentário lá).
+ */
 export async function atualizarEndereco(
   parceiraId: string,
   dados: { cep: string; numero: string; complemento: string },
 ): Promise<ResultadoAtualizarEndereco> {
-  const perfilAtual = await perfilRepositorio.buscarPorParceira(parceiraId);
-  if (!perfilAtual) {
-    return { ok: false, motivo: "PERFIL_NAO_ENCONTRADO" };
-  }
+  const perfilAtual = (await perfilRepositorio.buscarPorParceira(parceiraId)) ?? {
+    parceiraId,
+    pix: "",
+    email: "",
+    endereco: null,
+  };
 
   const dadosResolvidos = await resolvedorDeCep.resolver(dados.cep);
   const endereco = montarEndereco(dados, dadosResolvidos, perfilAtual.endereco);

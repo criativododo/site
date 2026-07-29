@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { randomUUID } from "node:crypto";
 import { atualizarContato, montarEndereco } from "./perfil.service.js";
 
 describe("atualizarContato (RN-04/CB-02)", () => {
@@ -18,6 +19,16 @@ describe("atualizarContato (RN-04/CB-02)", () => {
   it("recusa qualquer chave fora de pix/email, mesmo isolada", async () => {
     const resultado = await atualizarContato("qualquer-parceira", { status: "Ativa" });
     expect(resultado).toEqual({ ok: false, motivo: "CAMPO_NAO_PERMITIDO", campo: "status" });
+  });
+
+  it("cria o Perfil no primeiro PATCH quando a Parceira ainda não tem um (achado de QA: antes retornava PERFIL_NAO_ENCONTRADO, beco sem saída para qualquer conta real fora do seed de dev)", async () => {
+    const parceiraId = randomUUID();
+    const resultado = await atualizarContato(parceiraId, { pix: "chave-pix-nova" });
+
+    expect(resultado.ok).toBe(true);
+    if (resultado.ok) {
+      expect(resultado.perfil).toEqual({ parceiraId, pix: "chave-pix-nova", email: "", endereco: null });
+    }
   });
 });
 
