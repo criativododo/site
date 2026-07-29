@@ -56,6 +56,8 @@ obrigacaoAdminRoutes.get("/", async (_req, res) => {
 obrigacaoAdminRoutes.post("/", async (req, res) => {
   const { parceiraId, mesReferencia, valor, tipo } = req.body ?? {};
 
+  // valor usa `=== undefined` (não a checagem genérica de truthiness) porque 0 é um valor
+  // presente-mas-inválido que deve cair no motivo VALOR_INVALIDO do service, não aqui.
   if (!parceiraId || !mesReferencia || valor === undefined || !tipo) {
     res.status(400).json({ error: "Campos obrigatórios: parceiraId, mesReferencia, valor, tipo." });
     return;

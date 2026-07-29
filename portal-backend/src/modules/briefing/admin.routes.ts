@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { mensagemDeCamposObrigatoriosAusentes } from "../../shared/validacaoCampos.js";
 import {
   criarBriefingParaEntrega,
   editarBriefing,
@@ -48,12 +49,18 @@ briefingAdminRoutes.get("/", async (_req, res) => {
 
 /** Backoffice — criação sempre vinculada a uma Entrega existente (nunca por parceiraId/mesReferencia/formato soltos). */
 briefingAdminRoutes.post("/", async (req, res) => {
-  const { entregaId, look, dataEntrega, dataPostagem, orientacao } = req.body ?? {};
+  const corpo = req.body ?? {};
+  const { entregaId, look, dataEntrega, dataPostagem, orientacao } = corpo;
 
-  if (!entregaId || !look || !dataEntrega || !dataPostagem || !orientacao) {
-    res.status(400).json({
-      error: "Campos obrigatórios: entregaId, look, dataEntrega, dataPostagem, orientacao.",
-    });
+  const erroCampos = mensagemDeCamposObrigatoriosAusentes(corpo, [
+    "entregaId",
+    "look",
+    "dataEntrega",
+    "dataPostagem",
+    "orientacao",
+  ]);
+  if (erroCampos) {
+    res.status(400).json({ error: erroCampos });
     return;
   }
 

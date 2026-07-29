@@ -1,7 +1,10 @@
 import { Router } from "express";
+import { mensagemDeCamposObrigatoriosAusentes } from "../../shared/validacaoCampos.js";
 import {
+  aprovarEntrega,
   criarEntregaAdministrativa,
   listarTodasEntregas,
+  type MotivoRejeicaoAprovacao,
   type MotivoRejeicaoNovaEntrega,
 } from "./conteudo.service.js";
 
@@ -22,6 +25,15 @@ function mensagemDeErro(motivo: MotivoRejeicaoNovaEntrega): string {
   }
 }
 
+function mensagemDeErroAprovacao(motivo: MotivoRejeicaoAprovacao): string {
+  switch (motivo) {
+    case "NAO_ENCONTRADA":
+      return "Entrega não encontrada.";
+    case "TRANSICAO_INVALIDA":
+      return "só é possível aprovar uma Entrega que esteja 'em revisão'.";
+  }
+}
+
 /** Backoffice — leitura irrestrita de todas as Entregas (Administrador vê tudo, sem isolamento por Parceira). */
 entregaAdminRoutes.get("/", async (_req, res) => {
   res.json({ itens: await listarTodasEntregas() });
@@ -29,10 +41,17 @@ entregaAdminRoutes.get("/", async (_req, res) => {
 
 /** Backoffice — criação administrativa (RN análoga à RN-01 de Parceira: nasce sempre AGUARDANDO_MATERIAL). */
 entregaAdminRoutes.post("/", async (req, res) => {
-  const { parceiraId, mesReferencia, formato, dataEntrega } = req.body ?? {};
+  const corpo = req.body ?? {};
+  const { parceiraId, mesReferencia, formato, dataEntrega } = corpo;
 
-  if (!parceiraId || !mesReferencia || !formato || !dataEntrega) {
-    res.status(400).json({ error: "Campos obrigatórios: parceiraId, mesReferencia, formato, dataEntrega." });
+  const erroCampos = mensagemDeCamposObrigatoriosAusentes(corpo, [
+    "parceiraId",
+    "mesReferencia",
+    "formato",
+    "dataEntrega",
+  ]);
+  if (erroCampos) {
+    res.status(400).json({ error: erroCampos });
     return;
   }
 
@@ -45,4 +64,17 @@ entregaAdminRoutes.post("/", async (req, res) => {
   }
 
   res.status(201).json(resultado.entrega);
+});
+
+/** Backoffice — aprovação (EM_REVISAO → APROVADO, UC-012.03 parte 1; CT-03 para qualquer outra origem). */
+entregaAdminRoutes.patch("/:id/aprovar", async (req, res) => {
+  const resultado = await aprovarEntrega(req.params.id);
+
+  if (!resultado.ok) {
+    const status = resultado.motivo === "NAO_ENCONTRADA" ? 404 : 409;
+    res.status(status).json({ error: mensagemDeErroAprovacao(resultado.motivo) });
+    return;
+  }
+
+  res.json(resultado.entrega);
 });

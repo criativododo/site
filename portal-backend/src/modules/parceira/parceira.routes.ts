@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { mensagemDeCamposObrigatoriosAusentes } from "../../shared/validacaoCampos.js";
 import {
   alterarStatusParceira,
   cadastrarParceira,
@@ -15,10 +16,17 @@ parceiraRoutes.get("/", async (_req, res) => {
 
 /** RF-001/RN-01: cadastro administrativo — nasce sempre `INATIVA`. */
 parceiraRoutes.post("/", async (req, res) => {
-  const { chave, nome, email, cnpj, pix, condicaoComercial } = req.body ?? {};
+  const corpo = req.body ?? {};
+  const { chave, nome, email, cnpj, pix, condicaoComercial } = corpo;
 
-  if (!chave || !nome || !email || !condicaoComercial) {
-    res.status(400).json({ error: "Campos obrigatórios: chave, nome, email, condicaoComercial." });
+  const erroCampos = mensagemDeCamposObrigatoriosAusentes(corpo, [
+    "chave",
+    "nome",
+    "email",
+    "condicaoComercial",
+  ]);
+  if (erroCampos) {
+    res.status(400).json({ error: erroCampos });
     return;
   }
 
