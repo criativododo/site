@@ -461,6 +461,71 @@ do painel administrativo.
 
 ---
 
+## ADR-013 — Infraestrutura de resolução de CEP: cache + cadeia de providers com fallback
+
+- **Status:** Aceito.
+- **Data:** 2026-07-29.
+- **Autor da decisão:** responsável do projeto.
+- **Relaciona-se com:** SPEC-032 §6.3 (Adaptador de CEP, RN-01/RN-02), `PORTAL_ARQUITETURA.md`.
+
+### Contexto
+`ResolvedorDeCep` (porta definida em SPEC-032 §6.3) só tinha uma implementação:
+`ResolvedorDeCepEmMemoria`, um stub com dois CEPs fixos de teste, sem nenhuma integração
+externa real — decisão de infraestrutura deliberadamente adiada (comentário original: "nenhuma
+integração externa foi decidida"). Em produção, isso significava que **nenhum CEP real jamais
+resolvia**: `rua`/`bairro`/`cidade`/`uf` ficavam sempre vazios para qualquer Influenciadora
+real, e a tela de Perfil exibia o endereço com pontuação quebrada (achado de QA, 2026-07-29).
+
+Uma única API pública de CEP tem disponibilidade e taxa de erro não desprezíveis. O sistema
+legado deste projeto endereçava isso com múltiplas fontes de CEP em cadeia — filosofia que
+esta decisão mantém, sem herdar código dele (nunca existiu fisicamente neste repositório).
+
+### Decisão
+Criar `portal-backend/src/shared/cep/` como infraestrutura própria de resolução de CEP,
+independente do domínio de Perfil/Identidade (que continuam só conhecendo a porta
+`ResolvedorDeCep`/`DadosDeEndereco` já existente em `modules/perfil/cep.resolver.ts`):
+
+1. **Strategy + Chain of Responsibility.** `CepProvider` é a interface de uma fonte de CEP
+   (`buscar(cep): Promise<EnderecoPostal | null>`); `CepResolver` percorre uma lista ordenada
+   de providers, parando no primeiro que resolver. Falha de um provider (timeout, rede,
+   "não encontrado") nunca lança — o próprio provider devolve `null`/propaga erro, e
+   `CepResolver` decide passar para o próximo. Falha de todos retorna `null` (RN-02,
+   degradável), nunca exceção.
+2. **Ordem de fallback:** `BrasilAPI → ViaCEP → OpenCEP → AwesomeAPI`
+   (`shared/cep/index.ts::criarCepResolverPadrao`). Cada provider é um arquivo isolado em
+   `shared/cep/providers/`, com timeout individual (`AbortController`, padrão 3s) e
+   conhecimento exclusivo do formato de resposta da sua própria API — nenhum outro ponto do
+   sistema conhece nomes de campo como `logradouro`/`street`/`address` ou peculiaridades como
+   o `{ erro: true }` do ViaCEP (200 OK) vs. HTTP 404 de BrasilAPI/OpenCEP vs. HTTP 400 da
+   AwesomeAPI.
+3. **Normalização.** Independentemente de qual provider respondeu, `CepResolver` sempre
+   devolve o mesmo modelo canônico (`EnderecoPostal`: `logradouro`, `bairro`, `cidade`, `uf`),
+   já passado por `normalizarEndereco` (trim, UF em caixa alta). `modules/perfil/cep.resolver.ts`
+   (`ResolvedorDeCepPortal`) é o único ponto que traduz `logradouro` → `rua` (vocabulário do
+   domínio de Perfil) — a fronteira entre infraestrutura de CEP e domínio.
+4. **Cache.** `CepCache`, em memória (mesma decisão de persistência do resto do Portal hoje,
+   ver `START_HERE_NEXT_SESSION.md`), TTL de 30 dias, guarda só resoluções bem-sucedidas —
+   uma falha total dos providers não é cacheada, por ser tratada como possivelmente
+   transitória.
+5. **Extensão futura.** Adicionar um novo provider é criar uma classe `CepProvider` em
+   `shared/cep/providers/` e incluí-la na lista de `criarCepResolverPadrao`; remover um
+   provider é remover a linha correspondente — nenhum outro arquivo do sistema muda.
+
+### Consequências
+- `ResolvedorDeCepEmMemoria` (stub) foi removida; `resolvedorDeCep` (singleton consumido por
+  `perfil.service.ts` e `identidade.service.ts`) passa a resolver CEPs reais.
+- Cobertura de teste em `shared/cep/**/*.test.ts`: normalização (CEP e endereço), cache (hit,
+  expiração por TTL, não-cache de falha total), cada provider isoladamente (mapeamento de
+  resposta, "não encontrado", propagação de falha/timeout com `fetch` mockado — nenhum teste
+  faz chamada de rede real) e a cadeia completa (fallback entre providers, parar no primeiro
+  sucesso, cache evita nova chamada).
+- Sem novas dependências de terceiros: usa `fetch` nativo do Node (já disponível na versão
+  usada pelo projeto).
+- Continua existindo o mesmo tech debt já documentado de persistência 100% em memória — o
+  cache de CEP some num restart, sem risco de dado incorreto (só custa uma nova resolução).
+
+---
+
 ## Como usar este documento
 
 Toda decisão arquitetural nova e permanente deste projeto (que não seja um detalhe de

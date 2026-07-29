@@ -69,6 +69,8 @@ function EditarContato({
 	const [salvando, setSalvando] = useState(false);
 	const [erro, setErro] = useState<string | null>(null);
 
+	const formularioValido = pix.trim().length > 0 && email.trim().length > 0 && email.includes("@");
+
 	async function salvar() {
 		setSalvando(true);
 		setErro(null);
@@ -127,7 +129,7 @@ function EditarContato({
 				<button
 					type="button"
 					className="btn-primary"
-					disabled={salvando}
+					disabled={salvando || !formularioValido}
 					onClick={() => void salvar()}
 					style={{
 						alignSelf: "flex-start",
@@ -144,6 +146,16 @@ function EditarContato({
 	);
 }
 
+function mascararCep(valor: string): string {
+	const digitos = valor.replace(/\D/g, "").slice(0, 8);
+	return digitos.length > 5 ? `${digitos.slice(0, 5)}-${digitos.slice(5)}` : digitos;
+}
+
+function cepCompletoOuVazio(valor: string): boolean {
+	const digitos = valor.replace(/\D/g, "");
+	return digitos.length === 0 || digitos.length === 8;
+}
+
 function EditarEndereco({
 	perfil,
 	aoSalvarComSucesso,
@@ -153,7 +165,7 @@ function EditarEndereco({
 	aoSalvarComSucesso: (perfil: PerfilParceira) => void;
 	aoCancelar: () => void;
 }) {
-	const [cep, setCep] = useState(perfil.endereco?.cep ?? "");
+	const [cep, setCep] = useState(mascararCep(perfil.endereco?.cep ?? ""));
 	const [numero, setNumero] = useState(perfil.endereco?.numero ?? "");
 	const [complemento, setComplemento] = useState(
 		perfil.endereco?.complemento ?? "",
@@ -204,10 +216,15 @@ function EditarEndereco({
 				cep
 				<input
 					value={cep}
-					onChange={(evento) => setCep(evento.target.value)}
+					onChange={(evento) => setCep(mascararCep(evento.target.value))}
+					placeholder="00000-000"
+					inputMode="numeric"
 					style={estiloInput}
 				/>
 			</label>
+			{!cepCompletoOuVazio(cep) && (
+				<p className="portal-page-feedback is-error">cep incompleto — precisa de 8 dígitos.</p>
+			)}
 			<label style={estiloLabel}>
 				número
 				<input
@@ -231,7 +248,7 @@ function EditarEndereco({
 				<button
 					type="button"
 					className="btn-primary"
-					disabled={salvando}
+					disabled={salvando || !cepCompletoOuVazio(cep)}
 					onClick={() => void salvar()}
 					style={{
 						alignSelf: "flex-start",
@@ -348,6 +365,17 @@ function MeusDadosLgpd() {
 	);
 }
 
+/**
+ * Cada linha só aparece se tiver conteúdo — um endereço parcial (ex.: CEP não resolvido por
+ * nenhum provider, RN-02) nunca deve gerar pontuação solta (", 12 – , /").
+ */
+function linhasDeEndereco(endereco: Endereco): string[] {
+	const ruaNumero = [endereco.rua, endereco.numero].filter(Boolean).join(", ");
+	const linha1 = [ruaNumero, endereco.complemento].filter(Boolean).join(" – ");
+	const cidadeUf = [endereco.cidade, endereco.uf].filter(Boolean).join("/");
+	return [linha1, endereco.bairro, cidadeUf, endereco.cep].filter(Boolean);
+}
+
 function LinhaDePerfil({
 	rotulo,
 	valor,
@@ -462,10 +490,14 @@ export function PerfilPage() {
 
 						<>
 							<dt style={{ fontWeight: 700 }}>endereço</dt>
-							<dd style={{ display: "flex", alignItems: "center", gap: 12 }}>
-								{perfil.endereco ? (
+							<dd style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+								{perfil.endereco && linhasDeEndereco(perfil.endereco).length > 0 ? (
 									<>
-										{`${perfil.endereco.rua}, ${perfil.endereco.numero} — ${perfil.endereco.bairro}, ${perfil.endereco.cidade}/${perfil.endereco.uf}`}
+										<div style={{ display: "flex", flexDirection: "column" }}>
+											{linhasDeEndereco(perfil.endereco).map((linha, indice) => (
+												<span key={indice}>{linha}</span>
+											))}
+										</div>
 										{!editandoEndereco && (
 											<button
 												type="button"

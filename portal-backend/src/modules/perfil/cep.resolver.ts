@@ -1,8 +1,8 @@
+import { criarCepResolverPadrao, type CepResolver, type EnderecoPostal } from "../../shared/cep/index.js";
+
 /**
- * Porta de resolução de CEP (SPEC-032 §6.3 "Adaptador de CEP"). Nenhuma integração externa
- * foi decidida (mesma pendência de infraestrutura do §13 item 7) — isolado atrás desta
- * interface para que a service nunca dependa de qual provedor resolve o CEP. RN-02: qualquer
- * falha (CEP desconhecido, provedor indisponível) deve retornar `null`, nunca lançar — quem
+ * Porta de resolução de CEP (SPEC-032 §6.3 "Adaptador de CEP"). RN-02: qualquer falha (CEP
+ * desconhecido, todos os providers indisponíveis) deve retornar `null`, nunca lançar — quem
  * chama decide o comportamento degradável.
  */
 export interface DadosDeEndereco {
@@ -16,20 +16,29 @@ export interface ResolvedorDeCep {
   resolver(cep: string): Promise<DadosDeEndereco | null>;
 }
 
-/**
- * Stub em memória — sem chamada de rede (mantém o teste determinístico e evita decidir, sem
- * ADR, qual provedor de CEP usar em produção). CEPs fora do mapa são tratados como falha
- * (RN-02), não como erro.
- */
-const CEPS_CONHECIDOS: Record<string, DadosDeEndereco> = {
-  "01310-100": { rua: "Avenida Paulista", bairro: "Bela Vista", cidade: "São Paulo", uf: "SP" },
-  "20040-020": { rua: "Avenida Rio Branco", bairro: "Centro", cidade: "Rio de Janeiro", uf: "RJ" },
-};
+function paraDadosDeEndereco(resolvido: EnderecoPostal): DadosDeEndereco {
+  return {
+    rua: resolvido.logradouro,
+    bairro: resolvido.bairro,
+    cidade: resolvido.cidade,
+    uf: resolvido.uf,
+  };
+}
 
-export class ResolvedorDeCepEmMemoria implements ResolvedorDeCep {
+/**
+ * Adapta a infraestrutura real de resolução de CEP (`shared/cep` — cache + cadeia
+ * BrasilAPI → ViaCEP → OpenCEP → AwesomeAPI, ver ADR sobre infraestrutura de CEP em
+ * `knowledge/ARCHITECTURAL_DECISIONS.md`) ao vocabulário deste domínio (`rua`, não
+ * `logradouro`). Só este arquivo conhece esse mapeamento — `perfil.service.ts` e
+ * `identidade.service.ts` continuam a depender só de `ResolvedorDeCep`/`DadosDeEndereco`.
+ */
+export class ResolvedorDeCepPortal implements ResolvedorDeCep {
+  constructor(private readonly resolvedor: Pick<CepResolver, "resolver"> = criarCepResolverPadrao()) {}
+
   async resolver(cep: string): Promise<DadosDeEndereco | null> {
-    return CEPS_CONHECIDOS[cep] ?? null;
+    const resolvido = await this.resolvedor.resolver(cep);
+    return resolvido ? paraDadosDeEndereco(resolvido) : null;
   }
 }
 
-export const resolvedorDeCep: ResolvedorDeCep = new ResolvedorDeCepEmMemoria();
+export const resolvedorDeCep: ResolvedorDeCep = new ResolvedorDeCepPortal();

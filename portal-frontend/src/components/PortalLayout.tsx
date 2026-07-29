@@ -1,5 +1,5 @@
 import { Link, NavLink, Outlet } from "react-router-dom";
-import logoPrincipal from "../assets/brand/principal.svg";
+import logoPrincipal from "../assets/brand/principal-cherry.svg";
 import { PageHeaderProvider, usePageHeaderSlots } from "../lib/pageHeader";
 import { useSession } from "../lib/session";
 
