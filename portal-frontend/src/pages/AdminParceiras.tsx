@@ -1,6 +1,7 @@
 import type { ChangeEvent } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { ApiError, apiFetch } from "../lib/api";
+import { formatadorMoeda, formatarData } from "../lib/formatters";
 import { useSession } from "../lib/session";
 
 type StatusParceira = "ATIVA" | "INATIVA";
@@ -25,58 +26,7 @@ interface Parceira {
 	dataCriacao: string;
 }
 
-const formatadorMoeda = new Intl.NumberFormat("pt-BR", {
-	style: "currency",
-	currency: "BRL",
-});
-
 const ITENS_POR_PAGINA = 50;
-
-const estiloInput = {
-	height: 40,
-	borderRadius: 8,
-	border: "1px solid rgba(27, 23, 23, 0.2)",
-	padding: "0 12px",
-	fontSize: 14,
-	fontWeight: 400,
-} as const;
-
-const estiloLabel = {
-	display: "flex",
-	flexDirection: "column",
-	gap: 6,
-	fontSize: 13,
-	fontWeight: 700,
-} as const;
-
-const estiloBotaoOutlineNeutro = {
-	height: 36,
-	padding: "0 16px",
-	fontSize: 13,
-	borderRadius: 24,
-	border: "1px solid rgba(27, 23, 23, 0.2)",
-	background: "none",
-} as const;
-
-const estiloBotaoOutlineCherry = {
-	height: 36,
-	padding: "0 16px",
-	fontSize: 13,
-	borderRadius: 24,
-	border: "1px solid var(--color-cherry)",
-	background: "none",
-	color: "var(--color-cherry)",
-} as const;
-
-const estiloBotaoPrimarioPequeno = {
-	height: 36,
-	padding: "0 16px",
-	fontSize: 13,
-} as const;
-
-function formatarData(dataIso: string): string {
-	return new Date(dataIso).toLocaleDateString("pt-BR");
-}
 
 interface DadosFormularioParceira {
 	chave: string;
@@ -202,106 +152,86 @@ function FormularioParceira({
 	}
 
 	return (
-		<div
-			style={{
-				display: "grid",
-				gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-				gap: 12,
-				marginTop: 16,
-				paddingTop: 16,
-				borderTop: "1px solid rgba(27, 23, 23, 0.1)",
-			}}
-		>
+		<div className="admin-form-grid">
 			{!parceira && (
-				<label style={estiloLabel}>
+				<label className="admin-field">
 					chave
-					<input {...campo("chave")} style={estiloInput} />
+					<input className="admin-input" {...campo("chave")} />
 				</label>
 			)}
-			<label style={estiloLabel}>
+			<label className="admin-field">
 				nome
-				<input {...campo("nome")} style={estiloInput} />
+				<input className="admin-input" {...campo("nome")} />
 			</label>
-			<label style={estiloLabel}>
+			<label className="admin-field">
 				e-mail
-				<input type="email" {...campo("email")} style={estiloInput} />
+				<input className="admin-input" type="email" {...campo("email")} />
 			</label>
-			<label style={estiloLabel}>
+			<label className="admin-field">
 				cnpj
-				<input {...campo("cnpj")} style={estiloInput} />
+				<input className="admin-input" {...campo("cnpj")} />
 			</label>
-			<label style={estiloLabel}>
+			<label className="admin-field">
 				pix
-				<input {...campo("pix")} style={estiloInput} />
+				<input className="admin-input" {...campo("pix")} />
 			</label>
-			<label style={estiloLabel}>
+			<label className="admin-field">
 				valor mensal (r$)
-				<input type="number" {...campo("valorMensal")} style={estiloInput} />
+				<input
+					className="admin-input"
+					type="number"
+					{...campo("valorMensal")}
+				/>
 			</label>
-			<label style={estiloLabel}>
+			<label className="admin-field">
 				reels contratados
 				<input
+					className="admin-input"
 					type="number"
 					{...campo("entregaveisReel")}
-					style={estiloInput}
 				/>
 			</label>
-			<label style={estiloLabel}>
+			<label className="admin-field">
 				carrosséis contratados
 				<input
+					className="admin-input"
 					type="number"
 					{...campo("entregaveisCarrossel")}
-					style={estiloInput}
 				/>
 			</label>
-			<label style={estiloLabel}>
+			<label className="admin-field">
 				stories contratados
 				<input
+					className="admin-input"
 					type="number"
 					{...campo("entregaveisStories")}
-					style={estiloInput}
 				/>
 			</label>
-			<label style={estiloLabel}>
+			<label className="admin-field">
 				prazo de uso de imagem (dias)
 				<input
+					className="admin-input"
 					type="number"
 					{...campo("prazoUsoImagemDias")}
-					style={estiloInput}
 				/>
 			</label>
 
 			{erro && (
-				<p
-					className="portal-page-feedback is-error"
-					style={{ margin: 0, gridColumn: "1 / -1" }}
-				>
+				<p className="portal-page-feedback is-error admin-form-error">
 					{erro}
 				</p>
 			)}
 
-			<div
-				style={{
-					display: "flex",
-					gap: 8,
-					alignItems: "center",
-					gridColumn: "1 / -1",
-				}}
-			>
+			<div className="admin-form-actions">
 				<button
 					type="button"
-					className="btn-primary"
+					className="btn-primary is-compact"
 					disabled={salvando}
 					onClick={() => void salvar()}
-					style={estiloBotaoPrimarioPequeno}
 				>
 					{salvando ? "salvando..." : "salvar"}
 				</button>
-				<button
-					type="button"
-					onClick={aoCancelar}
-					style={{ ...estiloBotaoOutlineNeutro, border: "none" }}
-				>
+				<button type="button" className="btn-plain" onClick={aoCancelar}>
 					cancelar
 				</button>
 			</div>
@@ -333,26 +263,12 @@ function LinhaParceira({
 	return (
 		<li className="portal-list-row operational-row">
 			<span
-				className="portal-list-row-status"
-				style={{
-					fontWeight: 700,
-					color: ativa ? "inherit" : "var(--color-cherry)",
-				}}
+				className={`portal-list-row-status status-pill${ativa ? "" : " is-alert"}`}
 			>
 				{ativa ? "ativa" : "inativa"}
 			</span>
 
-			<button
-				type="button"
-				onClick={aoAlternarDetalhes}
-				style={{
-					textAlign: "left",
-					background: "none",
-					border: "none",
-					padding: 0,
-					cursor: "pointer",
-				}}
-			>
+			<button type="button" className="admin-row-title-button" onClick={aoAlternarDetalhes}>
 				<strong className="portal-list-row-title">{parceira.nome}</strong>
 				<p className="portal-list-row-meta">
 					{parceira.chave} · {parceira.email}
@@ -368,29 +284,24 @@ function LinhaParceira({
 			</p>
 
 			<div className="portal-list-row-actions">
-				<button
-					type="button"
-					onClick={aoAlternarEdicao}
-					style={estiloBotaoOutlineNeutro}
-				>
+				<button type="button" className="btn-outline" onClick={aoAlternarEdicao}>
 					{editando ? "fechar edição" : "editar"}
 				</button>
 				{ativa ? (
 					<button
 						type="button"
+						className="btn-outline is-cherry"
 						disabled={emAcao}
 						onClick={aoAlternarStatus}
-						style={estiloBotaoOutlineCherry}
 					>
 						{emAcao ? "..." : "desativar"}
 					</button>
 				) : (
 					<button
 						type="button"
-						className="btn-primary"
+						className="btn-primary is-compact"
 						disabled={emAcao}
 						onClick={aoAlternarStatus}
-						style={estiloBotaoPrimarioPequeno}
 					>
 						{emAcao ? "..." : "ativar"}
 					</button>
@@ -398,32 +309,22 @@ function LinhaParceira({
 			</div>
 
 			{expandida && (
-				<dl
-					style={{
-						gridColumn: "1 / -1",
-						display: "grid",
-						gridTemplateColumns: "auto 1fr",
-						gap: "8px 20px",
-						fontSize: 14,
-						marginTop: 4,
-						paddingTop: 12,
-						borderTop: "1px solid rgba(27, 23, 23, 0.1)",
-						width: "100%",
-					}}
-				>
-					<dt style={{ fontWeight: 700 }}>cnpj</dt>
-					<dd>{parceira.cnpj || "—"}</dd>
-					<dt style={{ fontWeight: 700 }}>pix</dt>
-					<dd>{parceira.pix || "—"}</dd>
-					<dt style={{ fontWeight: 700 }}>entregáveis contratados</dt>
-					<dd>
-						{parceira.condicaoComercial.entregaveisReel} reel ·{" "}
-						{parceira.condicaoComercial.entregaveisCarrossel} carrossel ·{" "}
-						{parceira.condicaoComercial.entregaveisStories} stories
-					</dd>
-					<dt style={{ fontWeight: 700 }}>prazo de uso de imagem</dt>
-					<dd>{parceira.condicaoComercial.prazoUsoImagemDias} dias</dd>
-				</dl>
+				<div className="admin-row-expanded">
+					<dl>
+						<dt>cnpj</dt>
+						<dd>{parceira.cnpj || "—"}</dd>
+						<dt>pix</dt>
+						<dd>{parceira.pix || "—"}</dd>
+						<dt>entregáveis contratados</dt>
+						<dd>
+							{parceira.condicaoComercial.entregaveisReel} reel ·{" "}
+							{parceira.condicaoComercial.entregaveisCarrossel} carrossel ·{" "}
+							{parceira.condicaoComercial.entregaveisStories} stories
+						</dd>
+						<dt>prazo de uso de imagem</dt>
+						<dd>{parceira.condicaoComercial.prazoUsoImagemDias} dias</dd>
+					</dl>
+				</div>
 			)}
 
 			{editando && (
@@ -573,7 +474,7 @@ export function AdminParceirasPage() {
 	}
 
 	return (
-		<section className="portal-page" style={{ maxWidth: 1080 }}>
+		<section className="portal-page is-admin-wide">
 			<p className="portal-eyebrow">administração</p>
 			<h1 className="title-editorial portal-page-title">parceiras</h1>
 			<p className="portal-page-intro">
@@ -590,46 +491,41 @@ export function AdminParceirasPage() {
 
 			{!carregando && parceiras && (
 				<>
-					<div
-						style={{
-							display: "flex",
-							flexWrap: "wrap",
-							gap: 12,
-							alignItems: "flex-end",
-							marginBottom: 16,
-						}}
-					>
-						<label style={{ ...estiloLabel, flex: "2 1 220px" }}>
+					<div className="admin-toolbar">
+						<label className="admin-field is-wide">
 							buscar
 							<input
+								className="admin-input"
+								name="buscaParceiras"
 								placeholder="nome, chave, e-mail ou cnpj"
 								value={busca}
 								onChange={(evento) => setBusca(evento.target.value)}
-								style={estiloInput}
 							/>
 						</label>
-						<label style={{ ...estiloLabel, flex: "1 1 140px" }}>
+						<label className="admin-field" style={{ flex: "1 1 140px" }}>
 							status
 							<select
+								className="admin-select"
+								name="filtroStatus"
 								value={filtroStatus}
 								onChange={(evento) =>
 									setFiltroStatus(evento.target.value as FiltroStatus)
 								}
-								style={estiloInput}
 							>
 								<option value="TODAS">todas</option>
 								<option value="ATIVA">ativas</option>
 								<option value="INATIVA">inativas</option>
 							</select>
 						</label>
-						<label style={{ ...estiloLabel, flex: "1 1 170px" }}>
+						<label className="admin-field is-narrow">
 							ordenar por
 							<select
+								className="admin-select"
+								name="ordenacao"
 								value={ordenacao}
 								onChange={(evento) =>
 									setOrdenacao(evento.target.value as Ordenacao)
 								}
-								style={estiloInput}
 							>
 								<option value="NOME">nome</option>
 								<option value="RECENTES">cadastro mais recente</option>
@@ -638,22 +534,15 @@ export function AdminParceirasPage() {
 						</label>
 						<button
 							type="button"
-							className="btn-primary"
+							className="btn-primary is-medium"
 							onClick={() => setFormularioAberto((atual) => !atual)}
-							style={{ height: 40, padding: "0 24px", fontSize: 14 }}
 						>
 							{formularioAberto ? "fechar" : "+ nova parceira"}
 						</button>
 					</div>
 
 					{formularioAberto && (
-						<div
-							style={{
-								marginBottom: 24,
-								paddingBottom: 24,
-								borderBottom: "1px solid rgba(27, 23, 23, 0.1)",
-							}}
-						>
+						<div className="admin-form-panel">
 							<FormularioParceira
 								aoSalvarComSucesso={(nova) => {
 									setParceiras((atual) => (atual ? [nova, ...atual] : [nova]));
@@ -708,31 +597,23 @@ export function AdminParceirasPage() {
 							</ul>
 
 							{totalPaginas > 1 && (
-								<div
-									style={{
-										display: "flex",
-										alignItems: "center",
-										justifyContent: "center",
-										gap: 16,
-										marginTop: 24,
-									}}
-								>
+								<div className="admin-pagination">
 									<button
 										type="button"
+										className="btn-outline"
 										disabled={paginaVisivel === 1}
 										onClick={() => setPagina(paginaVisivel - 1)}
-										style={estiloBotaoOutlineNeutro}
 									>
 										anterior
 									</button>
-									<span style={{ fontSize: 14 }}>
+									<span>
 										página {paginaVisivel} de {totalPaginas}
 									</span>
 									<button
 										type="button"
+										className="btn-outline"
 										disabled={paginaVisivel === totalPaginas}
 										onClick={() => setPagina(paginaVisivel + 1)}
-										style={estiloBotaoOutlineNeutro}
 									>
 										próxima
 									</button>

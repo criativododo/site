@@ -78,7 +78,8 @@ button {
 button:focus-visible,
 a:focus-visible,
 input:focus-visible,
-select:focus-visible {
+select:focus-visible,
+textarea:focus-visible {
 	outline: 2px solid var(--color-cherry);
 	outline-offset: 3px;
 }
@@ -86,6 +87,202 @@ select:focus-visible {
 .btn-primary:disabled {
 	opacity: 0.5;
 	cursor: not-allowed;
+}
+
+/*
+ * Variantes compactas de .btn-primary — mesmo pill, mesma cor, só a altura/padding/
+ * tamanho de fonte mudam conforme o contexto (ação de linha vs. barra de ferramentas).
+ * Substitui os `style={{height:36,...}}` que cada página Admin repetia à mão.
+ */
+.btn-primary.is-compact {
+	height: 36px;
+	padding: 0 20px;
+	font-size: 13px;
+}
+.btn-primary.is-medium {
+	height: 40px;
+	padding: 0 24px;
+	font-size: 14px;
+}
+
+/* Botão secundário (contorno) — par de .btn-primary para ações de "editar"/"cancelar"/paginação. */
+.btn-outline {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	height: 36px;
+	padding: 0 16px;
+	border-radius: 24px;
+	border: 1px solid rgba(27, 23, 23, 0.2);
+	background: none;
+	color: var(--color-noir);
+	font-family: var(--font-display);
+	font-size: 13px;
+	font-weight: 700;
+	transition:
+		border-color 0.3s ease,
+		color 0.3s ease,
+		background 0.3s ease;
+}
+.btn-outline:hover:not(:disabled) {
+	border-color: var(--color-cherry);
+	color: var(--color-cherry);
+}
+.btn-outline:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+.btn-outline.is-cherry {
+	border-color: var(--color-cherry);
+	color: var(--color-cherry);
+}
+.btn-outline.is-cherry:hover:not(:disabled) {
+	background: var(--color-cherry);
+	color: var(--color-cotton);
+}
+
+/* Botão "texto puro" — cancelar/fechar sem contorno, usado dentro de formulários inline. */
+.btn-plain {
+	height: 36px;
+	padding: 0 4px;
+	border: none;
+	background: none;
+	color: rgba(27, 23, 23, 0.7);
+	font-family: var(--font-display);
+	font-size: 13px;
+	font-weight: 700;
+	transition: color 0.3s ease;
+}
+.btn-plain:hover:not(:disabled) {
+	color: var(--color-noir);
+}
+
+/* Selo de status — mesma linguagem visual do .pendencia-status-badge (parceira), aplicado
+   também às listas administrativas para que "status" tenha um único tratamento em todo o Portal. */
+.status-pill {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 4px 9px;
+	border-radius: 999px;
+	background: rgba(27, 23, 23, 0.08);
+	color: var(--color-noir);
+	font-size: 12.5px;
+	font-weight: 700;
+	line-height: 1.3;
+	text-align: center;
+}
+.status-pill.is-alert {
+	background: rgba(129, 1, 0, 0.08);
+	color: var(--color-cherry);
+}
+
+/* Página administrativa "larga" — listas operacionais (Parceiras/Entregas/Briefings/Obrigações)
+   e o Dashboard precisam de mais respiro que o .portal-page padrão (760px, pensado para texto). */
+.portal-page.is-admin-wide {
+	max-width: 1080px;
+}
+
+/*
+ * Formulário administrativo compartilhado (barra de busca/filtros e formulários de
+ * criação/edição inline) — extraído dos objetos de estilo inline duplicados em
+ * AdminParceiras/AdminEntregas/AdminBriefings/AdminObrigacoes.
+ */
+.admin-toolbar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	gap: 12px;
+	margin-bottom: 16px;
+}
+.admin-field {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	font-size: 13px;
+	font-weight: 700;
+}
+.admin-field.is-wide {
+	flex: 2 1 220px;
+}
+.admin-field.is-narrow {
+	flex: 1 1 170px;
+}
+.admin-input,
+.admin-select {
+	height: 40px;
+	border-radius: 8px;
+	border: 1px solid rgba(27, 23, 23, 0.2);
+	padding: 0 12px;
+	font-size: 14px;
+	font-weight: 400;
+	font-family: inherit;
+	color: var(--color-noir);
+	background: var(--color-cotton);
+}
+.admin-textarea {
+	height: auto;
+	min-height: 80px;
+	padding: 12px;
+	resize: vertical;
+}
+.admin-form-panel {
+	margin-bottom: 24px;
+	padding-bottom: 24px;
+	border-bottom: 1px solid rgba(27, 23, 23, 0.1);
+}
+.admin-form-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+	gap: 12px;
+	margin-top: 16px;
+	padding-top: 16px;
+	border-top: 1px solid rgba(27, 23, 23, 0.1);
+}
+.admin-form-grid.is-wide {
+	grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+.admin-form-error {
+	margin: 0;
+	grid-column: 1 / -1;
+}
+.admin-form-actions {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	grid-column: 1 / -1;
+}
+.admin-pagination {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 16px;
+	margin-top: 24px;
+	font-size: 14px;
+}
+.admin-row-expanded {
+	grid-column: 1 / -1;
+	width: 100%;
+	margin-top: 4px;
+	padding-top: 12px;
+	border-top: 1px solid rgba(27, 23, 23, 0.1);
+}
+.admin-row-expanded dl {
+	display: grid;
+	grid-template-columns: auto 1fr;
+	gap: 8px 20px;
+	font-size: 14px;
+}
+.admin-row-expanded dt {
+	font-weight: 700;
+}
+/* Botão "invisível" que envolve o nome/meta de uma linha operacional para expandir detalhes. */
+.admin-row-title-button {
+	text-align: left;
+	background: none;
+	border: none;
+	padding: 0;
+	cursor: pointer;
 }
 
 .portal-shell {
@@ -657,6 +854,24 @@ select:focus-visible {
 	.container {
 		padding: 0 40px;
 	}
+	/*
+	 * .operational-row tem 5 colunas de largura fixa (68/1.4fr/120/130/230 + gaps) que somam
+	 * ~812px mínimos — mais do que sobra ao lado da sidebar de 264px neste intervalo (achado
+	 * da auditoria de UX: as listas do Backoffice — Parceiras/Entregas/Briefings/Obrigações —
+	 * causavam overflow horizontal da página inteira entre 768px e 1100px). Empilha em cartão
+	 * único mais cedo que o breakpoint de 768px usado pelo restante do Portal.
+	 */
+	.operational-row {
+		grid-template-columns: 1fr;
+		row-gap: 10px;
+	}
+	.operational-row .portal-list-row-actions {
+		width: 100%;
+	}
+	.operational-row .portal-list-row-actions .btn-primary,
+	.operational-row .portal-list-row-actions button {
+		flex: 1;
+	}
 }
 
 @media (max-width: 768px) {
@@ -676,9 +891,6 @@ select:focus-visible {
 	}
 	.financeiro-kpi {
 		min-width: 100%;
-	}
-	.operational-row {
-		grid-template-columns: 1fr;
 	}
 	/*
 	 * Sidebar vira duas linhas no mobile: logo+conta em cima (largura
