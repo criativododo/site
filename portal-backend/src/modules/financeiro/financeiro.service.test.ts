@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { criarEntregaAdministrativa } from "../conteudo/conteudo.service.js";
+import { aprovarEntrega, criarEntregaAdministrativa } from "../conteudo/conteudo.service.js";
 import { entregaRepositorio } from "../conteudo/entrega.repository.js";
 import { alterarStatusParceira, cadastrarParceira } from "../parceira/parceira.service.js";
 import {
@@ -340,6 +340,33 @@ describe("liberarObrigacao (ADR-009/SPEC-020 §9)", () => {
       tipo: "MENSAL",
     });
     if (!criada.ok) throw new Error("fixture inválida");
+
+    const resultado = await liberarObrigacao(criada.obrigacao.id);
+    expect(resultado.ok).toBe(true);
+  });
+
+  it("integração ponta a ponta: Entrega aprovada via aprovarEntrega (não via repositório direto) torna a Obrigação MENSAL elegível", async () => {
+    const parceira = await criarParceiraAtiva("PARCEIRA-OBRIGACAO-11B");
+    const entregaResultado = await criarEntregaAdministrativa({
+      parceiraId: parceira.id,
+      mesReferencia: "2026-07",
+      formato: "Reel",
+      dataEntrega: "2026-07-10",
+    });
+    if (!entregaResultado.ok) throw new Error("fixture inválida");
+    await entregaRepositorio.atualizar({ ...entregaResultado.entrega, estado: "EM_REVISAO" });
+
+    const criada = await lancarObrigacao({
+      parceiraId: parceira.id,
+      mesReferencia: "2026-07",
+      valor: 2500,
+      tipo: "MENSAL",
+    });
+    if (!criada.ok) throw new Error("fixture inválida");
+    expect(criada.obrigacao.elegivelParaLiberacao).toBe(false);
+
+    const aprovacao = await aprovarEntrega(entregaResultado.entrega.id);
+    expect(aprovacao.ok).toBe(true);
 
     const resultado = await liberarObrigacao(criada.obrigacao.id);
     expect(resultado.ok).toBe(true);

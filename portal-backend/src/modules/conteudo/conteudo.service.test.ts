@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { alterarStatusParceira, cadastrarParceira } from "../parceira/parceira.service.js";
-import { criarEntregaAdministrativa, projetarPendencias, validarFormaDaNovaEntrega } from "./conteudo.service.js";
+import {
+  aprovarEntrega,
+  criarEntregaAdministrativa,
+  projetarPendencias,
+  validarFormaDaNovaEntrega,
+} from "./conteudo.service.js";
+import { entregaRepositorio } from "./entrega.repository.js";
 import type { Entrega } from "./entrega.types.js";
 
 function entrega(overrides: Partial<Entrega> = {}): Entrega {
@@ -148,5 +154,68 @@ describe("criarEntregaAdministrativa (Backoffice)", () => {
     });
 
     expect(resultado).toEqual({ ok: false, motivo: "PARCEIRA_INATIVA" });
+  });
+});
+
+describe("aprovarEntrega (Backoffice, UC-012.03 parte 1)", () => {
+  it("aprova uma Entrega EM_REVISAO", async () => {
+    const parceira = await criarParceiraAtiva("PARCEIRA-ENTREGA-3");
+    const criada = await criarEntregaAdministrativa({
+      parceiraId: parceira.id,
+      mesReferencia: "2026-07",
+      formato: "Reel",
+      dataEntrega: "2026-07-10",
+    });
+    if (!criada.ok) throw new Error("fixture inválida");
+    await entregaRepositorio.atualizar({ ...criada.entrega, estado: "EM_REVISAO" });
+
+    const resultado = await aprovarEntrega(criada.entrega.id);
+    expect(resultado).toEqual({ ok: true, entrega: expect.objectContaining({ estado: "APROVADO" }) });
+  });
+
+  it("rejeita aprovar Entrega ainda AGUARDANDO_MATERIAL (CT-03)", async () => {
+    const parceira = await criarParceiraAtiva("PARCEIRA-ENTREGA-4");
+    const criada = await criarEntregaAdministrativa({
+      parceiraId: parceira.id,
+      mesReferencia: "2026-07",
+      formato: "Reel",
+      dataEntrega: "2026-07-10",
+    });
+    if (!criada.ok) throw new Error("fixture inválida");
+
+    expect(await aprovarEntrega(criada.entrega.id)).toEqual({ ok: false, motivo: "TRANSICAO_INVALIDA" });
+  });
+
+  it("rejeita aprovar Entrega já APROVADA (CT-03, sem repetir a transição)", async () => {
+    const parceira = await criarParceiraAtiva("PARCEIRA-ENTREGA-5");
+    const criada = await criarEntregaAdministrativa({
+      parceiraId: parceira.id,
+      mesReferencia: "2026-07",
+      formato: "Reel",
+      dataEntrega: "2026-07-10",
+    });
+    if (!criada.ok) throw new Error("fixture inválida");
+    await entregaRepositorio.atualizar({ ...criada.entrega, estado: "EM_REVISAO" });
+    await aprovarEntrega(criada.entrega.id);
+
+    expect(await aprovarEntrega(criada.entrega.id)).toEqual({ ok: false, motivo: "TRANSICAO_INVALIDA" });
+  });
+
+  it("rejeita aprovar Entrega já PUBLICADA (CT-03, terminal)", async () => {
+    const parceira = await criarParceiraAtiva("PARCEIRA-ENTREGA-6");
+    const criada = await criarEntregaAdministrativa({
+      parceiraId: parceira.id,
+      mesReferencia: "2026-07",
+      formato: "Reel",
+      dataEntrega: "2026-07-10",
+    });
+    if (!criada.ok) throw new Error("fixture inválida");
+    await entregaRepositorio.atualizar({ ...criada.entrega, estado: "PUBLICADO" });
+
+    expect(await aprovarEntrega(criada.entrega.id)).toEqual({ ok: false, motivo: "TRANSICAO_INVALIDA" });
+  });
+
+  it("retorna NAO_ENCONTRADA para id inexistente", async () => {
+    expect(await aprovarEntrega("id-inexistente")).toEqual({ ok: false, motivo: "NAO_ENCONTRADA" });
   });
 });

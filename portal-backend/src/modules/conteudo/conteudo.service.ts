@@ -175,3 +175,25 @@ export async function criarEntregaAdministrativa(dados: DadosNovaEntrega): Promi
 
   return { ok: true, entrega: await entregaRepositorio.criar(entrega) };
 }
+
+export type MotivoRejeicaoAprovacao = "NAO_ENCONTRADA" | "TRANSICAO_INVALIDA";
+export type ResultadoAprovacao = { ok: true; entrega: Entrega } | { ok: false; motivo: MotivoRejeicaoAprovacao };
+
+/**
+ * UC-012.03 (parte 1: aprovação) — Backoffice. CT-03 (SPEC-012 §17): só transiciona
+ * `EmRevisao → Aprovado`; qualquer outro estado de origem é transição inválida. Não existe
+ * "Reprovar" na máquina de estados de SPEC-012 §9 (4 estados canônicos, RN-02) — não
+ * implementado aqui por não ser requisito documentado.
+ */
+export async function aprovarEntrega(id: string): Promise<ResultadoAprovacao> {
+  const entrega = await entregaRepositorio.buscarPorId(id);
+  if (!entrega) {
+    return { ok: false, motivo: "NAO_ENCONTRADA" };
+  }
+  if (entrega.estado !== "EM_REVISAO") {
+    return { ok: false, motivo: "TRANSICAO_INVALIDA" };
+  }
+
+  const atualizada = await entregaRepositorio.atualizar({ ...entrega, estado: "APROVADO" });
+  return { ok: true, entrega: atualizada };
+}
