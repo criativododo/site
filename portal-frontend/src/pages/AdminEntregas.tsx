@@ -1,6 +1,7 @@
 import type { ChangeEvent } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { ApiError, apiFetch } from "../lib/api";
+import { formatarData, mesReferenciaCorrente } from "../lib/formatters";
 import { useSession } from "../lib/session";
 
 type FormatoEntrega = "Reel" | "Carrossel" | "Stories1" | "Stories2";
@@ -42,17 +43,6 @@ const LABEL_ESTADO: Record<EstadoEntrega, string> = {
 	APROVADO: "aprovado",
 	PUBLICADO: "publicado",
 };
-
-function mesReferenciaCorrente(): string {
-	const agora = new Date();
-	const ano = agora.getUTCFullYear();
-	const mes = String(agora.getUTCMonth() + 1).padStart(2, "0");
-	return `${ano}-${mes}`;
-}
-
-function formatarData(dataIso: string): string {
-	return new Date(dataIso).toLocaleDateString("pt-BR");
-}
 
 const estiloInput = {
 	height: 40,
@@ -125,7 +115,7 @@ function FormularioEntrega({
 			setErro(
 				erroCapturado instanceof ApiError
 					? erroCapturado.message
-					: "não foi possível criar a Entrega.",
+					: "não foi possível criar a entrega.",
 			);
 		} finally {
 			setSalvando(false);
@@ -148,8 +138,8 @@ function FormularioEntrega({
 					className="portal-page-feedback is-error"
 					style={{ margin: 0, gridColumn: "1 / -1" }}
 				>
-					nenhuma Parceira ATIVA cadastrada — ative uma Parceira antes de criar
-					Entregas.
+					nenhuma parceira ativa cadastrada — ative uma parceira antes de criar
+					entregas.
 				</p>
 			) : (
 				<>
@@ -247,9 +237,13 @@ function FormularioEntrega({
 function LinhaEntrega({
 	entrega,
 	nomeParceira,
+	emAcao,
+	aoAprovar,
 }: {
 	entrega: Entrega;
 	nomeParceira: string;
+	emAcao: boolean;
+	aoAprovar: () => void;
 }) {
 	return (
 		<li className="portal-list-row operational-row">
@@ -280,6 +274,20 @@ function LinhaEntrega({
 			<p className="portal-list-row-meta">
 				{entrega.materialEnviado ? "material enviado" : "sem material ainda"}
 			</p>
+
+			{entrega.estado === "EM_REVISAO" && (
+				<div className="portal-list-row-actions">
+					<button
+						type="button"
+						className="btn-primary"
+						disabled={emAcao}
+						onClick={aoAprovar}
+						style={{ height: 36, padding: "0 16px", fontSize: 13 }}
+					>
+						{emAcao ? "..." : "aprovar"}
+					</button>
+				</div>
+			)}
 		</li>
 	);
 }
@@ -296,6 +304,7 @@ export function AdminEntregasPage() {
 	const [busca, setBusca] = useState("");
 	const [filtroEstado, setFiltroEstado] = useState<FiltroEstado>("TODOS");
 	const [formularioAberto, setFormularioAberto] = useState(false);
+	const [idEmAcao, setIdEmAcao] = useState<string | null>(null);
 
 	useEffect(() => {
 		let ativo = true;
@@ -316,7 +325,7 @@ export function AdminEntregasPage() {
 				setErro(
 					erroCapturado instanceof ApiError
 						? erroCapturado.message
-						: "não foi possível carregar as Entregas.",
+						: "não foi possível carregar as entregas.",
 				);
 			})
 			.finally(() => ativo && setCarregando(false));
@@ -338,6 +347,30 @@ export function AdminEntregasPage() {
 		() => (parceiras ?? []).filter((parceira) => parceira.status === "ATIVA"),
 		[parceiras],
 	);
+
+	async function aprovar(entrega: Entrega) {
+		setIdEmAcao(entrega.id);
+		setErro(null);
+		try {
+			const atualizada = await apiFetch<Entrega>(
+				`/api/admin/entregas/${entrega.id}/aprovar`,
+				{ method: "PATCH" },
+			);
+			setEntregas((atual) =>
+				atual
+					? atual.map((item) => (item.id === atualizada.id ? atualizada : item))
+					: atual,
+			);
+		} catch (erroCapturado) {
+			setErro(
+				erroCapturado instanceof ApiError
+					? erroCapturado.message
+					: "não foi possível aprovar a Entrega.",
+			);
+		} finally {
+			setIdEmAcao(null);
+		}
+	}
 
 	const filtradas = useMemo(() => {
 		if (!entregas) return [];
@@ -369,12 +402,12 @@ export function AdminEntregasPage() {
 			<p className="portal-eyebrow">administração</p>
 			<h1 className="title-editorial portal-page-title">entregas</h1>
 			<p className="portal-page-intro">
-				crie Entregas para alimentar o Portal das Parceiras e acompanhe o estado
+				crie entregas para alimentar o portal das parceiras e acompanhe o estado
 				de cada uma.
 			</p>
 
 			{carregando && (
-				<p className="portal-page-feedback">carregando Entregas...</p>
+				<p className="portal-page-feedback">carregando entregas...</p>
 			)}
 			{!carregando && erro && (
 				<p className="portal-page-feedback is-error">{erro}</p>
@@ -394,6 +427,7 @@ export function AdminEntregasPage() {
 						<label style={{ ...estiloLabel, flex: "2 1 220px" }}>
 							buscar por parceira
 							<input
+								name="buscaParceira"
 								placeholder="nome da parceira"
 								value={busca}
 								onChange={(evento) => setBusca(evento.target.value)}
@@ -403,6 +437,7 @@ export function AdminEntregasPage() {
 						<label style={{ ...estiloLabel, flex: "1 1 170px" }}>
 							estado
 							<select
+								name="filtroEstado"
 								value={filtroEstado}
 								onChange={(evento) =>
 									setFiltroEstado(evento.target.value as FiltroEstado)
@@ -453,8 +488,8 @@ export function AdminEntregasPage() {
 					{filtradas.length === 0 && (
 						<p className="portal-page-feedback">
 							{entregas.length === 0
-								? "nenhuma Entrega criada ainda."
-								: "nenhuma Entrega encontrada para esse filtro."}
+								? "nenhuma entrega criada ainda."
+								: "nenhuma entrega encontrada para esse filtro."}
 						</p>
 					)}
 
@@ -468,6 +503,8 @@ export function AdminEntregasPage() {
 										nomePorParceiraId.get(entrega.parceiraId) ??
 										"parceira desconhecida"
 									}
+									emAcao={idEmAcao === entrega.id}
+									aoAprovar={() => void aprovar(entrega)}
 								/>
 							))}
 						</ul>
