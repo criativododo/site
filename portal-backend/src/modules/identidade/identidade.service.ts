@@ -46,16 +46,40 @@ export async function resolverOuCriarIdentidade(
     claims.email.trim().toLowerCase(),
   );
 
+  // TEMP-DIAG-BOOTSTRAP (remover após diagnóstico) — só leitura, nenhuma lógica alterada.
+  console.error(
+    `[DIAG-BOOTSTRAP] claims.email=${JSON.stringify(claims.email)} sub=${claims.sub} ` +
+      `normalizado=${JSON.stringify(claims.email.trim().toLowerCase())} ` +
+      `adminBootstrapEmails=${JSON.stringify(env.adminBootstrapEmails)} ` +
+      `ehBootstrapAdministrador=${ehBootstrapAdministrador} ` +
+      `existente=${
+        existente
+          ? JSON.stringify({
+              papelAtor: existente.papelAtor,
+              estadoConta: existente.estadoConta,
+              origemAcesso: existente.origemAcesso,
+              emailPerfil: existente.emailPerfil,
+            })
+          : null
+      }`,
+  );
+
   if (existente) {
     const precisaPromoverBootstrap =
       ehBootstrapAdministrador &&
       (existente.papelAtor !== "ADMINISTRADOR" || existente.estadoConta !== "ACTIVE");
+
+    // TEMP-DIAG-BOOTSTRAP (remover após diagnóstico)
+    console.error(`[DIAG-BOOTSTRAP] ramo=existente precisaPromoverBootstrap=${precisaPromoverBootstrap}`);
 
     const atualizada: Identidade = precisaPromoverBootstrap
       ? { ...existente, papelAtor: "ADMINISTRADOR", estadoConta: "ACTIVE", ultimoAcesso: agora }
       : { ...existente, ultimoAcesso: agora };
     return identidadeRepositorio.salvar(atualizada);
   }
+
+  // TEMP-DIAG-BOOTSTRAP (remover após diagnóstico)
+  console.error(`[DIAG-BOOTSTRAP] ramo=criacao papelAtor=${ehBootstrapAdministrador ? "ADMINISTRADOR" : "INFLUENCIADORA"}`);
 
   // Seed de dev/QA (env.parceiraSeed, ver config/env.ts) — substitui, só para este e-mail
   // fixo, o fluxo real de vinculação de SPEC-035 §5.1-A que ainda não existe fisicamente.

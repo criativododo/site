@@ -116,6 +116,10 @@ authRoutes.get("/google/callback", async (req, res) => {
         : identidade.estadoConta === "AGUARDANDO_CADASTRO"
           ? "/cadastro"
           : "/pendencias";
+    // TEMP-DIAG-BOOTSTRAP (remover após diagnóstico)
+    console.error(
+      `[DIAG-BOOTSTRAP] pos-resolucao subProvider=${identidade.subProvider} papelAtor=${identidade.papelAtor} estadoConta=${identidade.estadoConta} destino=${destino}`,
+    );
     res.redirect(`${env.frontendUrl}${destino}`);
   } catch {
     // Nunca vazar detalhe interno do erro OIDC para o cliente (aud/iss/exp inválidos, etc.).
