@@ -37,6 +37,7 @@ de `app/src` — nunca a fonte primária; em qualquer divergência, `app/src` pr
 |---|---|
 | `CLAUDE.md` | Contrato operacional para agentes de IA |
 | `/inicio <objetivo>` | Carrega a memória operacional privada e registra o baseline obrigatório da sessão |
+| `docs/SESSION_MEMORY.md` | Guia de criação do repositório de memória e uso dos comandos Claude Code |
 | `START_HERE_NEXT_SESSION.md` | Snapshot histórico do estado anterior ao Session Memory |
 | `knowledge/PROJECT_SOURCE_OF_TRUTH.md` | Índice de qual documento manda sobre qual assunto |
 | `knowledge/Historico/CONTRATO_SOBERANO.md` | Domínio soberano — linguagem ubíqua oficial |
