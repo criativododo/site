@@ -2,9 +2,11 @@ import { randomUUID } from "node:crypto";
 import { Readable } from "node:stream";
 import type { ReadableStream as WebReadableStream } from "node:stream/web";
 import { comRetentativa, chamarDriveApi, DRIVE_UPLOAD_API } from "./comRetentativa.js";
+import { logEvento } from "../log.js";
 import type { ProvedorDeArmazenamento } from "../provedorDeArmazenamento.js";
 import type { PaginaDeRecursos, ParametrosDeEnvio, RecursoDeArmazenamento } from "../tipos.js";
 
+const CONTEXTO_LOG = "ProvedorDeArmazenamentoGoogleDrive";
 const MIME_TYPE_PASTA = "application/vnd.google-apps.folder";
 const CAMPOS_ARQUIVO = "id,name,mimeType,size,createdTime,modifiedTime,appProperties";
 
@@ -66,120 +68,189 @@ function construirCorpoMultipart(
  */
 export class ProvedorDeArmazenamentoGoogleDrive implements ProvedorDeArmazenamento {
   async criarPasta(nome: string, pastaPaiId: string | null): Promise<RecursoDeArmazenamento> {
-    return comRetentativa(async () => {
-      if (pastaPaiId !== null) {
-        const existente = await this.buscarPastaPorNomeEPai(nome, pastaPaiId);
-        if (existente) return existente;
-      }
+    const inicio = Date.now();
+    const resultado = await comRetentativa(
+      async () => {
+        if (pastaPaiId !== null) {
+          const existente = await this.buscarPastaPorNomeEPai(nome, pastaPaiId);
+          if (existente) return existente;
+        }
 
-      const metadata: Record<string, unknown> = { name: nome, mimeType: MIME_TYPE_PASTA };
-      if (pastaPaiId !== null) metadata.parents = [pastaPaiId];
+        const metadata: Record<string, unknown> = { name: nome, mimeType: MIME_TYPE_PASTA };
+        if (pastaPaiId !== null) metadata.parents = [pastaPaiId];
 
-      const resposta = await chamarDriveApi(`/files?fields=${CAMPOS_ARQUIVO}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(metadata),
-      });
-      return mapearArquivoDrive((await resposta.json()) as ArquivoDriveJson);
+        const resposta = await chamarDriveApi(`/files?fields=${CAMPOS_ARQUIVO}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(metadata),
+        });
+        return mapearArquivoDrive((await resposta.json()) as ArquivoDriveJson);
+      },
+      { operacao: "criarPasta" },
+    );
+    logEvento(CONTEXTO_LOG, {
+      operacao: "criarPasta",
+      recursoId: resultado.id,
+      resultado: "sucesso",
+      duracaoMs: Date.now() - inicio,
     });
+    return resultado;
   }
 
   async enviarArquivo(params: ParametrosDeEnvio): Promise<RecursoDeArmazenamento> {
-    return comRetentativa(async () => {
-      const existente = await this.buscarArquivoPorIdentidade(params.pastaId, params.identidadeDoRecurso);
+    const inicio = Date.now();
+    const resultado = await comRetentativa(
+      async () => {
+        const existente = await this.buscarArquivoPorIdentidade(params.pastaId, params.identidadeDoRecurso);
 
-      if (!existente) {
-        const metadata = {
-          name: params.nomeArquivo,
-          parents: [params.pastaId],
-          mimeType: params.tipoMime,
-          appProperties: {
-            identidadeDoRecurso: params.identidadeDoRecurso,
-            chaveDeIdempotencia: params.chaveDeIdempotencia,
-          },
-        };
-        const { body, contentType } = construirCorpoMultipart(metadata, params.conteudo, params.tipoMime);
+        if (!existente) {
+          const metadata = {
+            name: params.nomeArquivo,
+            parents: [params.pastaId],
+            mimeType: params.tipoMime,
+            appProperties: {
+              identidadeDoRecurso: params.identidadeDoRecurso,
+              chaveDeIdempotencia: params.chaveDeIdempotencia,
+            },
+          };
+          const { body, contentType } = construirCorpoMultipart(metadata, params.conteudo, params.tipoMime);
+          const resposta = await chamarDriveApi(
+            `/files?uploadType=multipart&fields=${CAMPOS_ARQUIVO}`,
+            { method: "POST", headers: { "Content-Type": contentType }, body },
+            DRIVE_UPLOAD_API,
+          );
+          return mapearArquivoDrive((await resposta.json()) as ArquivoDriveJson);
+        }
+
+        const chaveArmazenada = existente.appProperties?.chaveDeIdempotencia;
+        if (chaveArmazenada === params.chaveDeIdempotencia) {
+          return mapearArquivoDrive(existente);
+        }
+
+        const metadataSubstituicao = { appProperties: { chaveDeIdempotencia: params.chaveDeIdempotencia } };
+        const { body, contentType } = construirCorpoMultipart(metadataSubstituicao, params.conteudo, params.tipoMime);
         const resposta = await chamarDriveApi(
-          `/files?uploadType=multipart&fields=${CAMPOS_ARQUIVO}`,
-          { method: "POST", headers: { "Content-Type": contentType }, body },
+          `/files/${existente.id}?uploadType=multipart&fields=${CAMPOS_ARQUIVO}`,
+          { method: "PATCH", headers: { "Content-Type": contentType }, body },
           DRIVE_UPLOAD_API,
         );
         return mapearArquivoDrive((await resposta.json()) as ArquivoDriveJson);
-      }
-
-      const chaveArmazenada = existente.appProperties?.chaveDeIdempotencia;
-      if (chaveArmazenada === params.chaveDeIdempotencia) {
-        return mapearArquivoDrive(existente);
-      }
-
-      const metadataSubstituicao = { appProperties: { chaveDeIdempotencia: params.chaveDeIdempotencia } };
-      const { body, contentType } = construirCorpoMultipart(metadataSubstituicao, params.conteudo, params.tipoMime);
-      const resposta = await chamarDriveApi(
-        `/files/${existente.id}?uploadType=multipart&fields=${CAMPOS_ARQUIVO}`,
-        { method: "PATCH", headers: { "Content-Type": contentType }, body },
-        DRIVE_UPLOAD_API,
-      );
-      return mapearArquivoDrive((await resposta.json()) as ArquivoDriveJson);
+      },
+      { operacao: "enviarArquivo", chaveDeIdempotencia: params.chaveDeIdempotencia },
+    );
+    logEvento(CONTEXTO_LOG, {
+      operacao: "enviarArquivo",
+      recursoId: resultado.id,
+      chaveDeIdempotencia: params.chaveDeIdempotencia,
+      tamanhoBytes: params.conteudo.byteLength,
+      resultado: "sucesso",
+      duracaoMs: Date.now() - inicio,
     });
+    return resultado;
   }
 
   async baixarArquivo(
     recursoId: string,
   ): Promise<{ conteudo: NodeJS.ReadableStream; tipoMime: string; tamanhoBytes: number }> {
-    return comRetentativa(async () => {
-      const resposta = await chamarDriveApi(`/files/${recursoId}?alt=media`);
-      const tipoMime = resposta.headers.get("Content-Type") ?? "application/octet-stream";
-      const tamanhoBytes = Number(resposta.headers.get("Content-Length") ?? 0);
-      const conteudo = Readable.fromWeb(resposta.body as WebReadableStream<Uint8Array>);
-      return { conteudo, tipoMime, tamanhoBytes };
+    const inicio = Date.now();
+    const resultado = await comRetentativa(
+      async () => {
+        const resposta = await chamarDriveApi(`/files/${recursoId}?alt=media`);
+        const tipoMime = resposta.headers.get("Content-Type") ?? "application/octet-stream";
+        const tamanhoBytes = Number(resposta.headers.get("Content-Length") ?? 0);
+        const conteudo = Readable.fromWeb(resposta.body as WebReadableStream<Uint8Array>);
+        return { conteudo, tipoMime, tamanhoBytes };
+      },
+      { operacao: "baixarArquivo", recursoId },
+    );
+    logEvento(CONTEXTO_LOG, {
+      operacao: "baixarArquivo",
+      recursoId,
+      tamanhoBytes: resultado.tamanhoBytes,
+      resultado: "sucesso",
+      duracaoMs: Date.now() - inicio,
     });
+    return resultado;
   }
 
   async renomear(recursoId: string, novoNome: string): Promise<RecursoDeArmazenamento> {
-    return comRetentativa(async () => {
-      const resposta = await chamarDriveApi(`/files/${recursoId}?fields=${CAMPOS_ARQUIVO}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: novoNome }),
-      });
-      return mapearArquivoDrive((await resposta.json()) as ArquivoDriveJson);
-    });
+    const inicio = Date.now();
+    const resultado = await comRetentativa(
+      async () => {
+        const resposta = await chamarDriveApi(`/files/${recursoId}?fields=${CAMPOS_ARQUIVO}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: novoNome }),
+        });
+        return mapearArquivoDrive((await resposta.json()) as ArquivoDriveJson);
+      },
+      { operacao: "renomear", recursoId },
+    );
+    logEvento(CONTEXTO_LOG, { operacao: "renomear", recursoId, resultado: "sucesso", duracaoMs: Date.now() - inicio });
+    return resultado;
   }
 
   async remover(recursoId: string): Promise<void> {
-    await comRetentativa(async () => {
-      await chamarDriveApi(`/files/${recursoId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ trashed: true }),
-      });
-    });
+    const inicio = Date.now();
+    await comRetentativa(
+      async () => {
+        await chamarDriveApi(`/files/${recursoId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ trashed: true }),
+        });
+      },
+      { operacao: "remover", recursoId },
+    );
+    logEvento(CONTEXTO_LOG, { operacao: "remover", recursoId, resultado: "sucesso", duracaoMs: Date.now() - inicio });
   }
 
   async listar(pastaId: string, tamanhoPagina?: number, tokenPagina?: string): Promise<PaginaDeRecursos> {
-    return comRetentativa(async () => {
-      const q = `'${escaparValorQuery(pastaId)}' in parents and trashed=false`;
-      const parametros = new URLSearchParams({
-        q,
-        fields: `nextPageToken,files(${CAMPOS_ARQUIVO})`,
-      });
-      if (tamanhoPagina !== undefined) parametros.set("pageSize", String(tamanhoPagina));
-      if (tokenPagina !== undefined) parametros.set("pageToken", tokenPagina);
+    const inicio = Date.now();
+    const resultado = await comRetentativa(
+      async () => {
+        const q = `'${escaparValorQuery(pastaId)}' in parents and trashed=false`;
+        const parametros = new URLSearchParams({
+          q,
+          fields: `nextPageToken,files(${CAMPOS_ARQUIVO})`,
+        });
+        if (tamanhoPagina !== undefined) parametros.set("pageSize", String(tamanhoPagina));
+        if (tokenPagina !== undefined) parametros.set("pageToken", tokenPagina);
 
-      const resposta = await chamarDriveApi(`/files?${parametros.toString()}`);
-      const corpo = (await resposta.json()) as { files: ArquivoDriveJson[]; nextPageToken?: string };
-      return {
-        itens: corpo.files.map(mapearArquivoDrive),
-        proximoToken: corpo.nextPageToken,
-      };
+        const resposta = await chamarDriveApi(`/files?${parametros.toString()}`);
+        const corpo = (await resposta.json()) as { files: ArquivoDriveJson[]; nextPageToken?: string };
+        return {
+          itens: corpo.files.map(mapearArquivoDrive),
+          proximoToken: corpo.nextPageToken,
+        };
+      },
+      { operacao: "listar", recursoId: pastaId },
+    );
+    logEvento(CONTEXTO_LOG, {
+      operacao: "listar",
+      recursoId: pastaId,
+      resultado: "sucesso",
+      duracaoMs: Date.now() - inicio,
     });
+    return resultado;
   }
 
   async obterMetadados(recursoId: string): Promise<RecursoDeArmazenamento> {
-    return comRetentativa(async () => {
-      const resposta = await chamarDriveApi(`/files/${recursoId}?fields=${CAMPOS_ARQUIVO}`);
-      return mapearArquivoDrive((await resposta.json()) as ArquivoDriveJson);
+    const inicio = Date.now();
+    const resultado = await comRetentativa(
+      async () => {
+        const resposta = await chamarDriveApi(`/files/${recursoId}?fields=${CAMPOS_ARQUIVO}`);
+        return mapearArquivoDrive((await resposta.json()) as ArquivoDriveJson);
+      },
+      { operacao: "obterMetadados", recursoId },
+    );
+    logEvento(CONTEXTO_LOG, {
+      operacao: "obterMetadados",
+      recursoId,
+      resultado: "sucesso",
+      duracaoMs: Date.now() - inicio,
     });
+    return resultado;
   }
 
   /** Usado internamente por `criarPasta` — resolução por nome é suficiente (nome é a

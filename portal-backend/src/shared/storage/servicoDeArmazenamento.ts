@@ -1,8 +1,11 @@
 import { randomUUID } from "node:crypto";
 import path from "node:path";
 import { ErroDeArmazenamento, ErroTransitorioDeArmazenamento } from "./erros.js";
+import { logErro, logEvento } from "./log.js";
 import type { ProvedorDeArmazenamento } from "./provedorDeArmazenamento.js";
 import type { RecursoDeArmazenamento } from "./tipos.js";
+
+const CONTEXTO_LOG = "ServicoDeArmazenamento";
 
 /** Nome fixo, primeiro nível sob a raiz do Portal (§3.2 do TDD) — não é dimensão de domínio. */
 const NOME_PASTA_PARCEIRAS = "Parceiras";
@@ -39,26 +42,35 @@ export class ServicoDeArmazenamentoImpl implements ServicoDeArmazenamento {
   ) {}
 
   async resolverPastaDaColaboracao(parceiraId: string, mesReferencia: string): Promise<RecursoDeArmazenamento> {
+    const inicio = Date.now();
     try {
       const pastaParceiras = await this.resolverOuCriarPasta(NOME_PASTA_PARCEIRAS, this.pastaRaizId);
       const pastaParceira = await this.resolverOuCriarPasta(parceiraId, pastaParceiras.id);
-      return await this.resolverOuCriarPasta(mesReferencia, pastaParceira.id);
+      const pastaColaboracao = await this.resolverOuCriarPasta(mesReferencia, pastaParceira.id);
+      logEvento(CONTEXTO_LOG, {
+        operacao: "resolverPastaDaColaboracao",
+        recursoId: pastaColaboracao.id,
+        resultado: "sucesso",
+        duracaoMs: Date.now() - inicio,
+      });
+      return pastaColaboracao;
     } catch (erro) {
+      logErro(CONTEXTO_LOG, { operacao: "resolverPastaDaColaboracao", resultado: "erro", duracaoMs: Date.now() - inicio });
       throw traduzirErroDeArmazenamento(erro);
     }
   }
 
   async enviarMaterialDaEntrega(params: ParametrosDeEnvioDeMaterial): Promise<RecursoDeArmazenamento> {
+    const inicio = Date.now();
+    // Gerada uma vez por chamada; reaproveitada só pelas retentativas de rede de
+    // comRetentativa() dentro desta mesma chamada — nunca entre chamadas distintas (§2.9).
+    const chaveDeIdempotencia = randomUUID();
     try {
       const pastaColaboracao = await this.resolverPastaInterna(params.parceiraId, params.mesReferencia);
       const extensao = path.extname(params.nomeOriginal);
       const nomeArquivo = `${params.formato}-${params.entregaId}${extensao}`;
 
-      // Gerada uma vez por chamada; reaproveitada só pelas retentativas de rede de
-      // comRetentativa() dentro desta mesma chamada — nunca entre chamadas distintas (§2.9).
-      const chaveDeIdempotencia = randomUUID();
-
-      return await this.provedor.enviarArquivo({
+      const resultado = await this.provedor.enviarArquivo({
         pastaId: pastaColaboracao.id,
         nomeArquivo,
         conteudo: params.conteudo,
@@ -66,7 +78,24 @@ export class ServicoDeArmazenamentoImpl implements ServicoDeArmazenamento {
         identidadeDoRecurso: params.entregaId,
         chaveDeIdempotencia,
       });
+      logEvento(CONTEXTO_LOG, {
+        operacao: "enviarMaterialDaEntrega",
+        recursoId: resultado.id,
+        chaveDeIdempotencia,
+        entregaId: params.entregaId,
+        formato: params.formato,
+        resultado: "sucesso",
+        duracaoMs: Date.now() - inicio,
+      });
+      return resultado;
     } catch (erro) {
+      logErro(CONTEXTO_LOG, {
+        operacao: "enviarMaterialDaEntrega",
+        chaveDeIdempotencia,
+        entregaId: params.entregaId,
+        resultado: "erro",
+        duracaoMs: Date.now() - inicio,
+      });
       throw traduzirErroDeArmazenamento(erro);
     }
   }

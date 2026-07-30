@@ -224,16 +224,20 @@ isolamento — Parceira nunca acessa arquivo de outra Parceira por manipulação
 metadado de qual Entrega o arquivo pertence; (c) nenhuma credencial de armazenamento exposta
 ao frontend (uploads sempre mediados pelo backend, ou por URL assinada de curta duração).
 
-### 6.2 Arquitetura técnica do Storage (Gate 2 da Fase 4)
+### 6.2 Arquitetura técnica do Storage (Gates 2–4 da Fase 4, concluídos)
 
-**[PROPOSTA — documento único de referência]** A especificação técnica completa (interfaces,
-models, fluxo OAuth, retry, idempotência, tratamento de erros, estrutura de pastas,
-segurança, estratégia de testes, diagramas de sequência e checklist de implementação) vive
-em `docs/TDD_STORAGE_GOOGLE_DRIVE.md` — não duplicada aqui. Resumo de uma frase: três
-camadas (`ServicoDeArmazenamento` → `ProvedorDeArmazenamento` →
-`ProvedorDeArmazenamentoGoogleDrive`), escopo `drive.file` (§6.1), sem biblioteca cliente
-nova, idempotência via `appProperties` nativo do Drive, sem tabela própria no Postgres.
-Ainda não implementado — aguardando aprovação do TDD antes do Gate 3.
+**[DOCUMENTADO — implementado]** A especificação técnica completa (interfaces, models,
+fluxo OAuth, retry, idempotência, tratamento de erros, estrutura de pastas, segurança,
+estratégia de testes, diagramas de sequência e checklist de implementação) vive em
+`docs/TDD_STORAGE_GOOGLE_DRIVE.md` — não duplicada aqui. Resumo de uma frase: três camadas
+(`ServicoDeArmazenamento` → `ProvedorDeArmazenamento` → `ProvedorDeArmazenamentoGoogleDrive`),
+escopo `drive.file` (§6.1), pasta raiz exclusiva por ambiente (`ADR-020`), sem biblioteca
+cliente nova, idempotência via `appProperties` nativo do Drive, sem tabela própria no
+Postgres. Implementado em `portal-backend/src/shared/storage/` (Gate 3), validado contra a
+API real do Drive (Gate 4) em 2026-07-30 — 32 testes automatizados próprios (268 na suíte
+completa do backend). **Gate 5** (rota HTTP de upload, integração com
+`conteudo.service.ts`/mudança de estado da Entrega) permanece fora de escopo, não iniciado —
+exige decisão de produto própria.
 
 ## 7. Modelo de permissões
 

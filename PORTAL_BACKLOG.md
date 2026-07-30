@@ -233,4 +233,7 @@ vez com aprovação explícita: Fase 1 (fechamentos de baixo risco), Fase 2 (per
 PostgreSQL real, ADR-015) e Fase 3 (**Colaboração Mensal** como agregado formal, ADR-016) —
 todas concluídas e homologadas em 29/07/2026. Ver `docs/handoff/PROJECT_STATUS.md` para o
 estado atual detalhado e as decisões de produto ainda pendentes. Fase 4 (Armazenamento +
-Workspace Provisioning) é a próxima do roadmap.
+Workspace Provisioning) concluída em 30/07/2026 até o Gate 4 (implementação e validação de
+infraestrutura, `docs/TDD_STORAGE_GOOGLE_DRIVE.md`, `PORTAL_ARQUITETURA.md` §6.2) — Gate 5
+(integração com o domínio de Conteúdo/Entrega) permanece fora de escopo, é decisão de
+produto própria para uma fase futura. Fase 5 (Motor de Documentos) é a próxima do roadmap.

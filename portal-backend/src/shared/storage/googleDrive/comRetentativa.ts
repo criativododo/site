@@ -7,6 +7,9 @@ import {
   LimiteDeRequisicaoExcedido,
   RecursoDeArmazenamentoNaoEncontrado,
 } from "../erros.js";
+import { logAviso, logErro } from "../log.js";
+
+const CONTEXTO_LOG = "ProvedorDeArmazenamentoGoogleDrive";
 
 const DRIVE_API = "https://www.googleapis.com/drive/v3";
 const DRIVE_UPLOAD_API = "https://www.googleapis.com/upload/drive/v3";
@@ -90,6 +93,10 @@ function traduzirErroTerminal(erro: ErroHttpBrutoDrive): Error {
 
 export interface OpcoesRetentativa {
   tentativasMax?: number;
+  /** Só para log (§2.11) — nome da operação, correlação por recurso/operação lógica. */
+  operacao?: string;
+  recursoId?: string;
+  chaveDeIdempotencia?: string;
 }
 
 /**
@@ -101,6 +108,7 @@ export interface OpcoesRetentativa {
  */
 export async function comRetentativa<T>(fn: () => Promise<T>, opcoes: OpcoesRetentativa = {}): Promise<T> {
   const tentativasMax = opcoes.tentativasMax ?? TENTATIVAS_MAX_PADRAO;
+  const camposDeLog = { operacao: opcoes.operacao, recursoId: opcoes.recursoId, chaveDeIdempotencia: opcoes.chaveDeIdempotencia };
   let tentativa = 0;
   let jaTentouRenovarToken = false;
 
@@ -113,6 +121,7 @@ export async function comRetentativa<T>(fn: () => Promise<T>, opcoes: OpcoesRete
 
       if (erroBruto.status === 401) {
         if (jaTentouRenovarToken) {
+          logErro(CONTEXTO_LOG, { ...camposDeLog, resultado: "erro", tentativaNumero: tentativa, codigoErroGoogle: 401 });
           throw new ErroDeAutenticacaoStorage(
             "Autenticação Drive falhou mesmo após renovação de access token.",
             erroBruto,
@@ -120,19 +129,26 @@ export async function comRetentativa<T>(fn: () => Promise<T>, opcoes: OpcoesRete
         }
         jaTentouRenovarToken = true;
         invalidarCacheAccessTokenDrive();
+        logAviso(CONTEXTO_LOG, { ...camposDeLog, resultado: "retentativa", motivo: "401-renovacao-token", tentativaNumero: tentativa });
         tentativa--; // renovação de token não consome orçamento de backoff (§4.5)
         continue;
       }
 
+      const codigoErroGoogle = razaoGoogle(erroBruto.corpo) ?? erroBruto.status;
+
       if (!ehRetryable(erroBruto)) {
+        logErro(CONTEXTO_LOG, { ...camposDeLog, resultado: "erro", tentativaNumero: tentativa, codigoErroGoogle });
         throw traduzirErroTerminal(erroBruto);
       }
 
       if (tentativa >= tentativasMax) {
+        logErro(CONTEXTO_LOG, { ...camposDeLog, resultado: "erro", tentativaNumero: tentativa, codigoErroGoogle });
         throw traduzirErroTerminal(erroBruto);
       }
 
-      await sleep(calcularBackoffMs(tentativa, erroBruto.retryAfterMs));
+      const atrasoMs = calcularBackoffMs(tentativa, erroBruto.retryAfterMs);
+      logAviso(CONTEXTO_LOG, { ...camposDeLog, resultado: "retentativa", tentativaNumero: tentativa, codigoErroGoogle, atrasoMs: Math.round(atrasoMs) });
+      await sleep(atrasoMs);
     }
   }
 }
@@ -159,4 +175,4 @@ export async function chamarDriveApi(caminho: string, init: RequestInit = {}, ba
   return resposta;
 }
 
-export { DRIVE_API, DRIVE_UPLOAD_API };
+export { DRIVE_UPLOAD_API };
