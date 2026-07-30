@@ -9,6 +9,15 @@
 > **Decisão de escopo já aceita (Gate 1):** `ADR-019` (`knowledge/ARCHITECTURAL_DECISIONS.md`)
 > — escopo OAuth `drive.file`, não `drive` completo. Este TDD projeta a arquitetura *sobre*
 > essa decisão já tomada; não a reabre.
+>
+> **Revisão de aprovação (2026-07-30):** a primeira versão deste TDD usava `entregaId` como
+> chave de idempotência permanente em `enviarArquivo`, o que bloquearia silenciosamente
+> reenvio legítimo de material — em conflito direto com `SPEC-012` §16, CB-01 ("Upload
+> repetido para a mesma Entrega → substitui o material; mantém identidade", aprovado pelo PO
+> em 2026-07-15). §2.2, §2.4, §2.9, §3.4, §4.1, §6.1-§6.3, §7.1, §7.3 e §8 foram revisados
+> para separar **idempotência técnica de operação** (protege só contra retry de rede da
+> mesma tentativa de upload) de **identidade do recurso** (`entregaId`, usada para decidir
+> substituição). Decisão tomada pelo responsável do projeto antes da aprovação do Gate 2.
 
 ---
 
@@ -125,7 +134,20 @@ export interface ParametrosDeEnvio {
   nomeArquivo: string;
   conteudo: Buffer;
   tipoMime: string;
-  /** Obrigatório — sem overload sem ela. Ver §2.9 (Idempotência). */
+  /**
+   * Identidade lógica do recurso (hoje, sempre `entregaId`) — decide CRIAR (primeira vez)
+   * vs. SUBSTITUIR (já existe recurso com esta identidade). Estável entre chamadas
+   * distintas de `enviarMaterialDaEntrega` para a mesma Entrega. Ver §2.9.
+   */
+  identidadeDoRecurso: string;
+  /**
+   * Identifica uma tentativa lógica de upload (uma "operação"), não a Entrega. Gerado uma
+   * vez por chamada a `enviarMaterialDaEntrega` e reaproveitado apenas pelas retentativas de
+   * rede de `comRetentativa()` dentro dessa mesma chamada — nunca entre chamadas distintas.
+   * Protege só contra duplicação por retry de rede da mesma operação; NÃO impede reenvio
+   * legítimo (CB-01, `SPEC-012` §16) — reenvio é sempre uma operação nova, com uma nova
+   * chaveDeIdempotencia. Ver §2.9.
+   */
   chaveDeIdempotencia: string;
 }
 ```
@@ -171,7 +193,7 @@ export interface ServicoDeArmazenamento {
 
 | Serviço/módulo | Responsabilidade | Conhece domínio? | Conhece Drive? |
 |---|---|---|---|
-| `ServicoDeArmazenamento` | Orquestra provisionamento de pasta + envio, deriva chave de idempotência, traduz erro | Sim | Não (só a interface `ProvedorDeArmazenamento`) |
+| `ServicoDeArmazenamento` | Orquestra provisionamento de pasta + envio, gera `chaveDeIdempotencia` nova por chamada e passa `identidadeDoRecurso` (`entregaId`), traduz erro | Sim | Não (só a interface `ProvedorDeArmazenamento`) |
 | `ProvedorDeArmazenamentoGoogleDrive` | Implementa cada operação como chamada REST à Drive API v3 | Não | Sim |
 | `obterAccessTokenDrive()` (já existe) | Troca/memoiza access token | Não | Sim (só OAuth) |
 
@@ -191,7 +213,8 @@ aceito: escrever manualmente os poucos tipos de resposta necessários, mesmo pad
 | Método da interface | Endpoint Drive API v3 | Observação |
 |---|---|---|
 | `criarPasta` | `POST /files` (`mimeType: application/vnd.google-apps.folder`) | `parents: [pastaPaiId]`; `pastaPaiId=null` cria sob a raiz visível ao OAuth Client |
-| `enviarArquivo` | `POST /upload/drive/v3/files?uploadType=multipart` | Metadata (nome, parents, `appProperties.chaveDeIdempotencia`) + mídia no mesmo request |
+| `enviarArquivo` — recurso novo | `POST /upload/drive/v3/files?uploadType=multipart` | Metadata (nome, parents, `appProperties.identidadeDoRecurso`, `appProperties.chaveDeIdempotencia`) + mídia no mesmo request |
+| `enviarArquivo` — substituição (CB-01) | `PATCH /upload/drive/v3/files/{id}?uploadType=multipart` | Mesmo `fileId` ("mantém identidade"); metadata (`appProperties.chaveDeIdempotencia` atualizada) + novo conteúdo no mesmo request. Ver §2.9 |
 | `baixarArquivo` | `GET /files/{id}?alt=media` | Stream; `tipoMime`/`tamanhoBytes` lidos dos headers |
 | `renomear` | `PATCH /files/{id}` (`name`) | Metadata-only |
 | `remover` | `PATCH /files/{id}` (`trashed: true`) | Ver §5.5 — reversível, não `DELETE` definitivo |
@@ -243,24 +266,60 @@ todo método de `ProvedorDeArmazenamentoGoogleDrive` que faz chamada de rede.
 
 ### 2.9 Idempotência
 
-**Problema:** conexão pode cair depois que o Drive já criou o arquivo, mas antes da resposta
-chegar — `files.create` não é nativamente idempotente na API do Google. Um retry ingênuo
-duplicaria o arquivo.
+**Dois problemas distintos, resolvidos com duas chaves distintas** (revisão de aprovação,
+2026-07-30 — ver nota no topo do documento):
+
+1. **Idempotência técnica de operação.** Conexão pode cair depois que o Drive já processou o
+   request, mas antes da resposta chegar — `files.create`/`files.update` não são
+   nativamente idempotentes na API do Google. Um retry ingênuo *da mesma tentativa* não pode
+   duplicar/reprocessar o efeito.
+2. **Identidade do recurso e substituição (CB-01, `SPEC-012` §16).** "Upload repetido para a
+   mesma Entrega" — aprovado pelo PO em 2026-07-15 — **substitui o material; mantém
+   identidade**. Isto é uma operação nova e legítima, não um retry, e não pode ser bloqueada
+   pela idempotência técnica. A primeira versão deste TDD usava `entregaId` como chave única
+   de idempotência permanente, o que confundia os dois problemas e bloquearia
+   silenciosamente todo reenvio — corrigido aqui.
 
 **Decisão:** usar `appProperties` do próprio Drive (metadado chave-valor nativo, até 30
 entradas por arquivo, visível/gravável só pelo app que criou o recurso — compatível com
-`drive.file`) em vez de tabela própria no Postgres.
+`drive.file`) para guardar **as duas chaves separadamente**, em vez de tabela própria no
+Postgres:
+
+- `appProperties.identidadeDoRecurso` — estável, hoje sempre `entregaId`. Decide **qual**
+  recurso do Drive corresponde a esta Entrega.
+- `appProperties.chaveDeIdempotencia` — muda a cada operação nova. Decide se a chamada atual
+  é **um retry da última operação** (mesmo valor) ou **uma operação nova** (valor diferente).
+
+**Origem da `chaveDeIdempotencia`:** gerada por `ServicoDeArmazenamento` (`randomUUID()`) uma
+vez por chamada a `enviarMaterialDaEntrega`, e reaproveitada só pelas retentativas de
+`comRetentativa()` **dentro dessa mesma chamada**. Uma nova chamada a
+`enviarMaterialDaEntrega` para a mesma Entrega — reenvio do Portal, por exemplo — gera uma
+`chaveDeIdempotencia` nova, e é por definição uma operação nova.
 
 **Fluxo em `enviarArquivo`:**
-1. Antes de criar, consulta `files.list` filtrando por `appProperties has {key:'chaveDeIdempotencia', value:'...'}` dentro da pasta alvo.
-2. Se encontrar, retorna o recurso existente — **sem** nova chamada de criação.
-3. Se não encontrar, cria já gravando `chaveDeIdempotencia` em `appProperties` no mesmo
-   request (evita janela onde o arquivo existe sem a chave).
-4. `chaveDeIdempotencia` proposta: o próprio `entregaId` — suficiente porque, no caso de uso
-   real desta fase, uma Entrega tem no máximo um material.
+1. Antes de escrever, consulta `files.list` filtrando por `appProperties has
+   {key:'identidadeDoRecurso', value:'<entregaId>'}` dentro da pasta alvo — busca **por
+   identidade do recurso**, não mais por chave de idempotência.
+2. **Não encontrado** → cria (`POST .../files?uploadType=multipart`), gravando
+   `appProperties.identidadeDoRecurso` e `appProperties.chaveDeIdempotencia` já no mesmo
+   request (evita janela onde o arquivo existe sem as chaves).
+3. **Encontrado, com `chaveDeIdempotencia` armazenada igual à recebida agora** → retry da
+   mesma operação (ex.: `comRetentativa()` reenviando após timeout) → retorna o recurso
+   existente **sem nova chamada de escrita**.
+4. **Encontrado, com `chaveDeIdempotencia` armazenada diferente da recebida agora** →
+   operação nova sobre uma Entrega que já tem material (CB-01) → **substitui o conteúdo do
+   arquivo existente**, mantendo o mesmo `fileId` ("mantém identidade" — CB-01):
+   `PATCH .../files/{id}?uploadType=multipart` com o novo conteúdo e
+   `appProperties.chaveDeIdempotencia` atualizada, no mesmo request.
 
 **Alternativa descartada:** tabela `storage_operacoes` no Postgres — rejeitada por adicionar
 escopo de schema fora deste Gate, quando o Drive já resolve o mesmo problema nativamente.
+
+**Nota de limitação aceita:** o Drive mantém revisões automáticas de conteúdo por padrão
+(retenção própria, tipicamente ~30 dias, não configurada nem controlada por este TDD) — isso
+não é um histórico de versões de produto, é comportamento nativo do Drive fora do controle
+da aplicação. Se histórico de versões vier a ser um requisito de produto, é decisão nova,
+fora deste Gate (ver §7.3).
 
 ### 2.10 Tratamento de erros
 
@@ -398,6 +457,8 @@ uma única vez via script análogo a `testarOAuthGoogleDrive.ts` — não em tem
 | Pasta de Colaboração Mensal | `{mesReferencia}` (`YYYY-MM`) | Mesmo formato já usado em `Entrega`/`ColaboracaoMensal` — nenhuma tradução entre camadas |
 | Arquivo de material | `{formato}-{entregaId}.{ext}` | Único por Entrega (que tem no máximo um material); legível para auditoria manual; não usa o nome original enviado pela Parceira (pode ter caractere inválido ou PII) |
 | Metadado de nome original | `appProperties.nomeOriginal` | Preserva o nome que a Parceira enviou sem usá-lo como nome físico do arquivo |
+| Metadado de identidade do recurso | `appProperties.identidadeDoRecurso` (`entregaId`) | Decide CRIAR vs. SUBSTITUIR — ver §2.9 |
+| Metadado de operação | `appProperties.chaveDeIdempotencia` | Distingue retry de rede (mesmo valor) de reenvio legítimo (valor novo) — ver §2.9 |
 
 ### 3.5 Arquivos temporários vs. permanentes
 
@@ -437,17 +498,28 @@ sequenceDiagram
     end
     PDG-->>SDA: pastaColaboracaoId resolvido
 
-    SDA->>PDG: enviarArquivo({pastaId, nomeArquivo, conteudo, chaveDeIdempotencia: entregaId})
-    PDG->>API: GET /files?q=appProperties.chaveDeIdempotencia='entregaId'
-    alt já existe (idempotência)
-        API-->>PDG: recurso existente
-        PDG-->>SDA: RecursoDeArmazenamento (sem novo upload)
-    else não existe
+    SDA->>SDA: gera chaveDeIdempotencia nova (randomUUID) para esta chamada
+    SDA->>PDG: enviarArquivo({pastaId, nomeArquivo, conteudo, identidadeDoRecurso: entregaId, chaveDeIdempotencia})
+    PDG->>API: GET /files?q=appProperties.identidadeDoRecurso='entregaId'
+    alt recurso não existe
         PDG->>TOK: access token válido?
         TOK-->>PDG: access_token
-        PDG->>API: POST /upload/drive/v3/files?uploadType=multipart
+        PDG->>API: POST /upload/drive/v3/files?uploadType=multipart (cria + grava identidadeDoRecurso + chaveDeIdempotencia)
         alt sucesso
             API-->>PDG: RecursoDeArmazenamento
+            PDG-->>SDA: RecursoDeArmazenamento
+        else erro
+            Note over PDG,API: ver §4.5 (tratamento de falhas)
+        end
+    else recurso existe, chaveDeIdempotencia armazenada == recebida
+        Note over PDG,API: retry da mesma operação (§2.9)
+        API-->>PDG: recurso existente
+        PDG-->>SDA: RecursoDeArmazenamento (sem nova escrita)
+    else recurso existe, chaveDeIdempotencia armazenada != recebida
+        Note over PDG,API: reenvio legítimo — CB-01 (§2.9)
+        PDG->>API: PATCH /upload/drive/v3/files/{id}?uploadType=multipart (substitui conteúdo, mesmo fileId, atualiza chaveDeIdempotencia)
+        alt sucesso
+            API-->>PDG: RecursoDeArmazenamento (mesmo id, novo conteúdo)
             PDG-->>SDA: RecursoDeArmazenamento
         else erro
             Note over PDG,API: ver §4.5 (tratamento de falhas)
@@ -623,8 +695,15 @@ já usa o `fetch` global — proposta é torná-lo injetável só para teste). C
 
 - Sucesso de cada operação (`criarPasta`, `enviarArquivo`, `baixarArquivo`, `renomear`,
   `remover`, `listar`, `obterMetadados`).
-- `enviarArquivo` com `chaveDeIdempotencia` repetida → não gera novo `files.create`, retorna
-  o recurso já existente.
+- `enviarArquivo` para `identidadeDoRecurso` nova → cria (`POST .../files?uploadType=multipart`),
+  grava `appProperties.identidadeDoRecurso` e `appProperties.chaveDeIdempotencia`.
+- `enviarArquivo` repetido com a **mesma** `chaveDeIdempotencia` para a mesma
+  `identidadeDoRecurso` (retry) → **não** gera novo `files.create`/`files.update`, retorna o
+  recurso já existente sem chamada de escrita adicional (CT — idempotência de operação).
+- `enviarArquivo` com `chaveDeIdempotencia` **diferente** para a mesma `identidadeDoRecurso`
+  já existente (reenvio, CB-01) → **substitui**: chama `PATCH .../files/{id}?uploadType=multipart`,
+  mantém o mesmo `fileId` no `RecursoDeArmazenamento` retornado, atualiza
+  `appProperties.chaveDeIdempotencia` (CT — CB-01, não pode ser confundido com retry).
 - `listar` com paginação → `proximoToken` propagado corretamente entre chamadas.
 
 ### 6.2 Testes unitários — `ServicoDeArmazenamento`
@@ -633,6 +712,9 @@ já usa o `fetch` global — proposta é torná-lo injetável só para teste). C
 
 - Provisionamento de pasta só na primeira chamada por `Parceira × MesReferencia`; reuso em
   chamadas seguintes (sem nova `criarPasta`).
+- Duas chamadas distintas a `enviarMaterialDaEntrega` para a mesma Entrega geram duas
+  `chaveDeIdempotencia` diferentes (verificar via spy no provedor fake) — garante que
+  `ServicoDeArmazenamento` nunca reutiliza a chave de uma chamada anterior (CT — CB-01).
 - Erro do provedor (fake lança `ErroDeArmazenamento`) propagado traduzido, nunca cru.
 
 ### 6.3 Testes de retry
@@ -683,7 +765,7 @@ criada).
 | Risco | Impacto | Mitigação proposta |
 |---|---|---|
 | Cache de access token por processo, não compartilhado | Baixo — redundância de chamada ao endpoint de token se escalar horizontalmente | Reavaliar só quando múltiplas instâncias forem reais (não é hoje) |
-| `appProperties` como único mecanismo de idempotência | Médio — específico do Drive, não portável | Documentado (§2.9); reprojetar se um provedor futuro não tiver equivalente |
+| `appProperties` como único mecanismo de idempotência e identidade de recurso | Médio — específico do Drive, não portável | Documentado (§2.9); reprojetar se um provedor futuro não tiver equivalente |
 | `fetch` nativo em vez de SDK oficial | Baixo — mais código próprio para manter | Superfície pequena (6 endpoints); revisitar se a superfície crescer muito |
 
 ### 7.2 Operacionais
@@ -698,9 +780,12 @@ criada).
 - Sem download direto Parceira→Drive (tudo mediado pelo backend) — decisão de segurança
   (§5.3), não limitação técnica, mas implica que todo upload/download passa pela banda do
   backend.
-- Sem versionamento de arquivo — reenvio do mesmo `entregaId` retorna o recurso já existente
-  (idempotência), não cria uma nova versão. Se sobrescrita for necessária no futuro, é nova
-  decisão de produto.
+- Sem histórico de versões de produto — reenvio do mesmo `entregaId` (`identidadeDoRecurso`)
+  **substitui** o conteúdo do arquivo existente, mantendo o mesmo `fileId` (§2.9, CB-01
+  `SPEC-012` §16); a versão anterior não fica acessível pela aplicação. O Drive mantém
+  revisões automáticas de conteúdo por padrão (retenção própria, não controlada por este
+  TDD), mas isso não é exposto como funcionalidade de produto. Se histórico de versões
+  navegável pela Parceira/Operador vier a ser necessário, é nova decisão de produto.
 
 ### 7.4 Dependências futuras
 
@@ -724,7 +809,9 @@ iniciado.
 - [ ] `portal-backend/src/shared/storage/googleDrive/provedorGoogleDrive.ts` —
       `ProvedorDeArmazenamentoGoogleDrive`, implementando os 7 métodos da interface (§2.4)
 - [ ] `comRetentativa()` — utilitário de retry com backoff exponencial + jitter (§2.8)
-- [ ] Verificação de idempotência via `appProperties` antes de `files.create` (§2.9)
+- [ ] Verificação de identidade do recurso (`appProperties.identidadeDoRecurso`) e de
+      idempotência de operação (`appProperties.chaveDeIdempotencia`) antes de
+      `files.create`/`files.update`, incluindo o caminho de substituição (CB-01, §2.9)
 - [ ] `portal-backend/src/shared/storage/servicoDeArmazenamento.ts` —
       `ServicoDeArmazenamento`/`ServicoDeArmazenamentoImpl` (§2.3)
 - [ ] `portal-backend/src/shared/storage/index.ts` — `criarProvedorDeArmazenamento` +
