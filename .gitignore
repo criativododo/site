@@ -37,6 +37,9 @@ temp/
 .audit-portal/
 architecture-report.txt
 
+# Material de Design System exportado (HTML/PDF), nunca fonte de verdade — ver DESIGN.md
+/Design System/
+
 # Logs
 *.log
 
