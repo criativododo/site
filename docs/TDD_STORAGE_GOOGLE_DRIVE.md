@@ -18,6 +18,26 @@
 > para separar **idempotência técnica de operação** (protege só contra retry de rede da
 > mesma tentativa de upload) de **identidade do recurso** (`entregaId`, usada para decidir
 > substituição). Decisão tomada pelo responsável do projeto antes da aprovação do Gate 2.
+>
+> **Revisão crítica pré-Gate 3 (2026-07-30):** auditoria formal antes da aprovação final do
+> Gate 2 identificou cinco ajustes, todos aplicados nesta revisão: (1) §2.8/§2.9 — a
+> proteção de idempotência descrita cobria só retentativa de uma *chamada completa* a
+> `enviarArquivo`, não a retentativa interna de `comRetentativa()` sobre a própria escrita
+> (`files.create`/`files.update`) quando a conexão cai depois do Drive já ter processado o
+> request — e `criarPasta` não tinha proteção equivalente nenhuma contra o mesmo risco.
+> Ambos fechados explicitando que toda retentativa reexecuta a verificação de existência
+> antes de reenviar uma escrita, nunca reenvia a escrita isolada às cegas. (2) §2.4/§2.9/§4.1/
+> §4.3 — consultas `files.list` não excluíam recurso na lixeira (`trashed:true`), o que
+> poderia fazer uma reconsulta de idempotência ou de pasta encontrar um recurso já removido
+> por `remover()`; adicionado `trashed=false` explícito a toda consulta. (3) §3.2/§3.3 — a
+> árvore de pastas contradizia a si mesma sobre quando/como a raiz é criada; corrigido e a
+> pasta fixa `Parceiras/` deixa de ser um pré-requisito implícito não provisionado, passando a
+> ser resolvida pelo mesmo mecanismo de list-then-create já usado para `parceiraId`/
+> `mesReferencia`. (4) §2.2/§2.13 — `ConfiguracaoDeArmazenamento` era referenciado sem nunca
+> ser definido, e a injeção de dependência não mostrava de onde `GOOGLE_DRIVE_ROOT_FOLDER_ID`
+> chega a `ServicoDeArmazenamentoImpl`; ambos agora explícitos. Decisões de arquitetura já
+> aceitas (ADR-019, CB-01) não foram reabertas — só lacunas de especificação técnica dentro
+> delas.
 
 ---
 
@@ -212,13 +232,13 @@ aceito: escrever manualmente os poucos tipos de resposta necessários, mesmo pad
 
 | Método da interface | Endpoint Drive API v3 | Observação |
 |---|---|---|
-| `criarPasta` | `POST /files` (`mimeType: application/vnd.google-apps.folder`) | `parents: [pastaPaiId]`; `pastaPaiId=null` cria sob a raiz visível ao OAuth Client |
+| `criarPasta` | `POST /files` (`mimeType: application/vnd.google-apps.folder`) | `parents: [pastaPaiId]`. Comportamento genérico da interface: `pastaPaiId=null` criaria sob a raiz visível ao OAuth Client — mas `ServicoDeArmazenamento` nunca invoca com `null`, sempre resolve relativo a `GOOGLE_DRIVE_ROOT_FOLDER_ID` explícito (§3.3) |
 | `enviarArquivo` — recurso novo | `POST /upload/drive/v3/files?uploadType=multipart` | Metadata (nome, parents, `appProperties.identidadeDoRecurso`, `appProperties.chaveDeIdempotencia`) + mídia no mesmo request |
 | `enviarArquivo` — substituição (CB-01) | `PATCH /upload/drive/v3/files/{id}?uploadType=multipart` | Mesmo `fileId` ("mantém identidade"); metadata (`appProperties.chaveDeIdempotencia` atualizada) + novo conteúdo no mesmo request. Ver §2.9 |
 | `baixarArquivo` | `GET /files/{id}?alt=media` | Stream; `tipoMime`/`tamanhoBytes` lidos dos headers |
 | `renomear` | `PATCH /files/{id}` (`name`) | Metadata-only |
 | `remover` | `PATCH /files/{id}` (`trashed: true`) | Ver §5.5 — reversível, não `DELETE` definitivo |
-| `listar` | `GET /files?q='{pastaId}' in parents&pageSize=&pageToken=` | Paginação nativa (`nextPageToken`) |
+| `listar` | `GET /files?q='{pastaId}' in parents and trashed=false&pageSize=&pageToken=` | Paginação nativa (`nextPageToken`). `trashed=false` explícito — o Drive não exclui recurso na lixeira por padrão; sem este filtro, uma pasta ou arquivo removido por `remover()` poderia ser encontrado de novo por uma consulta de resolução/idempotência (ver §2.9) |
 | `obterMetadados` | `GET /files/{id}?fields=...` | Usado pela verificação de idempotência (§2.9) |
 
 ### 2.5 Fluxo OAuth
@@ -264,6 +284,31 @@ todo método de `ProvedorDeArmazenamentoGoogleDrive` que faz chamada de rede.
 - **`401` (caso especial):** não é backoff — invalida o cache de
   `obterAccessTokenDrive()`, tenta renovar 1x, se persistir trata como não retryable.
 
+**O que exatamente `comRetentativa()` reexecuta a cada tentativa — distinção obrigatória:**
+
+- Para operação naturalmente seguro de repetir (`listar`, `obterMetadados`, `baixarArquivo`,
+  `renomear`, `remover` — read-only ou escrita idempotente por natureza: renomear para o
+  mesmo nome ou marcar `trashed:true` duas vezes é inofensivo), `comRetentativa()` envolve
+  só a chamada HTTP isolada, como no diagrama genérico de §4.5.
+- Para `criarPasta` e `enviarArquivo` — as duas únicas operações que chamam `files.create`/
+  `files.update`, **não nativamente idempotentes na API do Google** (§2.9) — a função
+  encapsulada por `comRetentativa()` é a sequência **verificação-de-existência + decisão +
+  escrita como uma unidade só**, nunca a chamada de escrita isolada. Isso importa
+  especificamente para o cenário em que a conexão cai *depois* do Drive já ter processado o
+  request de criação, mas antes da resposta chegar: uma retentativa que reenviasse cegamente
+  o mesmo `POST` criaria um segundo recurso duplicado — o problema que §2.9 declara resolver,
+  mas que só é de fato resolvido se cada retentativa **recomeça pela consulta de
+  existência**, não pelo reenvio direto da escrita. Concretamente:
+  - `enviarArquivo`: cada retentativa reexecuta a consulta por
+    `appProperties.identidadeDoRecurso` (§2.9) antes de decidir create/update/no-op — nunca
+    reenvia `POST`/`PATCH` sem antes reconsultar.
+  - `criarPasta` (via `resolverPastaDaColaboracao`, §4.3): cada retentativa reexecuta a
+    consulta por nome dentro do pai (`listar`) antes de decidir criar — mesmo mecanismo,
+    sem precisar de `appProperties` própria, porque nome+pasta-pai já é uma chave de
+    identidade estável para `Parceiras`/`{parceiraId}`/`{mesReferencia}` (ao contrário do
+    nome de arquivo, que pode variar de extensão entre reenvios — por isso `enviarArquivo`
+    usa `appProperties` em vez de nome, ver §2.9).
+
 ### 2.9 Idempotência
 
 **Dois problemas distintos, resolvidos com duas chaves distintas** (revisão de aprovação,
@@ -298,8 +343,12 @@ vez por chamada a `enviarMaterialDaEntrega`, e reaproveitada só pelas retentati
 
 **Fluxo em `enviarArquivo`:**
 1. Antes de escrever, consulta `files.list` filtrando por `appProperties has
-   {key:'identidadeDoRecurso', value:'<entregaId>'}` dentro da pasta alvo — busca **por
-   identidade do recurso**, não mais por chave de idempotência.
+   {key:'identidadeDoRecurso', value:'<entregaId>'} and trashed=false` dentro da pasta alvo
+   — busca **por identidade do recurso**, não mais por chave de idempotência.
+   `trashed=false` é deliberado: se o material da Entrega foi removido (`remover()`, §2.4),
+   um reenvio subsequente deve **criar um recurso novo e visível**, não reaproveitar/
+   ressuscitar silenciosamente o arquivo na lixeira — remoção é uma ação distinta de
+   substituição (CB-01 só se aplica a reenvio sem remoção prévia).
 2. **Não encontrado** → cria (`POST .../files?uploadType=multipart`), gravando
    `appProperties.identidadeDoRecurso` e `appProperties.chaveDeIdempotencia` já no mesmo
    request (evita janela onde o arquivo existe sem as chaves).
@@ -381,20 +430,43 @@ Sem framework de DI — o projeto não usa um hoje (`material.storage.ts` export
 singleton diretamente). Mantém o padrão, com seleção por config:
 
 ```typescript
+// portal-backend/src/shared/storage/tipos.ts (acréscimo a §2.2)
+
+export interface ConfiguracaoDeArmazenamento {
+  tipo: "google-drive";
+  googleDrive: {
+    /** GOOGLE_DRIVE_ROOT_FOLDER_ID (§3.3) — raiz do Portal, provisionada uma única vez fora
+     *  de tempo de request. Consumida por ServicoDeArmazenamentoImpl, não pelo provedor:
+     *  ProvedorDeArmazenamento não conhece caminho lógico nenhum (§2.1). */
+    pastaRaizId: string;
+  };
+}
+```
+
+```typescript
 // portal-backend/src/shared/storage/index.ts
 
-export function criarProvedorDeArmazenamento(config: ConfiguracaoDeArmazenamento): ProvedorDeArmazenamento {
-  switch (config.tipo) {
+export function criarProvedorDeArmazenamento(tipo: ConfiguracaoDeArmazenamento["tipo"]): ProvedorDeArmazenamento {
+  switch (tipo) {
     case "google-drive":
-      return new ProvedorDeArmazenamentoGoogleDrive(config.googleDrive);
+      // Sem parâmetro de credencial: reaproveita obterAccessTokenDrive() (ADR-017) por
+      // import direto, não por injeção — mesmo padrão já usado hoje em googleDriveClient.ts.
+      return new ProvedorDeArmazenamentoGoogleDrive();
     default:
-      throw new Error(`Provedor de armazenamento não suportado: ${config.tipo}`);
+      throw new Error(`Provedor de armazenamento não suportado: ${tipo}`);
   }
 }
 
 export const servicoDeArmazenamento: ServicoDeArmazenamento =
-  new ServicoDeArmazenamentoImpl(criarProvedorDeArmazenamento(env.storage));
+  new ServicoDeArmazenamentoImpl(
+    criarProvedorDeArmazenamento(env.storage.tipo),
+    env.storage.googleDrive.pastaRaizId,
+  );
 ```
+
+`ServicoDeArmazenamentoImpl` recebe `pastaRaizId` no construtor — é a partir dele que
+`resolverPastaDaColaboracao` inicia a resolução em cadeia descrita em §3.2 (raiz →
+`Parceiras` → `{parceiraId}` → `{mesReferencia}`).
 
 Testes injetam um `ProvedorDeArmazenamento` fake diretamente no construtor de
 `ServicoDeArmazenamentoImpl` — sem mock de rede, mesmo padrão de isolamento que
@@ -423,23 +495,36 @@ que já existe hoje: **Parceira** e **Colaboração Mensal**.
 ### 3.2 Organização de pastas
 
 ```
-<raiz do Portal, criada pela própria app na primeira execução>
-└── Parceiras/
+<raiz do Portal — GOOGLE_DRIVE_ROOT_FOLDER_ID, provisionada uma única vez, fora de tempo de
+ request, por script manual (§3.3)>
+└── Parceiras/                     (nome fixo, resolvida/criada sob demanda — ver nota abaixo)
     └── {parceiraId}/              (UUID — organização "por Parceira")
         └── {mesReferencia}/       (formato "YYYY-MM" — organização "por Colaboração
                                      Mensal", equivalente funcional de "por campanha")
             └── {formato}-{entregaId}.{extensaoOriginal}
 ```
 
-Árvore de 2 níveis (Parceira → MesReferencia), não 3 (sem subpasta por `formato`) —
-mantém navegação manual simples no Drive, e o nome do arquivo já carrega o `formato`
-(Reel/Carrossel/etc.) sem precisar de mais uma pasta.
+**Nota sobre `Parceiras/`:** só a raiz é provisionada manualmente (§3.3) — nenhuma outra
+pasta é pré-criada. `Parceiras/` é resolvida pelo mesmo mecanismo de list-then-create já
+usado para `{parceiraId}`/`{mesReferencia}` (§4.3), só que um nível acima, com nome fixo em
+vez de dinâmico: `resolverPastaDaColaboracao` é uma cadeia de 3 verificações (`Parceiras` sob
+`pastaRaizId`, `{parceiraId}` sob `Parceiras`, `{mesReferencia}` sob `{parceiraId}`), não 2.
+Isso não exige nenhum provisionamento adicional fora de tempo de request: como a raiz é
+estável (config persistida), a busca por `Parceiras` sob ela sempre encontra a mesma pasta
+depois da primeira chamada, em qualquer instância/reinício do processo — sem depender de
+cache em memória nem de nova tabela no Postgres (§1.3).
+
+Contando as 2 pastas dinâmicas por domínio (Parceira → MesReferencia), não 3 (sem subpasta
+por `formato`) — mantém navegação manual simples no Drive, e o nome do arquivo já carrega o
+`formato` (Reel/Carrossel/etc.) sem precisar de mais uma pasta.
 
 **Justificativa da profundidade:** cada nível a mais é uma chamada de API extra em
-`resolverPastaDaColaboracao` (verificar existência antes de criar) — 2 níveis é o mínimo
-necessário para refletir a hierarquia real do domínio (`Parceira` contém N
+`resolverPastaDaColaboracao` (verificar existência antes de criar) — 2 níveis dinâmicos é o
+mínimo necessário para refletir a hierarquia real do domínio (`Parceira` contém N
 `ColaboracaoMensal`, cada uma com N `Entrega`) sem introduzir uma dimensão que o domínio não
-tem hoje (`formato` já é legível no nome do arquivo).
+tem hoje (`formato` já é legível no nome do arquivo). `Parceiras` é um nível fixo adicional,
+não uma dimensão de domínio — existe só para não misturar pasta de Parceira com qualquer
+outro uso futuro da raiz do Portal.
 
 ### 3.3 Pasta raiz
 
@@ -448,6 +533,17 @@ própria aplicação** — nenhuma pasta pré-existente pode ser reaproveitada, 
 só concede acesso a recurso criado (ou aberto via Picker, fora de escopo) sob esta
 autorização. ID persistido como config (`GOOGLE_DRIVE_ROOT_FOLDER_ID`), criado manualmente
 uma única vez via script análogo a `testarOAuthGoogleDrive.ts` — não em tempo de request.
+
+**Só a raiz** é provisionada por este script. A razão de a raiz (e só ela) precisar de
+provisionamento fora de tempo de request não é apenas `drive.file` — mesmo com escopo mais
+amplo, a aplicação ainda precisaria de um ID estável entre reinícios do processo, e este Gate
+não persiste nenhum estado em Postgres (§1.3). Sem um ID de raiz persistido em config, cada
+reinício do processo recriaria uma raiz nova e órfã, desconectada de todo material já
+enviado. Nenhuma pasta abaixo da raiz (`Parceiras`, `{parceiraId}`, `{mesReferencia}`) tem
+esse problema: cada uma é resolvida por busca (`listar`, por nome, sob um pai já estável) a
+cada chamada, então a primeira chamada em produção já as cria sob demanda e toda chamada
+seguinte — em qualquer instância ou após qualquer reinício — encontra a mesma pasta de novo,
+sem exigir persistência própria (§3.2).
 
 ### 3.4 Convenções de nomenclatura
 
@@ -500,7 +596,7 @@ sequenceDiagram
 
     SDA->>SDA: gera chaveDeIdempotencia nova (randomUUID) para esta chamada
     SDA->>PDG: enviarArquivo({pastaId, nomeArquivo, conteudo, identidadeDoRecurso: entregaId, chaveDeIdempotencia})
-    PDG->>API: GET /files?q=appProperties.identidadeDoRecurso='entregaId'
+    PDG->>API: GET /files?q=appProperties.identidadeDoRecurso='entregaId' and trashed=false
     alt recurso não existe
         PDG->>TOK: access token válido?
         TOK-->>PDG: access_token
@@ -563,7 +659,7 @@ sequenceDiagram
     participant API as Google Drive API v3
 
     SDA->>PDG: listar(pastaPaiId) — pasta de nome {nome} já existe?
-    PDG->>API: GET /files?q='{pastaPaiId}' in parents and name='{nome}'
+    PDG->>API: GET /files?q='{pastaPaiId}' in parents and name='{nome}' and trashed=false
     API-->>PDG: PaginaDeRecursos
     alt encontrada
         PDG-->>SDA: RecursoDeArmazenamento existente
@@ -705,6 +801,16 @@ já usa o `fetch` global — proposta é torná-lo injetável só para teste). C
   mantém o mesmo `fileId` no `RecursoDeArmazenamento` retornado, atualiza
   `appProperties.chaveDeIdempotencia` (CT — CB-01, não pode ser confundido com retry).
 - `listar` com paginação → `proximoToken` propagado corretamente entre chamadas.
+- `listar`/consulta de identidade sempre incluem `trashed=false` na query enviada ao Drive
+  (CT — verificar o corpo/URL do `fetch` fake) (§2.4, §2.9).
+- `enviarArquivo`: `fetch` fake simula timeout na chamada de criação (`POST`) *depois* de o
+  Drive já ter processado (próxima chamada de `listar`, dentro da mesma retentativa de
+  `comRetentativa()`, já encontra o recurso com a `chaveDeIdempotencia` da tentativa atual) →
+  resultado final é sucesso com o recurso já criado, **sem** um segundo `POST` de criação (CT
+  — fecha a lacuna de retentativa "às cegas" descrita em §2.8).
+- `criarPasta` (via `resolverPastaDaColaboracao`): mesmo cenário de timeout pós-processamento
+  → retentativa reconsulta por nome+pai antes de criar de novo, retorna a pasta já criada,
+  **sem** segunda pasta duplicada (CT — mesma lacuna, aplicada a pasta).
 
 ### 6.2 Testes unitários — `ServicoDeArmazenamento`
 
@@ -712,6 +818,9 @@ já usa o `fetch` global — proposta é torná-lo injetável só para teste). C
 
 - Provisionamento de pasta só na primeira chamada por `Parceira × MesReferencia`; reuso em
   chamadas seguintes (sem nova `criarPasta`).
+- `resolverPastaDaColaboracao` resolve os 3 níveis a partir de `pastaRaizId` (`Parceiras` →
+  `{parceiraId}` → `{mesReferencia}`), não 2 — verificar via spy que `Parceiras` também passa
+  pelo ciclo listar/criar na primeira chamada e é reaproveitada nas seguintes (§3.2).
 - Duas chamadas distintas a `enviarMaterialDaEntrega` para a mesma Entrega geram duas
   `chaveDeIdempotencia` diferentes (verificar via spy no provedor fake) — garante que
   `ServicoDeArmazenamento` nunca reutiliza a chave de uma chamada anterior (CT — CB-01).
@@ -802,18 +911,26 @@ Tudo abaixo é **implementação**, condicionada à aprovação deste TDD. Nenhu
 iniciado.
 
 - [ ] `portal-backend/src/shared/storage/tipos.ts` — `RecursoDeArmazenamento`,
-      `PaginaDeRecursos`, `ParametrosDeEnvio` (§2.2)
+      `PaginaDeRecursos`, `ParametrosDeEnvio`, `ConfiguracaoDeArmazenamento` (§2.2, §2.13)
 - [ ] `portal-backend/src/shared/storage/provedorDeArmazenamento.ts` — interface
       `ProvedorDeArmazenamento` (§2.2)
 - [ ] `portal-backend/src/shared/storage/erros.ts` — hierarquia `ErroDeArmazenamento` (§2.10)
 - [ ] `portal-backend/src/shared/storage/googleDrive/provedorGoogleDrive.ts` —
-      `ProvedorDeArmazenamentoGoogleDrive`, implementando os 7 métodos da interface (§2.4)
-- [ ] `comRetentativa()` — utilitário de retry com backoff exponencial + jitter (§2.8)
+      `ProvedorDeArmazenamentoGoogleDrive`, implementando os 7 métodos da interface (§2.4),
+      sem construtor de credencial (reaproveita `obterAccessTokenDrive()` por import, §2.13)
+- [ ] `comRetentativa()` — utilitário de retry com backoff exponencial + jitter (§2.8),
+      aplicado a `criarPasta`/`enviarArquivo` envolvendo a sequência
+      verificação-de-existência + escrita como unidade retryable só, nunca a escrita isolada
+      (§2.8)
 - [ ] Verificação de identidade do recurso (`appProperties.identidadeDoRecurso`) e de
       idempotência de operação (`appProperties.chaveDeIdempotencia`) antes de
-      `files.create`/`files.update`, incluindo o caminho de substituição (CB-01, §2.9)
+      `files.create`/`files.update`, incluindo o caminho de substituição (CB-01, §2.9) e o
+      filtro `trashed=false` em toda consulta de resolução/idempotência (§2.4, §2.9)
+- [ ] `resolverPastaDaColaboracao` como cadeia de 3 níveis (`Parceiras` → `{parceiraId}` →
+      `{mesReferencia}`) a partir de `pastaRaizId`, não 2 (§3.2)
 - [ ] `portal-backend/src/shared/storage/servicoDeArmazenamento.ts` —
-      `ServicoDeArmazenamento`/`ServicoDeArmazenamentoImpl` (§2.3)
+      `ServicoDeArmazenamento`/`ServicoDeArmazenamentoImpl`, recebendo `pastaRaizId` no
+      construtor (§2.3, §2.13)
 - [ ] `portal-backend/src/shared/storage/index.ts` — `criarProvedorDeArmazenamento` +
       export de `servicoDeArmazenamento` (injeção de dependência, §2.13)
 - [ ] `env.storage`/`GOOGLE_DRIVE_ROOT_FOLDER_ID` em `config/env.ts` e `.env.example` (§3.3)
