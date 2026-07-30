@@ -702,6 +702,294 @@ infraestrutura confirmada do projeto (VPS Ubuntu), só não usada em código ain
 
 ---
 
+## ADR-016 — Colaboração Mensal como agregado formal e canônico do domínio (Fase 3 do Plano Mestre)
+
+- **Status:** Aceito.
+- **Data:** 2026-07-29.
+- **Autor da decisão:** responsável do projeto (Fase 3 aprovada em
+  `criativododo-interno/PLANO_MESTRE_IMPLEMENTACAO_PORTAL_DODO.md`).
+- **Relaciona-se com:** `knowledge/Historico/CONTRATO_SOBERANO.md` §4 e §6.3 (linguagem
+  ubíqua `Colaboracao Mensal`/`Compilador do Mes`; fronteira por competência), SPEC-005,
+  ADR-006 (vocabulário de domínio), ADR-009 (gate de elegibilidade de pagamento), ADR-014
+  (Calendário Operacional), ADR-015 (persistência PostgreSQL), `docs/handoff/
+  PROJECT_STATUS.md` ("Decisões de produto pendentes" e "Fluxos incompletos").
+
+### Contexto
+
+`mesReferencia` é hoje um campo livre, preenchido manualmente em cada Entrega/Briefing/
+Obrigação Financeira — a associação entre esses registros e uma competência existe só por
+convenção de chave natural (`parceiraId` + `mesReferencia` [+ `formato`]), nunca como
+entidade própria. Isso é a maior lacuna estrutural identificada nos handoffs de 2026-07-27
+e é registrado como pendência explícita em `PROJECT_STATUS.md` ("Colaboração Mensal (SPEC-005)
+não existe como agregado formal").
+
+O Contrato Soberano já antecipava esse conceito antes mesmo de existir código de Portal:
+`Colaboracao Mensal` está na linguagem ubíqua oficial (§4) e é descrita como "fronteira por
+competência" (§6.3, "Parceira x MesReferencia"); `Compilador do Mes` também já está na
+linguagem ubíqua (§4), embora nunca tenha sido implementado. Este ADR não introduz conceito
+novo de domínio — apenas decide **como e quando** ele é materializado em código, o que era a
+decisão de produto pendente que bloqueava a Fase 3 (gatilho de compilação).
+
+Pré-requisito técnico já satisfeito: Fase 2 (ADR-015) trouxe PostgreSQL real, tornando
+viável um relacionamento por FK verdadeira em vez de convenção de chave natural solta.
+
+### Decisão
+
+#### 1. Colaboração Mensal torna-se a entidade canônica do domínio
+
+Novo módulo de domínio `colaboracao-mensal`, seguindo as mesmas 4 camadas de todos os
+módulos existentes (`*.types.ts` / `*.repository.ts` / `*.service.ts` / `*.routes.ts`).
+Entidade `ColaboracaoMensal`: `parceiraId`, `mesReferencia`, `condicaoComercial` (snapshot —
+ver item 4), `status`, `criadoPor`, `criadoEm`, `quantidadeRegistrosGerados`.
+
+A partir desta fase, `ColaboracaoMensal` é a **fonte canônica** de agrupamento por
+competência: Entrega, Briefing e Obrigação Financeira passam a se relacionar a ela por FK
+real (`colaboracaoMensalId`), não apenas por coincidirem em `parceiraId`+`mesReferencia`. A
+convenção de chave natural não é abandonada — continua sendo a chave de negócio usada para
+localizar/gerar a `ColaboracaoMensal` correspondente — mas deixa de ser o único vínculo
+estrutural entre os registros de uma competência.
+
+#### 2. Gatilho de compilação: ação manual do Administrador (sem automação nesta fase)
+
+A criação de uma competência (`ColaboracaoMensal` para o conjunto de Parceiras `ATIVA`s
+elegíveis) ocorre **exclusivamente por ação manual de um Administrador autenticado**, via
+endpoint dedicado. Regras de negócio da operação de compilação:
+
+- **Uma competência por mês.** Não é possível compilar duas vezes o mesmo `mesReferencia`
+  para a mesma Parceira — tentativa de recompilar uma competência já existente não cria
+  duplicata (ver idempotência abaixo) nem sobrescreve o snapshot já gravado.
+- **Idempotente.** Executar a operação de compilação mais de uma vez para a mesma
+  competência não gera registros duplicados nem altera o snapshot já materializado na
+  primeira execução.
+- **Snapshot oficial da competência.** No instante da compilação, a Condição Comercial
+  vigente de cada Parceira `ATIVA` é congelada dentro da `ColaboracaoMensal` gerada (ver
+  item 4) — a competência criada é, a partir desse momento, o registro oficial e imutável
+  daquele mês para aquelas Parceiras.
+- **Escopo de participação:** todas as Parceiras com status `ATIVA` **no momento da
+  execução da compilação** participam. Uma Parceira que se torna `ATIVA` depois da
+  compilação de um mês não entra retroativamente nessa competência já compilada — só
+  participa da próxima compilação, a menos que uma intervenção administrativa explícita e
+  futura (fora do escopo desta fase) decida incluí-la.
+- **Auditoria obrigatória.** Toda execução da operação registra, via `registrarAuditoria`
+  (mesmo middleware transversal já aplicado a toda rota autenticada — `portal-backend/src/
+  middleware/auditoria.ts`): identidade do Administrador executor, data/hora, e a quantidade
+  de registros gerados (Parceiras compiladas nessa execução).
+- **Sem cron, sem automação, sem virada de mês automática nesta fase.** Não existe job
+  agendado. A automação do gatilho (se algum dia vier a existir) é decisão de produto
+  separada, fora do escopo deste ADR e desta fase.
+
+#### 3. Calendário Operacional continua sendo a única fonte de dia útil (reafirmação do ADR-014)
+
+Nenhum cálculo de data introduzido por esta fase (ex.: referência ao mês corrente para
+efeito de validação da competência a compilar) cria heurística própria de dia da semana.
+Onde qualquer cálculo desta fase precisar determinar dia útil, ele reutiliza
+`ProvedorDeCalendarioOperacional` (`portal-backend/src/shared/calendarioOperacional/`) — nunca
+reintroduz tratamento especial para sexta-feira ou qualquer outro dia específico fora do que
+o Calendário Operacional já define. Isso reafirma explicitamente, no contexto desta fase, o
+princípio permanente já registrado no ADR-014: exceção ao cálculo de dia útil é sempre regra
+de negócio explícita, nunca heurística implícita embutida em código.
+
+#### 4. Condição Comercial: snapshot imutável, nunca referência viva
+
+No momento da compilação, os valores efetivos da Condição Comercial vigente de cada Parceira
+são **copiados** para dentro da `ColaboracaoMensal` gerada (campo `condicaoComercial`,
+`jsonb`, mesmo padrão de objeto aninhado já usado em `Endereco`/`condicaoComercial` desde o
+ADR-015). A partir da compilação:
+
+- A `ColaboracaoMensal` já compilada é um registro histórico **imutável** — alterações
+  futuras na Condição Comercial cadastrada na `Parceira` **não** propagam, nem automática
+  nem retroativamente, para competências já compiladas.
+- A `Parceira` continua sendo a fonte única de verdade da Condição Comercial **apenas para
+  competências futuras** (ainda não compiladas).
+- Toda leitura de relatório, pagamento, auditoria ou histórico referente a uma competência
+  já compilada usa exclusivamente o snapshot gravado na própria `ColaboracaoMensal` — nunca
+  faz join para ler a Condição Comercial atual da Parceira.
+- Correção excepcional de um snapshot já gravado exige processo administrativo explícito
+  (fora do escopo desta fase definir esse processo em detalhe) — nunca é feita por
+  atualização automática decorrente de uma edição cadastral da Parceira.
+
+#### 5. Migração retroativa do dado histórico
+
+Script de migração de dados (não uma migration de schema — ver item "Impactos
+arquiteturais" para a distinção), executado uma única vez por ambiente, que:
+
+- Cria uma `ColaboracaoMensal` para cada combinação única `parceiraId`+`mesReferencia` já
+  existente no histórico (Entregas/Briefings/Obrigações Financeiras criados manualmente nas
+  fases anteriores).
+- Vincula automaticamente todos os registros históricos correspondentes
+  (`colaboracaoMensalId`) à `ColaboracaoMensal` recém-criada ou já existente para aquela
+  combinação.
+- É **idempotente**: reexecutar o script não cria `ColaboracaoMensal` duplicada nem
+  revincula registros já vinculados.
+- Roda **dentro de transação** (o driver `pg` já em uso desde o ADR-015 suporta
+  transação explícita via `BEGIN`/`COMMIT`/`ROLLBACK` manual, sem necessidade de ORM).
+- **Preserva integralmente** os dados históricos — nenhuma Entrega, Briefing ou Obrigação
+  Financeira tem qualquer campo de negócio alterado; a migração só adiciona o vínculo novo.
+- Para o snapshot de Condição Comercial dos registros históricos (que não foram compilados
+  por um Administrador, e portanto não têm um momento de compilação real): o snapshot é
+  reconstruído a partir da Condição Comercial da Parceira **no momento em que o script de
+  migração roda** — é a melhor aproximação disponível para dado que nunca teve um evento de
+  compilação real, e é uma limitação conhecida, não uma regra de negócio nova (ver
+  "Pendências" abaixo).
+- Ao final, produz um relatório com: quantidade de `ColaboracaoMensal` criadas, quantidade
+  de registros vinculados (por módulo), e inconsistências encontradas (ex.: registro
+  histórico cujo `mesReferencia` não segue o formato esperado) — sem interromper a migração
+  por uma inconsistência isolada, apenas reportando-a.
+
+#### 6. Responsabilidades, ciclo de vida e invariantes
+
+**Responsabilidades da `ColaboracaoMensal`:**
+- É a fronteira formal de competência (Parceira × MesReferencia) — responsabilidade que o
+  Contrato Soberano já atribuía a este conceito (§6.3).
+- É a única detentora do snapshot de Condição Comercial de uma competência já compilada.
+- É o destino do vínculo (`colaboracaoMensalId`) de Entrega, Briefing e Obrigação
+  Financeira — mas **não** controla nem participa do ciclo de estado interno de nenhum
+  desses três (ver responsabilidades por módulo abaixo).
+
+**Ciclo de vida da `ColaboracaoMensal`:**
+```
+(inexistente) → COMPILADA (snapshot gravado, imutável)
+```
+Não há, nesta fase, nenhum estado intermediário nem transição de volta — uma vez compilada,
+uma competência não é "descompilada"; correção excepcional é processo administrativo à
+parte (item 4), não uma transição de estado modelada.
+
+**Invariantes do domínio:**
+- Não existem duas `ColaboracaoMensal` para a mesma combinação `parceiraId`+`mesReferencia`
+  (unicidade — reforçada por constraint de banco, ver "Impactos arquiteturais").
+- Uma `ColaboracaoMensal` compilada nunca tem seu `condicaoComercial` sobrescrito por
+  processo automático.
+- Todo registro de Entrega/Briefing/Obrigação Financeira criado **a partir desta fase** para
+  uma competência que já tem `ColaboracaoMensal` correspondente nasce vinculado a ela.
+
+**Regras de integridade:**
+- `colaboracaoMensalId` é FK real (Postgres) nas três tabelas relacionadas, com `ON DELETE
+  RESTRICT` (nenhuma exclusão de `ColaboracaoMensal` que tenha registros vinculados —
+  consistente com "Não apagar dados" das restrições permanentes do projeto).
+- Constraint de unicidade `(parceira_id, mes_referencia)` na tabela `colaboracoes_mensais`
+  garante a invariante de "uma competência por mês" também no nível de banco, não só no
+  `service` — mesma disciplina de defesa em profundidade já usada para as chaves primárias
+  desde o ADR-015, mas aqui justificada porque a regra de unicidade é o núcleo da decisão de
+  idempotência do item 2, não um detalhe de implementação a adicionar depois.
+
+**Responsabilidades de cada módulo existente (inalteradas fora do vínculo novo):**
+- `conteudo` (Entrega), `briefing`, `financeiro` (Obrigação Financeira): continuam donos
+  exclusivos do próprio ciclo de estado (`AGUARDANDO_MATERIAL→EM_REVISAO→APROVADO→
+  PUBLICADO`; `EM_ABERTO→APROVADO→PAGO`) e das próprias regras de negócio — a única mudança
+  desta fase é ganhar uma referência (`colaboracaoMensalId`) à competência formal a que
+  pertencem.
+- Gate de elegibilidade de pagamento (ADR-009) não muda de comportamento: continua
+  verificando o estado de todas as Entregas da competência, agora localizadas por
+  `colaboracaoMensalId` em vez de por `parceiraId`+`mesReferencia` solto — mudança de
+  implementação de acesso ao dado, não de regra de negócio.
+
+### O que NÃO faz parte desta fase
+
+- Nenhum dos 7 motores de `OTIMIZAÇÕES DODÔ.mk` (Documentos, Comunicação, Briefings, Envios,
+  Planejamento Editorial, Armazenamento/Workspace Provisioning, Endurecimento transversal) —
+  vêm depois, apoiados neste agregado, conforme já delimitado no Plano Mestre.
+- Automação do gatilho de compilação (cron, virada de mês automática) — decisão de produto
+  separada, não tomada por este ADR.
+- Qualquer automação de lançamento financeiro além do necessário para materializar a
+  Colaboração Mensal (ex.: régua de cobrança).
+- As demais decisões de produto pendentes listadas em `PROJECT_STATUS.md` que não bloqueiam
+  esta fase e não foram tratadas aqui: "Reprovar" Entrega (SPEC-012 não documenta esse
+  estado); unicidade de `chave`/e-mail/CNPJ em Parceira; migração de `Endereco` para
+  `Parceira`. Nenhuma delas é decidida ou antecipada por este ADR.
+- Processo administrativo detalhado de correção excepcional de um snapshot já compilado
+  (mencionado no item 4 como necessidade futura, não especificado aqui).
+
+### Riscos conhecidos
+
+- **Migração retroativa toca três tabelas de domínio simultaneamente** sobre dado real em
+  PostgreSQL — mitigado por transação explícita, idempotência e execução única controlada
+  por ambiente (não automática, não repetida sem necessidade).
+- **Condição Comercial incompleta ou inconsistente em dado legado** pode gerar um snapshot
+  incompleto na migração retroativa — o script reporta a inconsistência (item 5) em vez de
+  presumir um valor; decisão sobre como tratar cada caso reportado é do responsável do
+  projeto, não do código.
+- **Registro órfão pós-migração**, se a migração falhar parcialmente fora de uma transação —
+  mitigado por rodar a migração de dados inteira dentro de uma única transação por
+  execução.
+- **Violação de idempotência se a constraint de unicidade de banco não for criada junto com
+  a migration de schema** — por isso a constraint (item 6) é parte obrigatória da migration
+  de schema desta fase, não um follow-up.
+- **Regressão silenciosa no gate de pagamento (ADR-009)** se a mudança de "acesso por chave
+  natural" para "acesso por FK" não for coberta por teste de regressão dedicado — mitigado
+  pela exigência de teste específico (ver Plano de Execução da Fase 3).
+
+### Impactos arquiteturais
+
+- Novo módulo de domínio `portal-backend/src/modules/colaboracao-mensal/`, seguindo o padrão
+  de 4 camadas já estabelecido.
+- Nova tabela `colaboracoes_mensais` (migration de **schema**, `portal-backend/migrations/
+  0002_colaboracao_mensal.sql`, aplicada pelo runner já existente — `scripts/migrate.ts`) e
+  nova coluna `colaboracao_mensal_id` (FK) nas tabelas `entregas`, `briefings` e
+  `obrigacoes_financeiras`.
+- Script de migração de **dados** (retroativo, item 5) é artefato distinto da migration de
+  schema — roda uma vez por ambiente, não faz parte do pipeline automático de
+  `scripts/migrate.ts` (mesma separação entre "aplicar schema" e "popular/transformar dado"
+  que o projeto já usa entre `migrate.ts` e `seed.ts`, desde o ADR-015).
+- Endpoints HTTP administrativos implementados em `portal-backend/src/modules/
+  colaboracao-mensal/admin.routes.ts` — `POST /admin/colaboracoes-mensais/compilar`,
+  `GET /admin/colaboracoes-mensais` (histórico por Parceira) e
+  `GET /admin/colaboracoes-mensais/:parceiraId/:mesReferencia` (consulta pontual) —
+  registrados em `portal-backend/src/routes/api.routes.ts` sob `requireAdmin`, reaproveitando
+  a auditoria transversal já existente (`middleware/auditoria.ts`). Controllers finos — toda
+  regra permanece em `colaboracaoMensal.service.ts`.
+- Nenhuma mudança na infraestrutura de produção além da nova migration de schema — mesma
+  instância PostgreSQL já em uso desde o ADR-015.
+
+### Estratégia de rollback da migration
+
+Dado que o projeto não usa ORM nem ferramenta de migration com suporte nativo a `down`
+automático (ADR-015 — runner mínimo que só aplica `.sql` novos em ordem), o rollback desta
+fase segue a mesma disciplina de simplicidade, em duas camadas:
+
+1. **Rollback de schema:** a migration `0002_colaboracao_mensal.sql` só faz alterações
+   aditivas (nova tabela, novas colunas FK nullable até a migração de dados terminar).
+   Um script de reversão correspondente (`0002_colaboracao_mensal_rollback.sql`) é mantido
+   junto à migration, mas **não é executado automaticamente pelo runner** — é invocado
+   manualmente, apenas se necessário, e remove as colunas novas e a tabela
+   `colaboracoes_mensais` (seguro porque, até a migração de dados rodar, nenhuma outra
+   tabela depende delas).
+2. **Rollback de dados:** o script de migração retroativa (item 5) é idempotente e sua
+   reversão (se necessária) é um script irmão, também não automático, que zera
+   `colaboracao_mensal_id` nas três tabelas afetadas e esvazia `colaboracoes_mensais` — sem
+   apagar nenhum dado das tabelas originais (`entregas`, `briefings`,
+   `obrigacoes_financeiras`), em conformidade com a restrição permanente "Não apagar dados".
+3. **Pré-condição obrigatória antes de rodar a migração de dados em qualquer ambiente com
+   dado real:** backup (`pg_dump`) do banco correspondente — exigência explícita desta fase,
+   não deixada implícita, dado que esta é a primeira migração de dados retroativa (em
+   oposição a apenas de schema) desde a adoção do Postgres real (ADR-015).
+
+### Consequências
+
+- `ColaboracaoMensal` passa a ser a entidade de referência para qualquer relatório,
+  auditoria ou processo futuro que precise agrupar por competência — os 7 motores futuros do
+  Plano Mestre são construídos sobre este agregado, não sobre a convenção de chave natural
+  solta que existia até aqui.
+- Nenhuma regra de negócio do ciclo de estado de Entrega, Briefing ou Obrigação Financeira
+  muda — apenas a forma como esses registros se relacionam à sua competência.
+- O gate de pagamento (ADR-009) e o Calendário Operacional (ADR-014) permanecem exatamente
+  como definidos — este ADR os reafirma, não os reabre.
+- Toda automação futura do gatilho de compilação (cron, virada de mês) exigirá uma nova
+  decisão de produto e, se alterar arquitetura, um novo ADR — não está pré-aprovada por este
+  documento.
+
+### Quadro-resumo
+
+| Decisão tomada | Alternativas descartadas | Justificativa | Impacto esperado na arquitetura |
+|---|---|---|---|
+| `ColaboracaoMensal` como entidade canônica, com FK real ligando Entrega/Briefing/Obrigação Financeira | Manter apenas a convenção de chave natural (`parceiraId`+`mesReferencia`), sem agregado formal | Fecha a lacuna estrutural repetidamente registrada nos handoffs; é pré-requisito documental (Contrato Soberano §6.3) e técnico (base para os 7 motores futuros do Plano Mestre) | Novo módulo de domínio; nova tabela; FK real substituindo convenção implícita nas 3 tabelas relacionadas |
+| Gatilho de compilação: ação manual do Administrador, sem automação | Cron automático; virada de mês calendário automática | Permite validar o fluxo de compilação com uso real antes de qualquer automação; auditável por ação humana explícita; evita compilar competência incorreta sem supervisão nesta fase inicial | Endpoint administrativo novo; sem job agendado; auditoria obrigatória por execução |
+| Condição Comercial congelada por snapshot no momento da compilação | Referência viva à Condição Comercial atual da Parceira | Garante histórico imutável e auditável; pagamentos e relatórios de competências já compiladas não podem mudar retroativamente por uma edição cadastral | Coluna `jsonb` de snapshot na `ColaboracaoMensal`; nenhuma leitura histórica faz join com o cadastro atual da Parceira |
+| Migração retroativa automática e idempotente de todo o histórico | FK opcional/nullable permanente, aplicando o vínculo só a dado novo | Evita dois regimes de dado (com e sem `ColaboracaoMensal`) convivendo indefinidamente; `ColaboracaoMensal` só é de fato canônica se cobrir também o histórico | Script de migração de dados transacional e idempotente; relatório de migração; FK torna-se ponto de referência único assim que a migração roda |
+| Reafirmação do Calendário Operacional (ADR-014) como única fonte de dia útil, sem heurística nova nesta fase | Introduzir regra própria de data para a operação de compilação | Evita reintroduzir heurística implícita — princípio permanente já registrado no ADR-014 | Nenhuma mudança no `ProvedorDeCalendarioOperacional`; reaproveitado sem extensão |
+| Rollback em duas camadas (schema aditivo + script de reversão manual, não automático) com backup obrigatório antes da migração de dados | Ferramenta de migration com suporte nativo a `down` | Mantém a mesma disciplina de simplicidade do projeto (sem ORM, sem dependência nova) já usada desde o ADR-015; suficiente porque as alterações de schema desta fase são aditivas | Dois scripts SQL adicionais (rollback de schema e de dados), nenhum executado automaticamente pelo runner existente |
+
+---
+
 ## Como usar este documento
 
 Toda decisão arquitetural nova e permanente deste projeto (que não seja um detalhe de

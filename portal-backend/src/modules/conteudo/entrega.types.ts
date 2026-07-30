@@ -25,6 +25,13 @@ export interface Entrega {
   dataAtualizacao: string;
   /** RN-04/RNF-03 (SPEC-012): carimbada ao virar PUBLICADO; a partir daí a Entrega é somente leitura (INV-04). */
   dataArquivamento: string | null;
+  /**
+   * FK para ColaboracaoMensal (ADR-016, Fase 3). Espelha a coluna já criada em
+   * `migrations/0002_colaboracao_mensal.sql`; ainda não lida/escrita por
+   * `entrega.repository.ts` (Etapa 1 é só schema) — sempre `undefined` até a etapa que
+   * atualizar o repository.
+   */
+  colaboracaoMensalId?: string | null;
 }
 
 /** ItemDePendencia (SPEC-027 §6.1): projeção de leitura da Entrega para o Portal. */

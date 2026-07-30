@@ -121,6 +121,8 @@ direto, específico, sem ornamento. soa como alguém que domina o que faz sem pr
 
 **caixa e pontuação.** caixa baixa como padrão em todo conteúdo digital — maiúscula só em nomes próprios, siglas e títulos operacionais. ponto final, vírgula, dois pontos; sem exclamação salvo exceção específica. **sem travessão em nenhum contexto.** sem reticências, nunca. o Portal segue a regra à risca: toda mensagem de sistema é caixa baixa — "nenhuma entrega criada ainda.", "sessão expirada.", "acesso indisponível" — inclusive em telas de erro, onde a tentação de gritar em maiúscula é maior.
 
+**escopo da regra.** "sem travessão" rege a identidade verbal da marca — copy institucional, produto e mensagens de sistema, a voz que o público final lê. documentação técnica interna, como este próprio Design System, escrito para quem constrói o produto, não para quem o usa, não está sujeita a essa restrição: usa travessão como pontuação estrutural normal. regra definitiva, não pendência.
+
 **ritmo.** frase curta e longa alternadas — a variação cria respiração. parágrafos de no máximo duas ou três linhas. uma linha isolada funciona como virada ou aterramento:
 
 > a dodô não entrega um documento e sai.
@@ -553,8 +555,7 @@ dois projetos independentes, sem workspace compartilhado, cada um com seu própr
 10. **15 ícones em `design-system/icons/` sem nenhum uso em código**, e dois deles (`campanhas`, `marcas`) carregando vocabulário de domínio descontinuado.
 11. **`.pendencias-summary` (usada nas 9 telas de página) e `.portal-eyebrow` são dois padrões de "kicker de seção" quase-duplicados**, com valores ligeiramente diferentes (13.6px/maiúsculo/0.08em vs. 13px/minúsculo/0.07em) — não documentado como componente nem como drift até esta auditoria.
 12. **`.portal-section-divider` não está documentado** — usado em `Admin.tsx`, `AdminDashboard.tsx`, `Financeiro.tsx`, `Perfil.tsx` para separar sub-blocos dentro de uma página.
-13. **regra de voz "sem travessão em nenhum contexto" (§05) e o uso real deste documento se contradizem** — o próprio `DESIGN.md` usa "—" centenas de vezes, quase sempre como inciso, não como discurso direto. **decisão aberta, não resolvida aqui** (ver disciplina de não inventar identidade, [§32](#32--governança-do-documento)): se a regra pretende banir só o travessão de fala direta, o documento está conforme; se pretende banir qualquer "—", o documento está em falta desde a v1.0. quem responde pela marca precisa decidir qual das duas leituras vale.
-14. **`textarea:focus-visible` não existe na regra genérica do Portal real** (`portal-frontend/src/index.css`) — só `button, a, input, select`. o campo de observações (`AdminBriefings.tsx`) fica sem foco visível garantido. (corrigido só neste site de documentação, não no Portal — ver [§29](#29--acessibilidade-wcag)).
+13. **`textarea:focus-visible` não existe na regra genérica do Portal real** (`portal-frontend/src/index.css`) — só `button, a, input, select`. o campo de observações (`AdminBriefings.tsx`) fica sem foco visível garantido. (corrigido só neste site de documentação, não no Portal — ver [§29](#29--acessibilidade-wcag)).
 
 **apêndice — notas técnicas menores:**
 

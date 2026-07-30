@@ -5,6 +5,15 @@
 **Para:** próximo agente (Codex) que vai continuar o Backoffice Administrativo
 **Commit no momento deste handoff:** `16447c0` (mais este documento, ver §10)
 
+> **ATUALIZAÇÃO 2026-07-27 — fase concluída.** Todo o roadmap descrito abaixo (§5/§6) foi
+> implementado: `AdminParceiras.tsx`, CRUD administrativo de Entrega (incluindo Aprovação,
+> item não previsto originalmente aqui) e Briefing, CRUD completo de Obrigação Financeira com
+> o gate de elegibilidade, e Dashboard administrativo. O "~10% concluído" da §1 abaixo e o
+> checklist da §6 estão desatualizados — **não usar este documento para avaliar o que falta
+> fazer.** Estado atual, dívidas técnicas reais e próximos passos:
+> `docs/handoff/2026-07-27_backoffice-administrativo-consolidacao.md`. Mantido aqui só como
+> registro histórico do racional de design de cada decisão tomada nesta unidade (§5, §8).
+
 Este documento existe para que você (Codex) consiga continuar o trabalho
 **sem reler dezenas de arquivos**. Leia-o inteiro antes de tocar em código.
 Ele é mais detalhado que o handoff anterior (`2026-07-26_backoffice-parceira.md`,

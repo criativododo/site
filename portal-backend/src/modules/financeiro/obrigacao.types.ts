@@ -27,4 +27,11 @@ export interface ObrigacaoFinanceira {
   dataAtualizacao: string;
   /** RN-03/INV-03 (SPEC-020): carimbada ao virar PAGO; a partir daí o registro é somente leitura. */
   dataArquivamento: string | null;
+  /**
+   * FK para ColaboracaoMensal (ADR-016, Fase 3). Espelha a coluna já criada em
+   * `migrations/0002_colaboracao_mensal.sql`; ainda não lida/escrita por
+   * `obrigacao.repository.ts` (Etapa 1 é só schema) — sempre `undefined` até a etapa que
+   * atualizar o repository.
+   */
+  colaboracaoMensalId?: string | null;
 }

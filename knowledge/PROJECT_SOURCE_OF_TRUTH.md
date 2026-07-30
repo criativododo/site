@@ -58,7 +58,15 @@ arquitetura para o que será construído agora.
 ## 5. Ordem oficial de implementação
 
 **Fonte oficial: `PORTAL_BACKLOG.md`** (raiz do repositório) — épicos, features, histórias
-de usuário e tarefas técnicas, já sequenciados (EPIC 0 → EPIC 5), com critérios de aceite.
+de usuário e tarefas técnicas, já sequenciados (EPIC 0 → EPIC 5, concluídos), com critérios
+de aceite.
+
+**A partir da evolução estrutural iniciada em 29/07/2026** (fechamentos de baixo risco,
+persistência PostgreSQL, Colaboração Mensal e o que vier depois), a ordem oficial passa a ser
+`criativododo-interno/PLANO_MESTRE_IMPLEMENTACAO_PORTAL_DODO.md` (fora do repositório git,
+aprovado pelo responsável do projeto), executado uma fase por vez — ver
+`docs/handoff/PROJECT_STATUS.md` para a fase corrente. `PORTAL_BACKLOG.md` continua sendo a
+fonte histórica do que já foi construído (EPIC 0-5), não é reaberto nem reescrito.
 
 ## 6. Jornadas oficiais dos usuários
 

@@ -3,6 +3,7 @@ import { registrarAuditoria } from "../middleware/auditoria.js";
 import { bloquearParceiraIdDeCliente, parceiraDaSessao } from "../middleware/isolamento.js";
 import { requireAdmin, requireAuth, requireContaAtiva } from "../middleware/requireAuth.js";
 import { briefingAdminRoutes } from "../modules/briefing/admin.routes.js";
+import { colaboracaoMensalAdminRoutes } from "../modules/colaboracao-mensal/admin.routes.js";
 import { entregaAdminRoutes } from "../modules/conteudo/admin.routes.js";
 import { conteudoRoutes } from "../modules/conteudo/conteudo.routes.js";
 import { dashboardRoutes } from "../modules/dashboard/dashboard.routes.js";
@@ -58,6 +59,9 @@ apiRoutes.use("/admin/briefings", requireAdmin, briefingAdminRoutes);
 
 /** Backoffice administrativo — Obrigação Financeira (CRUD completo, SPEC-020/ADR-009). */
 apiRoutes.use("/admin/obrigacoes", requireAdmin, obrigacaoAdminRoutes);
+
+/** Backoffice administrativo — Colaboração Mensal (ADR-016, Fase 3 do Plano Mestre): compilação manual de competência e consulta. */
+apiRoutes.use("/admin/colaboracoes-mensais", requireAdmin, colaboracaoMensalAdminRoutes);
 
 /** LGPD (ADR-010) — direitos do titular: acesso/portabilidade e processo de expurgo. */
 apiRoutes.use("/portal/lgpd", bloquearParceiraIdDeCliente, lgpdRoutes);

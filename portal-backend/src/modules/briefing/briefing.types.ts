@@ -20,4 +20,11 @@ export interface BlocoBriefing {
   /** Auditoria mínima (ISO 8601) — mesmo padrão de entrega.types.ts. */
   dataCriacao: string;
   dataAtualizacao: string;
+  /**
+   * FK para ColaboracaoMensal (ADR-016, Fase 3). Espelha a coluna já criada em
+   * `migrations/0002_colaboracao_mensal.sql`; ainda não lida/escrita por
+   * `briefing.repository.ts` (Etapa 1 é só schema) — sempre `undefined` até a etapa que
+   * atualizar o repository.
+   */
+  colaboracaoMensalId?: string | null;
 }

@@ -5,20 +5,53 @@
 > documentação vs. o que é código, o que já foi decidido, o que ainda precisa de decisão, em
 > que ordem construir o Portal, e quais riscos evitar.
 
+> **ATUALIZAÇÃO 2026-07-27 — leia isto antes do "Resumo de 60 segundos" abaixo.** As seções
+> originais deste documento (escritas em 2026-07-26, logo após o EPIC 0) descreviam um estado
+> em que **nenhum código de Portal existia ainda**. Isso não é mais verdade: `portal-backend/`
+> e `portal-frontend/` existem, funcionam, e cobrem tanto o Portal da Parceira (EPIC 1-4)
+> quanto uma fase inteira de Backoffice Administrativo (Parceiras, Entregas, Aprovação de
+> Entregas, Briefings, Obrigação Financeira, Dashboard) não prevista neste documento original.
+> Estado consolidado e atualizado: `docs/handoff/2026-07-27_backoffice-administrativo-
+> consolidacao.md`. As seções abaixo foram corrigidas nos pontos que ficaram diretamente
+> falsos (resumo, §1, §3, §6, §7, §11); o restante (racional das decisões de EPIC 0, riscos,
+> mapa de fontes de verdade) continua válido e não foi tocado.
+
+> **ATUALIZAÇÃO 2026-07-29.** Fora do backlog acima (EPIC 0-5 + Backoffice), uma segunda
+> trilha de evolução estrutural rodou sob `criativododo-interno/
+> PLANO_MESTRE_IMPLEMENTACAO_PORTAL_DODO.md` (fora do repositório git): Fase 1 (fechamentos
+> de baixo risco), Fase 2 (persistência PostgreSQL real, ADR-015) e **Fase 3 — Colaboração
+> Mensal como agregado formal (ADR-016)**, todas concluídas e homologadas em navegador real.
+> Isso torna falsa a afirmação abaixo, no "Resumo de 60 segundos", de que "Colaboração
+> Mensal como agregado formal" só existe como documentação — corrigido no próprio bullet.
+> Estado atual detalhado: `docs/handoff/PROJECT_STATUS.md` (sempre a fonte mais recente do
+> estado físico do repositório, ver §9 do mapa de fontes de verdade). Próxima fase
+> recomendada: Fase 4 (Armazenamento + Workspace Provisioning), aguardando aprovação.
+
 ## Resumo de 60 segundos (se só puder ler isto)
 
-- **Existe em código:** só a Landing Page (`app/`). Nada de Portal, backend, banco ou auth.
-- **Existe só como documentação:** o Portal inteiro, especificado em `knowledge/` (SPECs,
-  ADRs), descrevendo um sistema que rodava em outro repositório, já removido.
+- **Existe em código:** a Landing Page (`app/`) **e** o Portal completo — `portal-backend/`
+  (Node.js/TypeScript/Express) e `portal-frontend/` (React/Vite/TypeScript). Cobre tanto o
+  Portal da Parceira (login, pendências, financeiro, perfil, LGPD) quanto o Backoffice
+  Administrativo (Parceiras, Entregas, Aprovação de Entregas, Briefings, Obrigação Financeira,
+  Dashboard). Ver `docs/handoff/2026-07-27_backoffice-administrativo-consolidacao.md` para o
+  detalhamento módulo a módulo.
+- **Existe só como documentação:** o restante do domínio ainda não coberto pelo código acima
+  (ex.: geração automática de Entregas/Briefings/Obrigações a partir da Condição Comercial no
+  momento da compilação de uma competência, publicação de conteúdo), especificado em
+  `knowledge/` (SPECs, ADRs) descrevendo um sistema que rodava em outro repositório, já
+  removido, mais as evoluções estruturais ainda não construídas aqui. **"Colaboração Mensal"
+  como agregado formal já existe em código desde 29/07/2026** (Fase 3 do Plano Mestre,
+  ADR-016) — ver banner de atualização acima.
 - **Fonte de verdade visual:** a Landing (`app/`) — não o Design System HTML.
-- **Leia primeiro, nesta ordem:** este documento → `knowledge/PROJECT_SOURCE_OF_TRUTH.md` →
-  `PORTAL_BRIEFING.md` → `PORTAL_ARQUITETURA.md` → `PORTAL_BACKLOG.md`.
-- **ADRs a respeitar:** `knowledge/ARCHITECTURAL_DECISIONS.md` (ADR-001 a ADR-004, série
+- **Leia primeiro, nesta ordem:** este documento → `docs/handoff/2026-07-27_backoffice-
+  administrativo-consolidacao.md` (estado atual do Portal/Backoffice) →
+  `knowledge/PROJECT_SOURCE_OF_TRUTH.md` → `PORTAL_BRIEFING.md` → `PORTAL_ARQUITETURA.md` →
+  `PORTAL_BACKLOG.md`.
+- **ADRs a respeitar:** `knowledge/ARCHITECTURAL_DECISIONS.md` (ADR-001 a ADR-010, série
   desta sessão) — sobrepõem, para fins visuais e de método, o que a série antiga
   (`knowledge/Arquitetura/ADR-*.md`) documentava para um sistema que não existe mais aqui.
-- **EPIC 0 concluído em 2026-07-26:** as 6 decisões bloqueantes de `PORTAL_BRIEFING.md` §13
-  (itens 1-6) foram tomadas e registradas em `knowledge/ARCHITECTURAL_DECISIONS.md`
-  (ADR-005 a ADR-010) — ver §6 abaixo. O projeto está em **EPIC 1 (Fundação)**.
+- **EPIC 0 concluído em 2026-07-26; EPIC 1-4 do Portal e a fase de Backoffice Administrativo
+  concluídos desde então** (ver §6/§7 abaixo e o documento de consolidação linkado acima).
 
 ---
 
@@ -27,16 +60,28 @@
 Este repositório (`/Users/danielperrut/criativododo`) tem hoje, fisicamente:
 
 - **`app/`** — a Landing Page do Criativo DODÔ, React 19 + Vite + GSAP + TypeScript.
-  **Funciona e está implementada.** É o único código de produto real que existe aqui.
+  **Funciona e está implementada.**
+- **`portal-backend/`** — API do Portal, Node.js + TypeScript + Express 5. **Funciona e está
+  implementada**: autenticação Google OIDC, Portal da Parceira (pendências, financeiro,
+  perfil, LGPD) e Backoffice Administrativo completo (Parceiras, Entregas, Aprovação de
+  Entregas, Briefings, Obrigação Financeira, Dashboard). Persistência 100% em memória
+  (decisão deliberada, não uma lacuna — ver `docs/handoff/2026-07-27_backoffice-
+  administrativo-consolidacao.md`).
+- **`portal-frontend/`** — frontend do Portal, React 19 + Vite + TypeScript, reaproveitando a
+  identidade visual de `app/`. **Funciona e está implementado**, cobrindo as mesmas telas do
+  backend acima.
 - **`design-system/`** — um Design System em HTML, gerado a partir do código de `app/` numa
   sessão anterior. É documentação auxiliar, **não é a referência principal**.
 - **`knowledge/`** — uma documentação de produto e arquitetura extensa e madura sobre um
   sistema de gestão de parcerias com influenciadoras ("TEAR"/"ELÃ | influência", hoje
   "DODÔ"), incluindo dezenas de SPECs, ADRs, e um Portal da Influenciadora totalmente
-  especificado.
-- **Nenhum backend. Nenhum frontend de Portal. Nenhuma linha de código PHP/Laravel/Apps
-  Script existe fisicamente aqui.** Tudo isso que `knowledge/` descreve como "implementado"
-  pertence a um repositório diferente, que foi removido (`/Users/danielperrut/ela-influencia`).
+  especificado. Continua sendo a fonte de regras de negócio (ver §4 abaixo) — o que mudou é
+  que parte relevante dela **já tem código real correspondente** em `portal-backend/`/
+  `portal-frontend/`, não mais "sistema ausente".
+- **Nenhuma linha de código PHP/Laravel/Apps Script existe fisicamente aqui** — essa stack
+  ("Sistema B") pertenceu a uma fase anterior do projeto, código nunca chegou a produção e não
+  está neste repositório. `knowledge/Arquitetura/ADR-*.md` documenta essas decisões como
+  referência histórica de raciocínio, não como código herdável.
 
 **Erro mais fácil de cometer nesta próxima sessão:** ler uma SPEC que diz "✅ Implementada,
 599/599 testes verdes" e presumir que existe código para reaproveitar. Não existe. O valor
@@ -61,12 +106,18 @@ refeito no futuro — não trate nada nele como imutável.
 **Ação prática:** antes de estilizar qualquer tela nova do Portal, abra `app/src` e leia os
 componentes, o CSS e as animações GSAP diretamente.
 
-## 3. O que já existe em código (só isto)
+## 3. O que já existe em código
 
 - `app/` — Landing Page completa.
+- `portal-backend/` + `portal-frontend/` — Portal da Parceira e Backoffice Administrativo
+  completos (autenticação Google OIDC real, upload de material, CRUD administrativo de
+  Parceiras/Entregas/Briefings/Obrigação Financeira, Dashboard agregado). Ver
+  `docs/handoff/2026-07-27_backoffice-administrativo-consolidacao.md` para o detalhamento de
+  quais fluxos estão completos e quais ainda não (ex.: publicação de conteúdo, "Colaboração
+  Mensal" como agregado formal).
 - `design-system/index.html` + `DESIGN.md` — documentação visual auxiliar (derivada de
   `app/`, não a fonte principal — ver §2).
-- Nada de Portal, backend, autenticação, banco de dados ou upload de arquivo.
+- Sem banco de dados real (persistência em memória, decisão deliberada) e sem CI/CD.
 
 ## 4. O que existe apenas como documentação (tudo em `knowledge/`)
 
@@ -129,21 +180,36 @@ As 6 decisões bloqueantes abaixo foram tomadas pelo responsável do projeto e r
 Ver `PORTAL_BRIEFING.md` §13 (itens 7-12 seguem pendentes) e `PORTAL_BACKLOG.md` EPIC 0
 (marcado concluído) para o detalhamento.
 
-## 7. Em que ordem construir o Portal
+**Atualização 2026-07-27 — EPIC 1 a 4 concluídos.** Fundação (login OIDC real, isolamento por
+sessão), Conteúdo/Pendências, Financeiro/Histórico e Perfil estão implementados e validados
+manualmente com sessão OAuth real (`portal-backend`/`portal-frontend`). EPIC 5 (moderação de
+conta `PENDING→ACTIVE/REJECTED`) também está implementado. **Além do backlog original deste
+documento**, uma fase inteira de Backoffice Administrativo (fora do escopo do
+`PORTAL_BACKLOG.md`, autorizada à parte pelo responsável do projeto) também foi concluída:
+CRUD de Parceiras, Entregas (com Aprovação), Briefings, Obrigação Financeira, e Dashboard
+agregado. Ver `docs/handoff/2026-07-27_backoffice-administrativo-consolidacao.md` para o
+detalhamento completo, dívidas técnicas reais e o roadmap proposto daqui para frente.
+
+## 7. Em que ordem foi construído o Portal (histórico) — próximos passos no documento de consolidação
 
 ```
-EPIC 0 — Decisões bloqueantes (itens 1-6 acima)
+EPIC 0 — Decisões bloqueantes (itens 1-6 acima)                          ✅ concluído
    ↓
-EPIC 1 — Fundação: setup + Acesso (login) + identidade visual conectada (§2)
+EPIC 1 — Fundação: setup + Acesso (login) + identidade visual conectada  ✅ concluído
    ↓
-EPIC 2 — Conteúdo/Pendências (módulo de maior frequência de uso)
+EPIC 2 — Conteúdo/Pendências (módulo de maior frequência de uso)         ✅ concluído
    ↓
-EPIC 3 — Financeiro/Histórico  ∥  EPIC 4 — Perfil (podem ser paralelizados)
+EPIC 3 — Financeiro/Histórico  ∥  EPIC 4 — Perfil                        ✅ concluídos
    ↓
-EPIC 5 — Identidade e Acesso avançada (só se o modelo federado for escolhido)
+EPIC 5 — Identidade e Acesso avançada                                     ✅ concluído
+   ↓
+Backoffice Administrativo (fase à parte, fora deste backlog original)    ✅ concluído
+   (Parceiras, Entregas, Aprovação, Briefings, Obrigação Financeira, Dashboard)
 ```
 
-Racional completo de cada fase em `PORTAL_BACKLOG.md`.
+Racional completo de cada fase do Portal em `PORTAL_BACKLOG.md`. Para o que vem depois
+(fechamentos de baixo risco e evoluções estruturais como "Colaboração Mensal"), ver o roadmap
+proposto em `docs/handoff/2026-07-27_backoffice-administrativo-consolidacao.md`.
 
 ## 8. Quais arquivos ler primeiro (nesta ordem)
 
@@ -163,10 +229,10 @@ Racional completo de cada fase em `PORTAL_BACKLOG.md`.
    (fonte soberana do domínio) e as SPECs individuais citadas nos documentos acima
    (`knowledge/Produto/SPEC-025/027/030/032/035`).
 
-**Não leia `README.md`/`CLAUDE.md` como fonte de estrutura do repositório** — ambos
-descrevem uma estrutura de pastas (`backend/`, `frontend/`, `docs/`) que não existe aqui
-(pendência registrada em `PORTAL_BRIEFING.md` §13.9). Eles precisam ser atualizados em algum
-momento, mas não são confiáveis para orientação estrutural agora.
+**Atualização 2026-07-27:** `README.md` e `CLAUDE.md` já foram corrigidos e hoje refletem a
+estrutura real do repositório (`app/`, `portal-frontend/`, `portal-backend/`) — podem ser
+usados como fonte de estrutura sem ressalva. A pendência de `PORTAL_BRIEFING.md` §13.9 que
+motivou o aviso original está resolvida.
 
 ## 9. Quais documentos são fonte da verdade
 
@@ -180,7 +246,7 @@ qualquer dúvida sobre qual documento manda sobre qual assunto. Resumo:
 | Requisitos funcionais do Portal | `knowledge/Produto/SPEC-025/027/030/032/035` |
 | Decisões arquiteturais permanentes (visual/método) | `knowledge/ARCHITECTURAL_DECISIONS.md` |
 | Decisões arquiteturais do Sistema B (histórico, código ausente) | `knowledge/Arquitetura/ADR-*.md` |
-| Estado real do repositório | Este documento + `PORTAL_BRIEFING.md` §0 (não `README.md`/`CLAUDE.md`) |
+| Estado real do repositório | Este documento + `docs/handoff/2026-07-27_backoffice-administrativo-consolidacao.md` (`README.md`/`CLAUDE.md` também já corrigidos, ver §8) |
 | Definição oficial do produto | `PORTAL_BRIEFING.md` |
 | Arquitetura consolidada do Portal | `PORTAL_ARQUITETURA.md` |
 | Backlog de implementação | `PORTAL_BACKLOG.md` |
@@ -202,26 +268,31 @@ qualquer dúvida sobre qual documento manda sobre qual assunto. Resumo:
   no MVP; é decisão de escopo pendente, não trabalho implícito.
 - **Não trate `design-system/index.html` como imutável ou como a referência principal** — é
   auxiliar; a Landing (`app/`) manda.
-- **Não confie em `README.md`/`CLAUDE.md`** para a estrutura real de pastas — estão
-  desatualizados.
+- **`README.md`/`CLAUDE.md` já estão atualizados** (ver §8) — podem ser consultados
+  normalmente para a estrutura real de pastas.
 
-## 11. Plano de execução das primeiras semanas
+## 11. Plano de execução das primeiras semanas (histórico — todas as fases abaixo concluídas)
 
 **Semana 1 — Decisões (EPIC 0). ✅ Concluída em 2026-07-26.** Os 6 itens do §6 acima foram
 fechados com o responsável do projeto; ADRs correspondentes (ADR-005 a ADR-010) já
 registrados em `knowledge/ARCHITECTURAL_DECISIONS.md`.
 
-**Semana 2 — Fundação (EPIC 1).** Setup do backend/frontend escolhidos; conectar a
-identidade visual de `app/` ao frontend do Portal; implementar o mecanismo de autenticação
-decidido, com sessão deslizante de 6h; implementar o middleware de isolamento de dados por
-Parceira (nenhuma consulta pode aceitar `parceiraId` vindo do cliente).
+**Semana 2 — Fundação (EPIC 1). ✅ Concluída.** Setup do backend/frontend; identidade visual
+de `app/` conectada ao frontend do Portal; autenticação Google OIDC real com sessão
+deslizante de 6h; middleware de isolamento de dados por Parceira.
 
-**Semana 3-4 — Conteúdo (EPIC 2).** Modelo mínimo de `Entrega`/`Briefing` no vocabulário
-escolhido; tela de pendências do mês; leitura de briefing por item; upload de material com
+**Semana 3-4 — Conteúdo (EPIC 2). ✅ Concluída.** `Entrega`/`Briefing` no vocabulário Contrato
+Soberano; tela de pendências do mês; leitura de briefing por item; upload de material com
 transição de estado.
 
-**Semana 5 — Financeiro/Perfil (EPIC 3 e 4, paralelizáveis).** Resumo previsto x pago;
+**Semana 5 — Financeiro/Perfil (EPIC 3 e 4). ✅ Concluídas.** Resumo previsto x pago;
 histórico por período; tela de perfil com edição de PIX/e-mail/endereço (CEP degradável).
+
+**Fase adicional — Backoffice Administrativo. ✅ Concluída (fora do escopo original deste
+plano, autorizada à parte).** CRUD de Parceiras, Entregas (com Aprovação), Briefings,
+Obrigação Financeira, Dashboard agregado. Detalhamento completo, dívidas técnicas reais e
+roadmap proposto daqui para frente em
+`docs/handoff/2026-07-27_backoffice-administrativo-consolidacao.md`.
 
 **A partir daí:** identidade avançada (EPIC 5, se aplicável) e acompanhamento contínuo da
 infraestrutura de produção (transversal, ver `PORTAL_BACKLOG.md`).

@@ -62,6 +62,7 @@ export function PortalLayout() {
 					{ to: "/admin/entregas", label: "entregas" },
 					{ to: "/admin/briefings", label: "briefings" },
 					{ to: "/admin/financeiro", label: "obrigações" },
+					{ to: "/admin/colaboracoes-mensais", label: "colaboração mensal" },
 					{ to: "/admin", label: "moderação" },
 				]
 			: navItems;

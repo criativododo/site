@@ -3,6 +3,7 @@ import { PortalLayout } from "./components/PortalLayout";
 import { RotaProtegida } from "./components/RotaProtegida";
 import { AdminPage } from "./pages/Admin";
 import { AdminBriefingsPage } from "./pages/AdminBriefings";
+import { AdminColaboracoesMensaisPage } from "./pages/AdminColaboracoesMensais";
 import { AdminDashboardPage } from "./pages/AdminDashboard";
 import { AdminEntregasPage } from "./pages/AdminEntregas";
 import { AdminObrigacoesPage } from "./pages/AdminObrigacoes";
@@ -38,6 +39,10 @@ function App() {
 				<Route path="/admin/entregas" element={<AdminEntregasPage />} />
 				<Route path="/admin/briefings" element={<AdminBriefingsPage />} />
 				<Route path="/admin/financeiro" element={<AdminObrigacoesPage />} />
+				<Route
+					path="/admin/colaboracoes-mensais"
+					element={<AdminColaboracoesMensaisPage />}
+				/>
 				<Route path="/admin" element={<AdminPage />} />
 			</Route>
 

@@ -4,6 +4,12 @@
 **Fase do projeto:** Backoffice Administrativo (nova fase, iniciada nesta sessão, ainda em andamento)
 **Commit desta unidade:** `8d86618` — `feat(portal): backoffice — módulo Parceira (SPEC-001/SPEC-002)`
 
+> **ATUALIZAÇÃO 2026-07-27 — fase concluída.** As pendências priorizadas na §6 abaixo (tela de
+> `AdminParceiras.tsx`, CRUD de Entrega/Briefing, CRUD de Obrigação Financeira, Dashboard)
+> foram todas implementadas nas sessões seguintes. Ver
+> `docs/handoff/2026-07-27_backoffice-administrativo-consolidacao.md` para o estado atual.
+> Este documento (o handoff mais antigo da fase) é mantido só como histórico da unidade 1.
+
 ---
 
 ## 1. Estado atual

@@ -213,3 +213,24 @@ EPIC 0 (decisões) → EPIC 1 (fundação/acesso) → EPIC 2 (conteúdo)
       → EPIC 5 (identidade avançada, só se aplicável)
 [infraestrutura de produção corre em paralelo a partir de EPIC 1]
 ```
+
+---
+
+## Nota — 2026-07-27
+
+Todos os EPICs acima (0 a 5) estão concluídos. Uma fase adicional de **Backoffice
+Administrativo** (CRUD de Parceiras, Entregas, Aprovação de Entregas, Briefings, Obrigação
+Financeira, Dashboard) foi construída fora deste backlog original, autorizada à parte pelo
+responsável do projeto — ver `docs/handoff/2026-07-27_backoffice-administrativo-
+consolidacao.md` para o estado atual e o roadmap de próximos passos (fechamentos de baixo
+risco e evoluções estruturais como "Colaboração Mensal").
+
+## Nota — 2026-07-29
+
+Sequência de evolução estrutural, fora deste backlog original, sob o
+`PLANO_MESTRE_IMPLEMENTACAO_PORTAL_DODO.md` (`criativododo-interno/`), executada uma fase por
+vez com aprovação explícita: Fase 1 (fechamentos de baixo risco), Fase 2 (persistência
+PostgreSQL real, ADR-015) e Fase 3 (**Colaboração Mensal** como agregado formal, ADR-016) —
+todas concluídas e homologadas em 29/07/2026. Ver `docs/handoff/PROJECT_STATUS.md` para o
+estado atual detalhado e as decisões de produto ainda pendentes. Fase 4 (Armazenamento +
+Workspace Provisioning) é a próxima do roadmap.
