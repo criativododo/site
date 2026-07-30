@@ -42,6 +42,18 @@ export const env = {
     redirectUri: obrigatoria("GOOGLE_REDIRECT_URI"),
   },
 
+  /**
+   * OAuth dedicado ao Google Drive (ADR-017, início da Fase 4) — conta única administrada,
+   * distinta do client de login acima. Opcional (não usa `obrigatoria()`): ainda não é
+   * exigido pelo boot da aplicação em nenhum ambiente, só pelo helper de
+   * `shared/googleDrive` quando efetivamente chamado.
+   */
+  googleDrive: {
+    clientId: process.env.GOOGLE_DRIVE_CLIENT_ID ?? "",
+    clientSecret: process.env.GOOGLE_DRIVE_CLIENT_SECRET ?? "",
+    refreshToken: process.env.GOOGLE_DRIVE_REFRESH_TOKEN ?? "",
+  },
+
   adminBootstrapEmails: (process.env.ADMIN_BOOTSTRAP_EMAILS ?? "")
     .split(",")
     .map((email) => email.trim().toLowerCase())

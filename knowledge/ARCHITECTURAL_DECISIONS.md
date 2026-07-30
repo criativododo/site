@@ -990,6 +990,82 @@ fase segue a mesma disciplina de simplicidade, em duas camadas:
 
 ---
 
+## ADR-017 — OAuth dedicado do Google Drive: conta única administrada, refresh token de longa duração (início da Fase 4 do Plano Mestre)
+
+- **Status:** Aceito.
+- **Data:** 2026-07-30.
+- **Autor da decisão:** responsável do projeto (início da Fase 4 aprovado nesta data, via
+  `criativododo-interno/PLANO_MESTRE_IMPLEMENTACAO_PORTAL_DODO.md`).
+- **Relaciona-se com:** ADR-007 (OAuth de login, Authorization Code + PKCE), ADR-008 (ator
+  Marca fora do MVP, sistema single-tenant), PORTAL_ARQUITETURA.md §6 (Google Drive/S3/disco
+  como opções de armazenamento de material).
+
+### Contexto
+
+A Fase 4 do Plano Mestre (Armazenamento + Workspace Provisioning) precisa de acesso
+programático a uma conta do Google Drive para, em fases seguintes, provisionar pastas de
+trabalho por Parceira/competência. Este ADR cobre **apenas** o provisionamento do OAuth
+necessário para esse acesso — não a funcionalidade de Storage em si (criação de
+pastas por Parceira, upload de material via Drive), que permanece fora de escopo até
+decisão de produto e ADR próprios.
+
+Já existe, desde o ADR-007, um OAuth Client Google para login federado da Parceira
+(Authorization Code + PKCE, escopo `openid`/`email`/`profile`). Esse client **não** é
+reaproveitável aqui: é do tipo Web App vinculado ao redirect de login, e delegação por
+usuário final não se aplica a este caso — o sistema é single-tenant (ADR-008) e o Drive
+provisionado pertence à operação do Criativo Dodô, não a cada Parceira individualmente.
+Por isso, um segundo OAuth Client, dedicado, é necessário — não é duplicação nem resíduo
+de configuração antiga.
+
+### Decisão
+
+1. **Um segundo OAuth Client, dedicado exclusivamente ao Google Drive**, distinto do client
+   de login (ADR-007), provisionado no mesmo projeto Google Cloud (`criativo-dodo`). Escopo
+   único: `https://www.googleapis.com/auth/drive.file` (não sensível, não exige verificação
+   do Google) — nenhum escopo mais amplo é usado.
+2. **Modelo de conta única administrada**, não delegação por usuário: o consentimento OAuth
+   é concedido uma única vez por um Administrador, contra uma conta Google Drive que
+   pertence à operação do Criativo Dodô (não a uma Parceira individual) — consistente com o
+   sistema ser single-tenant (ADR-008).
+3. **Refresh token de longa duração armazenado como variável de ambiente**
+   (`GOOGLE_DRIVE_CLIENT_ID`/`GOOGLE_DRIVE_CLIENT_SECRET`/`GOOGLE_DRIVE_REFRESH_TOKEN`),
+   mesmo padrão de segredo de infraestrutura já usado para `GOOGLE_CLIENT_SECRET`/
+   `SESSION_SECRET` — nunca commitado (`.env` já coberto por `.gitignore`). Diferente do
+   login (ADR-007), não há troca de Authorization Code em tempo de requisição: o access
+   token é obtido sob demanda a partir do refresh token já provisionado, sem fluxo de
+   consentimento interativo no caminho de execução normal da aplicação.
+4. **Sem biblioteca cliente nova.** A troca refresh-token→access-token e as chamadas à Drive
+   API usam `fetch` nativo (Node 22+, já em uso no projeto), evitando adicionar
+   `googleapis`/`google-auth-library` como dependência para o que hoje é só validação de
+   conectividade — se a Storage em si vier a precisar de mais superfície da API, a decisão de
+   adotar uma biblioteca cliente é reavaliada nesse momento, não antecipada aqui.
+5. **Escopo físico desta fase:** módulo `portal-backend/src/shared/googleDrive/` (helper de
+   obtenção de access token) e script de validação `portal-backend/scripts/
+   testarOAuthGoogleDrive.ts` (conectividade + prova de escrita sob `drive.file`, sem rota
+   HTTP permanente, sem persistência de domínio). Nenhuma rota, service ou regra de negócio
+   de Storage é criada por este ADR.
+
+### Consequências
+
+- O client de login (ADR-007) permanece intocado — nenhuma correção deste ADR envolve trocar
+  ou remover o client de login existente.
+- Fases seguintes de Storage (provisionamento de pasta por Parceira/competência, upload via
+  Drive) reaproveitam o helper de access token deste ADR, mas exigem decisão de produto e
+  ADR próprios antes de qualquer código de domínio.
+- Revogação ou expiração do refresh token administrado exige nova concessão manual de
+  consentimento por um Administrador — não há fluxo automático de re-consentimento.
+
+### Quadro-resumo
+
+| Decisão tomada | Alternativas descartadas | Justificativa | Impacto esperado na arquitetura |
+|---|---|---|---|
+| Segundo OAuth Client dedicado ao Drive, distinto do client de login | Reaproveitar o client de login (ADR-007) para também acessar o Drive | Propósitos e modelos de concessão diferentes (login por usuário via PKCE vs. conta única administrada); evita acoplar renovação/escopo de um ao outro | Duas credenciais Google distintas coexistindo por design, não por resíduo |
+| Conta única administrada (não delegação por Parceira) | OAuth por Parceira, cada uma autorizando seu próprio Drive | Sistema é single-tenant (ADR-008); simplicidade operacional; nenhuma Parceira interage com o provisionamento de Storage | Um único refresh token para toda a operação, não um por Parceira |
+| Refresh token de longa duração via variável de ambiente | Fluxo de consentimento interativo a cada acesso | Acesso é server-to-server, sem usuário final no caminho; consistente com o padrão já usado para outros segredos de infraestrutura | Renovação de access token é chamada de rede simples, sem UI |
+| `fetch` nativo em vez de `googleapis`/`google-auth-library` | Adotar biblioteca cliente oficial do Google já nesta fase | Escopo desta fase é só validar conectividade OAuth, não construir a Storage inteira; evita dependência nova para uso ainda mínimo | Nenhuma dependência nova no `package.json` nesta fase |
+
+---
+
 ## Como usar este documento
 
 Toda decisão arquitetural nova e permanente deste projeto (que não seja um detalhe de

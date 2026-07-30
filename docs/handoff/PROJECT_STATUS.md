@@ -163,14 +163,29 @@ Entregas/Briefings/Obrigações automaticamente — ver "Fluxos incompletos" aci
 - Processo administrativo de correção excepcional de um snapshot de `ColaboracaoMensal` já
   compilado (ADR-016 item 4 menciona a necessidade, não especifica o fluxo).
 
+**Iniciada em 30/07/2026 (Fase 4 do Plano Mestre, ADR-017):** OAuth do Google Drive
+provisionado e validado — client dedicado (distinto do client de login/ADR-007), conta única
+administrada (`elafashionmkt@gmail.com`), escopo único `drive.file`. Refresh token
+armazenado localmente (`GOOGLE_DRIVE_CLIENT_ID`/`_CLIENT_SECRET`/`_REFRESH_TOKEN` em
+`portal-backend/.env`, nunca commitado). Helper `portal-backend/src/shared/googleDrive/
+googleDriveClient.ts` troca refresh token por access token sob demanda (sem
+`googleapis`/`google-auth-library`, só `fetch` nativo). Validado de ponta a ponta via
+`npm run oauth:testar-drive` (`portal-backend/scripts/testarOAuthGoogleDrive.ts`): consulta de
+identidade/quota, criação e remoção de pasta de teste sob `drive.file` — todos os passos
+confirmados com sucesso. Apenas o OAuth foi construído nesta etapa; nenhuma rota, service ou
+regra de negócio de Storage (provisionamento de pasta por Parceira/competência, upload via
+Drive) existe ainda — decisão de produto e ADR próprios continuam pendentes para isso.
+
 ## Próxima Sprint recomendada
 
 Ver `criativododo-interno/PLANO_MESTRE_IMPLEMENTACAO_PORTAL_DODO.md` — roadmap oficial,
 executado uma fase por vez, sempre com aprovação explícita antes de avançar. Fase 1
 (fechamentos de baixo risco), Fase 2 (persistência PostgreSQL) e Fase 3 (Colaboração Mensal,
-ADR-016) concluídas em 29/07/2026. Fase 4 (Armazenamento + Workspace Provisioning) é a
-próxima, aguardando aprovação explícita do responsável do projeto antes de iniciar.
+ADR-016) concluídas em 29/07/2026. **Fase 4 (Armazenamento + Workspace Provisioning) iniciada
+em 30/07/2026** — OAuth do Google Drive concluído (ADR-017); próximo passo dentro da própria
+Fase 4 é a decisão de produto sobre o modelo de provisionamento de pasta (estrutura por
+Parceira/competência), ainda em aberto.
 
 ## Última atualização
 
-2026-07-29.
+2026-07-30.

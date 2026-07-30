@@ -11,7 +11,8 @@
     "typecheck": "tsc --noEmit",
     "db:migrate": "tsx scripts/migrate.ts",
     "db:seed": "tsx scripts/seed.ts",
-    "db:backfill-colaboracao-mensal": "tsx scripts/backfillColaboracaoMensal.ts"
+    "db:backfill-colaboracao-mensal": "tsx scripts/backfillColaboracaoMensal.ts",
+    "oauth:testar-drive": "tsx scripts/testarOAuthGoogleDrive.ts"
   },
   "keywords": [],
   "author": "",
