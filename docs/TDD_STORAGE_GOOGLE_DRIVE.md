@@ -1,10 +1,8 @@
 # Technical Design Document — Storage (Google Drive), Fase 4
 
-> **Status:** Proposta — Gate 2 da Fase 4, aguardando aprovação do responsável do projeto.
-> Nenhum código de produção, endpoint, tela, regra de negócio ou migration foi criado a
-> partir deste documento. Este é o **documento único de referência para o Gate 3**
-> (implementação da infraestrutura) — `PORTAL_ARQUITETURA.md` §6 mantém só um resumo e aponta
-> para cá, para não duplicar conteúdo.
+> **Status:** Aprovado (2026-07-30) — Gate 2 concluído, Gate 3 (implementação) em andamento.
+> Este é o **documento único de referência para o Gate 3** — `PORTAL_ARQUITETURA.md` §6
+> mantém só um resumo e aponta para cá, para não duplicar conteúdo.
 >
 > **Decisão de escopo já aceita (Gate 1):** `ADR-019` (`knowledge/ARCHITECTURAL_DECISIONS.md`)
 > — escopo OAuth `drive.file`, não `drive` completo. Este TDD projeta a arquitetura *sobre*
@@ -38,6 +36,14 @@
 > chega a `ServicoDeArmazenamentoImpl`; ambos agora explícitos. Decisões de arquitetura já
 > aceitas (ADR-019, CB-01) não foram reabertas — só lacunas de especificação técnica dentro
 > delas.
+>
+> **Nota de execução do Gate 3 (2026-07-30):** a validação manual do script de
+> provisionamento (§3.3) criou de fato a pasta raiz do ambiente de desenvolvimento local
+> (id `15QbT0dgS2hxoM9NQqa7FK9dfnAk31a7g`) contra a conta Drive de produção (único client
+> OAuth existente, `ADR-017`) — não havia conta separada para dev. O responsável do projeto
+> decidiu adotar essa pasta como oficial do ambiente de dev (não recriar/remover) e formalizou
+> a estratégia de isolamento por ambiente em `ADR-020`: pasta raiz exclusiva por ambiente,
+> mesma conta por enquanto, diferenciação só via `GOOGLE_DRIVE_ROOT_FOLDER_ID` (ver §3.3).
 
 ---
 
@@ -544,6 +550,13 @@ esse problema: cada uma é resolvida por busca (`listar`, por nome, sob um pai j
 cada chamada, então a primeira chamada em produção já as cria sob demanda e toda chamada
 seguinte — em qualquer instância ou após qualquer reinício — encontra a mesma pasta de novo,
 sem exigir persistência própria (§3.2).
+
+**Isolamento por ambiente (`ADR-020`):** uma pasta raiz por ambiente (dev/staging/produção),
+todas sob a mesma conta Drive administrada por enquanto — nenhum ambiente reaproveita a
+pasta raiz de outro; a diferenciação é só o valor de `GOOGLE_DRIVE_ROOT_FOLDER_ID` no `.env`
+de cada ambiente, nunca lógica condicional no código. A pasta raiz de desenvolvimento local
+(id `15QbT0dgS2hxoM9NQqa7FK9dfnAk31a7g`) foi criada em 2026-07-30 durante a validação manual
+deste script e foi adotada como a pasta oficial desse ambiente — não recriar, não remover.
 
 ### 3.4 Convenções de nomenclatura
 

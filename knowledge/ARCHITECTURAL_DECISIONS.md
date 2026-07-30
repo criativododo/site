@@ -1204,6 +1204,78 @@ Gate 1:
 
 ---
 
+## ADR-020 — Isolamento de ambiente do Storage: mesma conta Google Drive, pasta raiz exclusiva por ambiente (Gate 3 da Fase 4)
+
+- **Status:** Aceito.
+- **Data:** 2026-07-30.
+- **Autor da decisão:** responsável do projeto (Gate 3 da Fase 4 do Plano Mestre, decisão
+  tomada ao constatar, durante a implementação, que o client OAuth do Drive já provisionado
+  por `ADR-017` está rotulado nas próprias variáveis de ambiente como "Portal DODÔ
+  Produção", sem conta separada para desenvolvimento/staging).
+- **Relaciona-se com:** ADR-017 (OAuth dedicado do Drive, conta única administrada), ADR-019
+  (escopo `drive.file`), `docs/TDD_STORAGE_GOOGLE_DRIVE.md` §3.3 (pasta raiz).
+
+### Contexto
+
+Durante a implementação do Gate 3 (Storage), ao validar o script de provisionamento da pasta
+raiz (`npm run drive:provisionar-raiz`), constatou-se que o único client OAuth do Drive
+configurado (`ADR-017`) é o client de produção — não existe conta/Drive separada para
+ambiente de desenvolvimento ou staging. O TDD (§3.3) já previa que a pasta raiz é criada
+manualmente uma única vez, fora de tempo de request, com o ID persistido em
+`GOOGLE_DRIVE_ROOT_FOLDER_ID`, mas não decidia explicitamente se ambientes distintos
+deveriam compartilhar a mesma pasta raiz dentro dessa conta única, ou ter pastas raiz
+distintas. Sem essa decisão, uma pasta raiz criada durante validação manual em
+desenvolvimento local ficaria, por omissão, na mesma árvore que a futura pasta raiz de
+produção — risco de material de teste se misturar com material real de Parceira.
+
+### Decisão
+
+1. **Uma única conta Google Drive administrada** continua servindo todos os ambientes por
+   enquanto (dev, staging, produção) — nenhuma conta/Drive nova é provisionada nesta decisão,
+   reafirma `ADR-017`.
+2. **Pasta raiz exclusiva por ambiente.** Cada ambiente (dev, staging, produção) tem sua
+   própria pasta raiz, criada independentemente pelo script de provisionamento, com seu
+   próprio valor de `GOOGLE_DRIVE_ROOT_FOLDER_ID` — nenhum ambiente reaproveita a pasta raiz
+   de outro. Isolamento é por pasta (`drive.file` já garante que uma pasta raiz só é
+   acessível a quem tem o ID), não por conta.
+3. **Toda diferenciação de ambiente passa exclusivamente por `GOOGLE_DRIVE_ROOT_FOLDER_ID`**
+   — nenhuma lógica condicional de ambiente (`if NODE_ENV === ...`) é introduzida no código
+   de Storage; o valor correto é responsabilidade do `.env` de cada ambiente, nunca de
+   branching em código.
+4. **A pasta raiz de desenvolvimento local já criada** (id `15QbT0dgS2hxoM9NQqa7FK9dfnAk31a7g`,
+   criada em 2026-07-30 durante validação manual do script de provisionamento) é adotada como
+   a pasta raiz oficial do ambiente de desenvolvimento local — não recriada, não removida.
+5. **Migração futura para contas separadas por ambiente permanece aberta, sem custo de
+   redesenho:** como toda a arquitetura resolve a raiz por `GOOGLE_DRIVE_ROOT_FOLDER_ID`
+   (config), nunca por caminho fixo em código, trocar de conta é só trocar
+   `GOOGLE_DRIVE_CLIENT_ID`/`SECRET`/`REFRESH_TOKEN` + `GOOGLE_DRIVE_ROOT_FOLDER_ID` no `.env`
+   do ambiente correspondente — nenhuma camada acima de `ProvedorDeArmazenamentoGoogleDrive`
+   precisa mudar.
+
+### Consequências
+
+- `docs/TDD_STORAGE_GOOGLE_DRIVE.md` §3.3 é atualizado para declarar esta decisão (pasta raiz
+  por ambiente, não por conta) e registrar a proveniência da pasta de desenvolvimento já
+  criada.
+- Cada ambiente que vier a existir (staging, produção) precisa rodar `npm run
+  drive:provisionar-raiz` (ou equivalente manual) uma vez, com seu próprio `.env`, antes do
+  primeiro uso de Storage nesse ambiente — nenhuma automação cria pasta raiz em tempo de
+  deploy.
+- Nenhuma mudança de código é exigida por esta ADR além da atualização de documentação — o
+  mecanismo já implementado (`GOOGLE_DRIVE_ROOT_FOLDER_ID` como único ponto de configuração
+  de raiz) já satisfaz a decisão.
+- Risco residual aceito, não bloqueante: enquanto a conta for única, quota de armazenamento e
+  de API é compartilhada entre todos os ambientes — reavaliar (conta dedicada por ambiente)
+  só se isso se tornar um problema real.
+
+### Quadro-resumo
+
+| Decisão tomada | Alternativas descartadas | Justificativa | Impacto esperado na arquitetura |
+|---|---|---|---|
+| Uma conta, pasta raiz exclusiva por ambiente, diferenciação só via `GOOGLE_DRIVE_ROOT_FOLDER_ID` | Conta Drive dedicada por ambiente agora | Nenhum requisito documentado exige isolamento de conta hoje; pasta raiz já isola por `drive.file`; menor custo operacional | Nenhuma mudança de código; só disciplina de configuração por ambiente |
+
+---
+
 ## Como usar este documento
 
 Toda decisão arquitetural nova e permanente deste projeto (que não seja um detalhe de
