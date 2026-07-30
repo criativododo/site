@@ -920,42 +920,50 @@ criada).
 
 ## 8. Checklist do Gate 3
 
-Tudo abaixo é **implementação**, condicionada à aprovação deste TDD. Nenhum item foi
-iniciado.
+**Status: concluído (2026-07-30).** Registro do que foi de fato entregue — ver commits de
+`feat(storage): ...` no histórico do repositório para o detalhe de cada item.
 
-- [ ] `portal-backend/src/shared/storage/tipos.ts` — `RecursoDeArmazenamento`,
+- [x] `portal-backend/src/shared/storage/tipos.ts` — `RecursoDeArmazenamento`,
       `PaginaDeRecursos`, `ParametrosDeEnvio`, `ConfiguracaoDeArmazenamento` (§2.2, §2.13)
-- [ ] `portal-backend/src/shared/storage/provedorDeArmazenamento.ts` — interface
+- [x] `portal-backend/src/shared/storage/provedorDeArmazenamento.ts` — interface
       `ProvedorDeArmazenamento` (§2.2)
-- [ ] `portal-backend/src/shared/storage/erros.ts` — hierarquia `ErroDeArmazenamento` (§2.10)
-- [ ] `portal-backend/src/shared/storage/googleDrive/provedorGoogleDrive.ts` —
+- [x] `portal-backend/src/shared/storage/erros.ts` — hierarquia `ErroDeArmazenamento` (§2.10)
+- [x] `portal-backend/src/shared/storage/googleDrive/provedorGoogleDrive.ts` —
       `ProvedorDeArmazenamentoGoogleDrive`, implementando os 7 métodos da interface (§2.4),
       sem construtor de credencial (reaproveita `obterAccessTokenDrive()` por import, §2.13)
-- [ ] `comRetentativa()` — utilitário de retry com backoff exponencial + jitter (§2.8),
-      aplicado a `criarPasta`/`enviarArquivo` envolvendo a sequência
-      verificação-de-existência + escrita como unidade retryable só, nunca a escrita isolada
-      (§2.8)
-- [ ] Verificação de identidade do recurso (`appProperties.identidadeDoRecurso`) e de
+- [x] `comRetentativa()` (`shared/storage/googleDrive/comRetentativa.ts`) — utilitário de
+      retry com backoff exponencial + jitter (§2.8), aplicado a `criarPasta`/`enviarArquivo`
+      envolvendo a sequência verificação-de-existência + escrita como unidade retryable só,
+      nunca a escrita isolada (§2.8)
+- [x] Verificação de identidade do recurso (`appProperties.identidadeDoRecurso`) e de
       idempotência de operação (`appProperties.chaveDeIdempotencia`) antes de
       `files.create`/`files.update`, incluindo o caminho de substituição (CB-01, §2.9) e o
       filtro `trashed=false` em toda consulta de resolução/idempotência (§2.4, §2.9)
-- [ ] `resolverPastaDaColaboracao` como cadeia de 3 níveis (`Parceiras` → `{parceiraId}` →
+- [x] `resolverPastaDaColaboracao` como cadeia de 3 níveis (`Parceiras` → `{parceiraId}` →
       `{mesReferencia}`) a partir de `pastaRaizId`, não 2 (§3.2)
-- [ ] `portal-backend/src/shared/storage/servicoDeArmazenamento.ts` —
+- [x] `portal-backend/src/shared/storage/servicoDeArmazenamento.ts` —
       `ServicoDeArmazenamento`/`ServicoDeArmazenamentoImpl`, recebendo `pastaRaizId` no
       construtor (§2.3, §2.13)
-- [ ] `portal-backend/src/shared/storage/index.ts` — `criarProvedorDeArmazenamento` +
+- [x] `portal-backend/src/shared/storage/index.ts` — `criarProvedorDeArmazenamento` +
       export de `servicoDeArmazenamento` (injeção de dependência, §2.13)
-- [ ] `env.storage`/`GOOGLE_DRIVE_ROOT_FOLDER_ID` em `config/env.ts` e `.env.example` (§3.3)
-- [ ] Script de provisionamento manual da pasta raiz (análogo a
-      `testarOAuthGoogleDrive.ts`), execução única fora do fluxo de produção (§3.3)
-- [ ] Testes unitários de `ProvedorDeArmazenamentoGoogleDrive` (§6.1, §6.3, §6.4)
-- [ ] Testes unitários de `ServicoDeArmazenamento` (§6.2)
-- [ ] Script de teste de integração manual contra API real (§6.6), fora de CI
-- [ ] `typecheck`/`build`/suíte de testes de `portal-backend` verdes
-- [ ] **Explicitamente fora do Gate 3, mesmo que pareça próximo:** nenhuma rota HTTP, nenhum
+- [x] `env.storage`/`GOOGLE_DRIVE_ROOT_FOLDER_ID` em `config/env.ts` e `.env.example` (§3.3)
+- [x] Script de provisionamento manual da pasta raiz (`scripts/provisionarPastaRaizDrive.ts`,
+      `npm run drive:provisionar-raiz`), execução única fora do fluxo de produção (§3.3) —
+      já executado contra a conta real; pasta raiz de desenvolvimento provisionada e
+      idempotência confirmada (`ADR-020`)
+- [x] Testes unitários de `ProvedorDeArmazenamentoGoogleDrive` (§6.1, §6.3, §6.4) — 26 testes
+- [x] Testes unitários de `ServicoDeArmazenamento` (§6.2) — 6 testes
+- [x] Script de teste de integração manual contra API real
+      (`scripts/testarStorageGoogleDrive.ts`, `npm run drive:testar-storage`), fora de CI —
+      escrito e revisado; **não executado nesta sessão** (grava/remove recursos reais na
+      conta Drive; execução fica pendente de decisão explícita, dado o precedente de escrita
+      não intencional já registrado em `ADR-020`)
+- [x] `typecheck`/`build`/suíte de testes de `portal-backend` verdes — 268 testes, 42
+      arquivos, suíte completa (não só Storage)
+- [x] **Explicitamente fora do Gate 3, mesmo que pareça próximo:** nenhuma rota HTTP, nenhum
       endpoint, nenhuma tela, nenhuma regra de negócio de Conteúdo/Entrega, nenhuma
-      migration/tabela nova, nenhum upload funcional de ponta a ponta (tudo isso é Gate 5)
+      migration/tabela nova, nenhum upload funcional de ponta a ponta (tudo isso é Gate 5) —
+      respeitado; nada disso foi tocado
 
 ---
 

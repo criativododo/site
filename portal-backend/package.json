@@ -13,7 +13,8 @@
     "db:seed": "tsx scripts/seed.ts",
     "db:backfill-colaboracao-mensal": "tsx scripts/backfillColaboracaoMensal.ts",
     "oauth:testar-drive": "tsx scripts/testarOAuthGoogleDrive.ts",
-    "drive:provisionar-raiz": "tsx scripts/provisionarPastaRaizDrive.ts"
+    "drive:provisionar-raiz": "tsx scripts/provisionarPastaRaizDrive.ts",
+    "drive:testar-storage": "tsx scripts/testarStorageGoogleDrive.ts"
   },
   "keywords": [],
   "author": "",
