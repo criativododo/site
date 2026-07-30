@@ -89,9 +89,9 @@ refeitos no futuro. Nunca usar como referência isolada, sem checar contra o có
 
 ## 9. Estado físico do repositório (o que existe de fato)
 
-**Fonte oficial: `PORTAL_BRIEFING.md` §0 e `START_HERE_NEXT_SESSION.md`** — não
-`README.md`/`CLAUDE.md` (ambos descrevem uma estrutura de pastas que não existe neste
-repositório; pendência registrada em `PORTAL_BRIEFING.md` §13.9).
+**Estado operacional vigente:** repositório privado `criativododo-memory`, carregado por
+`/inicio <objetivo>` (ADR-018). **Estado físico e histórico local:** `PORTAL_BRIEFING.md`
+§0 e `START_HERE_NEXT_SESSION.md`; este último é snapshot legado desde 30/07/2026.
 
 ## 10. Decisões arquiteturais permanentes
 
@@ -113,5 +113,6 @@ documentam decisões do Sistema B ausente).
 | 6 | Jornadas oficiais dos usuários | `USER_JOURNEYS.md` |
 | 7 | Linguagem ubíqua do domínio | `PORTAL_GLOSSARIO.md` |
 | 8 | Design System HTML | Auxiliar — nunca fonte primária |
-| 9 | Estado físico do repositório | `PORTAL_BRIEFING.md` §0 / `START_HERE_NEXT_SESSION.md` |
+| 9 | Estado operacional vigente | `criativododo-memory`, carregado por `/inicio <objetivo>` |
+| 9a | Estado físico e histórico local | `PORTAL_BRIEFING.md` §0 / `START_HERE_NEXT_SESSION.md` (legado) |
 | 10 | Decisões arquiteturais permanentes | `knowledge/ARCHITECTURAL_DECISIONS.md` |

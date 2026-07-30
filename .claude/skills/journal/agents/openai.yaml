@@ -1,0 +1,4 @@
+interface:
+  display_name: "Consultar journals"
+  short_description: "Pesquisa o histórico de sessões"
+  default_prompt: "Use $journal para pesquisar journals de sessão."

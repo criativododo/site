@@ -33,8 +33,9 @@ raciocínio, não como código herdável.
 
 **Antes de propor ou revisar qualquer decisão de arquitetura**, ler nesta ordem:
 
-1. `START_HERE_NEXT_SESSION.md` — estado real do repositório, o que é código vs.
-   documentação, riscos a evitar.
+1. Execute `/inicio <objetivo>` — carrega a memória operacional externa e registra o
+   baseline Git da sessão. `START_HERE_NEXT_SESSION.md` local é arquivo legado, útil apenas
+   como referência histórica.
 2. `knowledge/PROJECT_SOURCE_OF_TRUTH.md` — índice de qual documento manda sobre qual
    assunto (identidade visual, domínio, produto, arquitetura, backlog, jornadas, glossário).
 3. `knowledge/ARCHITECTURAL_DECISIONS.md` — ADRs de governança e método deste projeto
@@ -110,19 +111,18 @@ Autorização explícita do responsável pelo projeto, registrada nesta data:
 
 ## Comandos padrão
 
-`.claude/commands/<nome>.md` — um arquivo por comando, frontmatter com `description` e
-corpo em linguagem natural; resolvidos por `/<nome>`. Comandos ativos hoje: genéricos
-(`commit`, `commit-push-pr`, `code-review`, `clean_gone`) — não há comando de protocolo de
-sessão específico deste projeto no momento (`/comecar`/`/fim` mencionados em versões
-anteriores deste arquivo nunca chegaram a ser commitados neste repositório). Não criar novo
-comando sem necessidade comprovada de workflow repetido entre sessões.
+Skills em `.claude/skills/<nome>/SKILL.md` são resolvidas por `/<nome>` e são versionadas
+com o projeto. O protocolo operacional de sessão é obrigatório: `/inicio <objetivo>` antes
+de trabalhar, `/check` quando houver validação aplicável e `/fim` ao encerrar. Ele usa o
+clone irmão privado `../criativododo-memory`, nunca o deploy ou a VPS. Os comandos genéricos
+em `.claude/commands/` permanecem disponíveis para Git e revisão.
 
 ## Documentos oficiais
 
 Antes de iniciar qualquer tarefa, na ordem definida por
 `knowledge/PROJECT_SOURCE_OF_TRUTH.md`:
 
-1. `START_HERE_NEXT_SESSION.md` — estado real do repositório.
+1. `/inicio <objetivo>` — estado operacional atual e baseline da sessão.
 2. `knowledge/PROJECT_SOURCE_OF_TRUTH.md` — mapa de fontes de verdade por assunto.
 3. `knowledge/Historico/CONTRATO_SOBERANO.md` — domínio soberano (linguagem ubíqua, nunca
    reabrir sem novo ADR).
@@ -155,8 +155,8 @@ assunto:
   atual.
 - `knowledge/ARCHITECTURAL_DECISIONS.md` — ADRs de governança/método deste projeto como um
   todo (série própria, vigente).
-- `docs/_workspace/` — auditorias, releases e handoffs operacionais recentes.
-- `docs/handoff/` — marcos concluídos (histórico de entregas).
+- `docs/_workspace/` e `docs/handoff/` — histórico legado de auditorias, releases e
+  handoffs; o estado operacional vigente fica em `criativododo-memory` após `/inicio`.
 
 ## Convenções permanentes
 
@@ -175,7 +175,8 @@ Apenas regras já verificáveis em ADR ou no código hoje:
 
 Quando houver conflito:
 
-- `START_HERE_NEXT_SESSION.md` define o estado físico real do repositório.
+- A memória carregada por `/inicio` define o estado operacional vigente; os documentos de
+  handoff locais são histórico legado.
 - `knowledge/PROJECT_SOURCE_OF_TRUTH.md` define qual documento manda sobre qual assunto.
 - `knowledge/Historico/CONTRATO_SOBERANO.md` define domínio soberano (nunca reabrir).
 - `knowledge/ARCHITECTURAL_DECISIONS.md` define decisões arquiteturais vigentes deste

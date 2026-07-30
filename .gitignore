@@ -43,5 +43,9 @@ architecture-report.txt
 # Logs
 *.log
 
+# Session Memory local runtime and per-clone path override
+/.claude/session-memory/runtime/
+/.claude/session-memory/config.local.json
+
 # OS
 Thumbs.db

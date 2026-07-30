@@ -1,0 +1,4 @@
+interface:
+  display_name: "Status do projeto"
+  short_description: "Mostra o estado operacional atual"
+  default_prompt: "Use $status para mostrar o estado atual do projeto."

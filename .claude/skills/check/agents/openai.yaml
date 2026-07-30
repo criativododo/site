@@ -1,0 +1,4 @@
+interface:
+  display_name: "Verificar projeto"
+  short_description: "Executa a matriz de verificações"
+  default_prompt: "Use $check para executar as verificações configuradas."

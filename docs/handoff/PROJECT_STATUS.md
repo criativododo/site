@@ -1,5 +1,9 @@
 # Estado Atual
 
+> **Legado desde 30/07/2026:** o estado operacional canônico passou para o repositório
+> privado `criativododo-memory`, carregado via `/inicio <objetivo>`. Este documento é um
+> snapshot histórico e não deve mais receber atualizações de sessão.
+
 > Referência oficial e única do estado atual do projeto Criativo Dodô — plataforma
 > Influencia. Contém apenas o presente; não histórico, não decisões já superadas. Para
 > racional de como se chegou aqui, ver `docs/handoff/` (documentos datados) e

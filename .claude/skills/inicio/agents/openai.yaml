@@ -1,0 +1,4 @@
+interface:
+  display_name: "Iniciar sessão"
+  short_description: "Reconstrói o contexto da sessão"
+  default_prompt: "Use $inicio para iniciar uma sessão documentada."

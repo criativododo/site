@@ -1,0 +1,4 @@
+interface:
+  display_name: "Consultar roadmap"
+  short_description: "Mostra fases e progresso verificável"
+  default_prompt: "Use $roadmap para consultar o roadmap do projeto."

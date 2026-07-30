@@ -1,5 +1,8 @@
 # START_HERE_NEXT_SESSION.md
 
+> **Legado desde 30/07/2026:** este é um snapshot histórico. Para o estado operacional
+> vigente, execute `/inicio <objetivo>` e use o repositório privado `criativododo-memory`.
+
 > Este é o documento mais importante do handoff. Leia como se você fosse um engenheiro que
 > nunca participou deste projeto. Ele explica o estado real do repositório, o que é
 > documentação vs. o que é código, o que já foi decidido, o que ainda precisa de decisão, em

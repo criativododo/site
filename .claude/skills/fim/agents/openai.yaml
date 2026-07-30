@@ -1,0 +1,4 @@
+interface:
+  display_name: "Finalizar sessão"
+  short_description: "Registra e publica a sessão atual"
+  default_prompt: "Use $fim para encerrar e registrar esta sessão."

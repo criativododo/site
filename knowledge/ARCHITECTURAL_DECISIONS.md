@@ -1066,6 +1066,57 @@ de configuração antiga.
 
 ---
 
+## ADR-018 — Memória operacional de sessão em repositório Git privado separado
+
+- **Status:** Aceito.
+- **Data:** 2026-07-30.
+- **Relaciona-se com:** ADR-003 (não inventar requisito), ADR-016/017 (registro de decisões
+  e continuidade entre sessões).
+
+### Contexto
+
+O estado operacional vinha sendo mantido por handoffs extensos dentro do repositório da
+aplicação. Isso repete contexto, mistura histórico com estado vigente e torna a retomada de
+uma sessão dependente de leitura manual de múltiplos documentos. Esse material não compõe a
+aplicação, nem deve seguir para deploy ou VPS.
+
+### Decisão
+
+1. O estado operacional passa a viver no repositório Git privado
+   `criativododo/criativododo-memory`, clonado como diretório irmão do repositório da
+   aplicação por padrão.
+2. O repositório da aplicação versiona apenas o kit genérico em `.claude/session-memory/` e
+   as skills `/inicio`, `/fim`, `/status`, `/journal`, `/roadmap`, `/check` e `/release`.
+   O kit não integra build, runtime ou deploy da aplicação.
+3. `/inicio <objetivo>` sincroniza com `pull --ff-only`, registra baseline Git inclusive em
+   árvore de trabalho pré-existente e apresenta estado/journals verificáveis. `/fim` compila
+   o journal a partir do baseline e dos fatos explicitamente informados, valida o índice e
+   publica por commit/push. Divergências ou mudanças não commitadas bloqueiam a operação;
+   nunca há merge automático ou force-push.
+4. `START_HERE_NEXT_SESSION.md` e `docs/handoff/` locais são preservados como histórico
+   legado. Após a ativação, a memória externa é a única fonte do estado operacional atual.
+5. O sistema nunca registra conteúdo de `.env`, tokens, chaves ou outros segredos; nomes de
+   arquivos sensíveis são redigidos nos journals.
+
+### Consequências
+
+- Um clone novo precisa apenas de Git, Node e acesso ao repositório privado para recuperar
+  contexto; não depende de instalação global de comandos.
+- O primeiro bootstrap exige credencial GitHub válida para criar ou clonar o repositório
+  privado. Falhas de rede preservam o trabalho local e exigem recuperação explícita.
+- Os documentos em `docs/handoff/` não devem mais ser atualizados como estado presente;
+  referências históricas continuam válidas para racional e auditoria.
+
+### Quadro-resumo
+
+| Decisão tomada | Alternativas descartadas | Justificativa | Impacto esperado na arquitetura |
+|---|---|---|---|
+| Memória operacional em repositório Git privado separado | Continuar handoffs no repositório da aplicação; banco externo | Mantém histórico auditável, reduz contexto repetido e separa operação de deploy | Clone irmão de documentação e workflow de sessão versionado |
+| Skills + CLI Node sem dependências | Instalação global/manual; automação opaca por IA | Comandos são reproduzíveis em qualquer clone e a coleta Git é determinística | `.claude/skills/` e `.claude/session-memory/` passam a ser infraestrutura de desenvolvimento |
+| Sync/push somente fast-forward | Merge ou sobrescrita automática | Conflitos de memória não podem apagar contexto de outra sessão | Divergências interrompem o fluxo com recuperação manual |
+
+---
+
 ## Como usar este documento
 
 Toda decisão arquitetural nova e permanente deste projeto (que não seja um detalhe de

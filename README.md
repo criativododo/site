@@ -10,7 +10,9 @@ aprovação de conteúdo, pagamentos, contratos e histórico/auditoria.
 > **Nota histórica:** o produto nasceu como automação em Google Apps Script/Sheets, depois
 > passou por uma fase Laravel + React ("Sistema B", nunca chegou a produção, código ausente
 > deste repositório). A implementação atual — Landing + Portal — é a que existe fisicamente
-> aqui. Ver `START_HERE_NEXT_SESSION.md` e `knowledge/PROJECT_SOURCE_OF_TRUTH.md`.
+> aqui. Para contexto operacional vigente, execute `/inicio <objetivo>`; `START_HERE_NEXT_SESSION.md`
+> permanece como snapshot histórico. Para fontes de verdade de produto e arquitetura, veja
+> `knowledge/PROJECT_SOURCE_OF_TRUTH.md`.
 
 Organização oficial no GitHub: **criativododo**. Este repositório:
 `https://github.com/criativododo/criativododosite`.
@@ -34,7 +36,8 @@ de `app/src` — nunca a fonte primária; em qualquer divergência, `app/src` pr
 | Local | Conteúdo |
 |---|---|
 | `CLAUDE.md` | Contrato operacional para agentes de IA |
-| `START_HERE_NEXT_SESSION.md` | Estado real do repositório — leitura obrigatória antes de qualquer trabalho |
+| `/inicio <objetivo>` | Carrega a memória operacional privada e registra o baseline obrigatório da sessão |
+| `START_HERE_NEXT_SESSION.md` | Snapshot histórico do estado anterior ao Session Memory |
 | `knowledge/PROJECT_SOURCE_OF_TRUTH.md` | Índice de qual documento manda sobre qual assunto |
 | `knowledge/Historico/CONTRATO_SOBERANO.md` | Domínio soberano — linguagem ubíqua oficial |
 | `knowledge/Produto/SPEC-*.md` | Especificações funcionais numeradas |
