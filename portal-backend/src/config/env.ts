@@ -54,6 +54,19 @@ export const env = {
     refreshToken: process.env.GOOGLE_DRIVE_REFRESH_TOKEN ?? "",
   },
 
+  /**
+   * Storage (Fase 4, Gate 3, `docs/TDD_STORAGE_GOOGLE_DRIVE.md` §3.3) — raiz do Portal no
+   * Google Drive, provisionada uma única vez fora de tempo de request (`npm run
+   * drive:provisionar-raiz`). Opcional (não usa `obrigatoria()`): só é exigido quando
+   * `ServicoDeArmazenamento` é efetivamente chamado, não pelo boot da aplicação.
+   */
+  storage: {
+    tipo: "google-drive" as const,
+    googleDrive: {
+      pastaRaizId: process.env.GOOGLE_DRIVE_ROOT_FOLDER_ID ?? "",
+    },
+  },
+
   adminBootstrapEmails: (process.env.ADMIN_BOOTSTRAP_EMAILS ?? "")
     .split(",")
     .map((email) => email.trim().toLowerCase())
