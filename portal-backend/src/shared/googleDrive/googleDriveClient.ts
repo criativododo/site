@@ -31,6 +31,17 @@ export class ErroOAuthGoogleDrive extends Error {
 let cache: { accessToken: string; expiraEm: number } | null = null;
 
 /**
+ * Força a próxima chamada a `obterAccessTokenDrive()` a trocar um access token novo, mesmo
+ * que o cache ainda não tenha expirado por tempo — usado por `comRetentativa()`
+ * (`shared/storage/googleDrive/`) quando o Drive responde 401 a um token que o cache local
+ * ainda considerava válido (ex.: revogação manual). Acréscimo mínimo à Fase 4 (Storage,
+ * `docs/TDD_STORAGE_GOOGLE_DRIVE.md` §2.8/§4.5); não altera nenhum comportamento existente.
+ */
+export function invalidarCacheAccessTokenDrive(): void {
+  cache = null;
+}
+
+/**
  * Troca o refresh token administrado (ADR-017) por um access token válido, memoizando até
  * perto da expiração real informada pelo Google — evita uma chamada de rede por uso.
  */
