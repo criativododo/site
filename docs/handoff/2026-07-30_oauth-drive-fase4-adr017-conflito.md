@@ -212,9 +212,10 @@ Branch: `main`.
   pode ser considerado definitivamente concluído.
 - **Storage iniciado?** Não. Nenhuma rota, service ou regra de negócio de Storage existe.
 - **Workspace Provisioning iniciado?** Não.
-- **Existe algum bloqueio?** **Sim** — o conflito de escopo do ADR-017 (Seção 2/8) é um
-  bloqueio real de arquitetura que exige decisão explícita do responsável do projeto antes
-  de qualquer novo código de Storage.
+- **Existe algum bloqueio?** **Sim — GATE DE DECISÃO ARQUITETURAL.** O conflito de escopo do
+  ADR-017 (Seção 2/8) exige decisão explícita do responsável do projeto (`drive.file` vs.
+  `drive` completo) antes de qualquer novo código de Storage ou Workspace Provisioning. Este
+  gate bloqueia toda implementação adicional da Fase 4 até ser resolvido.
 
 ## 12. Checklist
 
