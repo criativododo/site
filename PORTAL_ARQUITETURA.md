@@ -195,13 +195,21 @@ atingida; tipo de entregável é imutável após criado.
 
 ## 6. Armazenamento
 
-**[DOCUMENTADO, mas específico de outra stack]** A única integração de armazenamento
-documentada com decisão formal é o **Google Drive via OAuth de conta dedicada**
-(`ADR-017`): `refresh_token` obtido por Authorization Code + redirect loopback local (não
-Service Account Key, bloqueada pela Org Policy `iam.disableServiceAccountKeyCreation` do
-Google Cloud), consumido por `grant_type=refresh_token` para obter access tokens de curta
-duração. Estrutura de pastas documentada: Shared Drive institucional com subpastas
-Materiais/Backup/Temporarios/Contratos/Exportacoes.
+**[DOCUMENTADO, mas específico de outra stack]** `knowledge/Arquitetura/ADR-017-oauth-conta-
+dedicada-google-drive.md` documenta o Google Drive via OAuth de conta dedicada para o
+Sistema B (Laravel, nunca chegou a produção neste repositório): `refresh_token` obtido por
+Authorization Code + redirect loopback local (não Service Account Key, bloqueada pela Org
+Policy `iam.disableServiceAccountKeyCreation` do Google Cloud), escopo `drive` completo,
+estrutura de pastas documentada em Shared Drive institucional com subpastas
+Materiais/Backup/Temporarios/Contratos/Exportacoes. **Não vinculante para a stack atual** —
+ver ressalva abaixo.
+
+**[DOCUMENTADO — decisão vigente para esta stack]** Para o Portal Node.js/TypeScript deste
+repositório, o OAuth do Drive está decidido e validado por `ADR-017` (série de governança,
+`knowledge/ARCHITECTURAL_DECISIONS.md`) e `ADR-019` (mesma série): mesmo mecanismo de
+`refresh_token`, porém escopo **`drive.file`**, não `drive` completo. `ADR-019` resolve
+formalmente o conflito com o ADR legado acima — nenhum requisito documentado do Portal
+depende de arquivo pré-existente fora do que o próprio app cria.
 
 **[PROPOSTA]** Se a stack escolhida não depender de Google Drive, qualquer storage
 compatível com upload de arquivo (S3-compatível, disco local com backup, ou o próprio Drive

@@ -1117,6 +1117,93 @@ aplicação, nem deve seguir para deploy ou VPS.
 
 ---
 
+## ADR-019 — Escopo OAuth do Google Drive para o Portal: `drive.file`, não `drive` completo (Gate 1 da Fase 4)
+
+- **Status:** Aceito.
+- **Data:** 2026-07-30.
+- **Autor da decisão:** responsável do projeto (Gate 1 da Fase 4 do Plano Mestre, análise
+  técnica solicitada explicitamente nesta sessão).
+- **Resolve:** o bloqueio único registrado como pendente pela Fase 4
+  (`docs/handoff/2026-07-30_oauth-drive-fase4-adr017-conflito.md`) — conflito entre `ADR-017`
+  desta série (escopo `drive.file`) e `knowledge/Arquitetura/ADR-017-oauth-conta-dedicada-
+  google-drive.md` (série "Sistema B", escopo `drive` completo, adendo de 2026-07-22).
+- **Relaciona-se com:** ADR-017 desta série, ADR-017 legado (`knowledge/Arquitetura/`),
+  ADR-003 (não inventar requisito), `PORTAL_ARQUITETURA.md` §5/§6, `PORTAL_BRIEFING.md` §8.
+
+### Contexto
+
+O ADR-017 desta série decidiu escopo `drive.file` para o OAuth do Drive sem confrontar
+explicitamente o ADR-017 legado, que decide `drive` completo pelo motivo — registrado em seu
+adendo de 2026-07-22 — de que uma estrutura de pastas já existia, criada manualmente sob o
+Sistema B (Laravel, nunca chegou a produção neste repositório), e `drive.file` só concede
+acesso a arquivo/pasta criado pelo próprio app sob a nova autorização.
+`PORTAL_ARQUITETURA.md` §6 e `PORTAL_BRIEFING.md` §8 citam esse ADR legado sem essa ressalva,
+criando a aparência de uma decisão vigente para a stack atual.
+
+Auditoria do domínio real do Portal (Node.js/TypeScript) para responder às seis perguntas do
+Gate 1:
+
+1. **O Portal precisa acessar arquivo existente criado fora do aplicativo?** Não. Nenhuma
+   rota, service ou repositório do `portal-backend` lê, lista ou consome arquivo que o
+   próprio Portal não tenha criado. `material.storage.ts` (`ArmazenamentoLocalEmDisco`) só
+   grava o arquivo recebido no upload da Parceira; não há rota de download nem de leitura
+   reversa (`entrega.repository.ts` só persiste o nome do arquivo salvo).
+2. **O Portal precisa reorganizar estrutura antiga do Drive?** Não. Nenhuma SPEC, ADR desta
+   série ou seção de `PORTAL_ARQUITETURA.md`/`PORTAL_BRIEFING.md` define esse requisito para
+   a stack atual. `PORTAL_ARQUITETURA.md` §6 já marca a integração citando o ADR legado como
+   "**[DOCUMENTADO, mas específico de outra stack]**".
+3. **A estrutura histórica do Drive continuará sendo utilizada?** Não documentado como
+   requisito — declarando a lacuna em vez de presumir (ADR-003). É possível, não confirmado,
+   que a conta testada nesta sessão (`elafashionmkt@gmail.com`) seja a mesma conta
+   institucional citada no ADR legado (`elafashionmkt-org`); mesmo assim, nenhuma fonte
+   oficial do Portal pede que essa estrutura manual seja lida ou reaproveitada.
+4. **O Storage administrará apenas arquivo criado pelo Portal?** Sim — é exatamente o
+   desenho de `SPEC-027`/`PORTAL_ARQUITETURA.md` §5: a Parceira envia, o backend grava, a
+   Entrega muda de estado. Nenhum fluxo documentado ou implementado depende de arquivo
+   pré-existente.
+5. **`drive.file` atende completamente aos requisitos?** Sim, por 1–4: todo uso real e
+   documentado do Drive nesta fase e nas seguintes (provisionamento de pasta por
+   Parceira/competência, upload de material) opera só sobre recurso criado pelo próprio
+   Portal — exatamente o que `drive.file` cobre.
+6. **Justificativa para `drive` completo, caso `drive.file` não atendesse:** não se aplica —
+   pergunta condicional a uma premissa (5) que não se confirmou.
+
+### Decisão
+
+1. O escopo OAuth do Google Drive para o Portal (stack Node.js/TypeScript deste repositório)
+   é **`drive.file`**, conforme já implementado e validado por ADR-017 desta série. Não é
+   adotado `drive` completo.
+2. O ADR-017 legado (`knowledge/Arquitetura/ADR-017-oauth-conta-dedicada-google-drive.md`,
+   incluindo seu adendo) é declarado **não vinculante para esta stack**: sua justificativa
+   para `drive` completo depende de uma estrutura de pastas criada por um sistema (Sistema B)
+   que nunca chegou a produção neste repositório, e nenhum requisito documentado do Portal
+   atual depende dela. O ADR legado permanece válido como registro histórico de raciocínio
+   daquela stack, não como decisão vigente para esta.
+3. `PORTAL_ARQUITETURA.md` §6 e `PORTAL_BRIEFING.md` §8 são atualizados nesta mesma sessão
+   para citar este ADR e parar de referenciar o ADR legado como se fosse a decisão vigente
+   sem ressalva.
+4. **Risco residual documentado, não bloqueante:** se uma decisão de produto futura exigir
+   que o Portal acesse ou migre a estrutura de pastas manual eventualmente existente na conta
+   Google Drive usada (`ROOT/Materiais/Backup/Temporarios/Contratos/Exportacoes`, citada no
+   ADR legado), esta decisão precisa ser reaberta com um novo ADR — `drive.file` não permite
+   esse acesso por design.
+
+### Consequências
+
+- Nenhuma mudança de código: o mecanismo já implementado e validado por ADR-017
+  (`googleDriveClient.ts`, script de validação) permanece como está.
+- Escopo de menor privilégio mantido: `drive.file` não exige verificação do Google nem
+  concede acesso além do que o Portal cria.
+- Gate 1 da Fase 4 concluído — desbloqueia o Gate 2 (arquitetura do Storage).
+
+### Quadro-resumo
+
+| Decisão tomada | Alternativas descartadas | Justificativa | Impacto esperado na arquitetura |
+|---|---|---|---|
+| Escopo `drive.file`, ADR legado declarado não vinculante para esta stack | Escopo `drive` completo, seguindo o padrão do ADR-017 legado | Nenhum requisito documentado ou implementado do Portal atual depende de arquivo pré-existente fora do próprio app | Menor privilégio mantido; nenhuma credencial/OAuth Client nova necessária |
+
+---
+
 ## Como usar este documento
 
 Toda decisão arquitetural nova e permanente deste projeto (que não seja um detalhe de

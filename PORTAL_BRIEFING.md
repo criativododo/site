@@ -239,7 +239,7 @@ regras ainda válidas como referência)
 |---|---|---|
 | CEP (BrasilAPI no PRD / ViaCEP no Sistema B) | Preenchimento automático de endereço | Nomes de provedor divergem entre fontes — flag, não resolvido |
 | Transportadora (BRComerce) | Rastreio logístico | Só no domínio do Sistema A |
-| Google Drive | Armazenamento de material enviado | `ADR-017`: OAuth de conta dedicada (refresh_token via Authorization Code + loopback local), não Service Account Key (bloqueada por Org Policy `iam.disableServiceAccountKeyCreation`); nenhum ambiente de produção está de fato servindo hoje |
+| Google Drive | Armazenamento de material enviado | Para esta stack: `ADR-017`+`ADR-019` (série de governança, `knowledge/ARCHITECTURAL_DECISIONS.md`) — OAuth de conta dedicada (refresh_token via Authorization Code + loopback local), não Service Account Key, escopo `drive.file`; nenhum ambiente de produção está de fato servindo hoje. O ADR-017 legado (`knowledge/Arquitetura/`, escopo `drive` completo) é do Sistema B e foi declarado não vinculante por `ADR-019` |
 | Google Docs/AutoCrat (legado) → dompdf/Browsershot (proposto) | Geração de Contrato/Briefing formal | Não implementado em nenhum sistema vivo |
 | Adobe Acrobat Sign | Assinatura eletrônica | Proposto (SHOULD), não implementado; risco de custo recorrente sinalizado |
 | Google Identity (OIDC/OAuth2) | Autenticação federada da influenciadora | Especificado em detalhe (SPEC-035 Cap. 9-10), nunca implementado no que sobrevive neste repositório |
