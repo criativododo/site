@@ -195,6 +195,8 @@ atingida; tipo de entregável é imutável após criado.
 
 ## 6. Armazenamento
 
+### 6.1 Decisão de escopo (Gate 1 da Fase 4 — já aceita)
+
 **[DOCUMENTADO, mas específico de outra stack]** `knowledge/Arquitetura/ADR-017-oauth-conta-
 dedicada-google-drive.md` documenta o Google Drive via OAuth de conta dedicada para o
 Sistema B (Laravel, nunca chegou a produção neste repositório): `refresh_token` obtido por
@@ -209,7 +211,11 @@ repositório, o OAuth do Drive está decidido e validado por `ADR-017` (série d
 `knowledge/ARCHITECTURAL_DECISIONS.md`) e `ADR-019` (mesma série): mesmo mecanismo de
 `refresh_token`, porém escopo **`drive.file`**, não `drive` completo. `ADR-019` resolve
 formalmente o conflito com o ADR legado acima — nenhum requisito documentado do Portal
-depende de arquivo pré-existente fora do que o próprio app cria.
+depende de arquivo pré-existente fora do que o próprio app cria. Consequência direta de
+`drive.file`, relevante para o desenho abaixo: **a pasta raiz do Portal no Drive precisa ser
+criada pela própria aplicação** — nenhuma pasta pré-existente pode ser reaproveitada, porque
+`drive.file` só concede acesso a recurso criado (ou explicitamente aberto via Picker, fora de
+escopo) sob esta autorização.
 
 **[PROPOSTA]** Se a stack escolhida não depender de Google Drive, qualquer storage
 compatível com upload de arquivo (S3-compatível, disco local com backup, ou o próprio Drive
@@ -217,6 +223,378 @@ reaproveitando o padrão de `ADR-017`) é tecnicamente equivalente, desde que pr
 isolamento — Parceira nunca acessa arquivo de outra Parceira por manipulação de URL; (b)
 metadado de qual Entrega o arquivo pertence; (c) nenhuma credencial de armazenamento exposta
 ao frontend (uploads sempre mediados pelo backend, ou por URL assinada de curta duração).
+
+### 6.2 Visão geral da arquitetura de Storage (Gate 2 da Fase 4 — proposta, aguardando aprovação)
+
+**[PROPOSTA]** Tudo do §6.2 em diante é o desenho técnico do Gate 2, ainda **não
+implementado** e ainda **não aprovado** — nenhum arquivo de código foi criado a partir desta
+seção; ela existe para revisão antes do Gate 3. Três camadas, isolamento estrito entre elas:
+
+```
+conteudo.service.ts (Gate 5 — fora de escopo aqui)
+   │  conhece Entrega/ColaboracaoMensal, NUNCA conhece Drive/OAuth/HTTP
+   ▼
+ServicoDeArmazenamento               (shared/storage/servicoDeArmazenamento.ts)
+   │  traduz conceito de domínio (parceiraId, mesReferencia, entregaId) em
+   │  caminho lógico + chave de idempotência; resolve/provisiona pasta;
+   │  não conhece Drive especificamente, só a interface ProvedorDeArmazenamento
+   ▼
+ProvedorDeArmazenamento (interface)   (shared/storage/provedorDeArmazenamento.ts)
+   │  contrato puro de infraestrutura: criar pasta, enviar/baixar/renomear/
+   │  remover/listar arquivo — sem qualquer conhecimento de Entrega ou Parceira
+   ▼
+ProvedorDeArmazenamentoGoogleDrive    (shared/storage/googleDrive/provedorGoogleDrive.ts)
+   │  implementação concreta, REST da Drive API v3 via fetch nativo,
+   │  reaproveita obterAccessTokenDrive() já validado (ADR-017)
+   ▼
+Google Drive API v3
+```
+
+Nomenclatura em português, alinhada à convenção já usada no código existente
+(`ArmazenamentoDeMaterial`/`ArmazenamentoLocalEmDisco` em `material.storage.ts`,
+`ErroOAuthGoogleDrive` em `googleDriveClient.ts`) — os termos em inglês usados no pedido do
+Gate 2 mapeiam assim: **StorageProvider → `ProvedorDeArmazenamento`**,
+**GoogleDriveStorageProvider → `ProvedorDeArmazenamentoGoogleDrive`**.
+
+**Por que três camadas, não duas:** `material.storage.ts` hoje mistura os dois níveis
+(`ArmazenamentoDeMaterial.salvar(entregaId, arquivo)` já conhece "Entrega" na assinatura). O
+Gate 2 separa: `ProvedorDeArmazenamento` não deve saber o que é uma Entrega — só sabe
+pasta/arquivo. Quem traduz "Entrega X da Parceira Y no mês Z" em "pasta/nome de arquivo" é o
+`ServicoDeArmazenamento`. Isso é o que permite trocar Drive por S3/disco no futuro (§6.1,
+`[PROPOSTA]`) sem tocar em nenhuma regra de negócio de Conteúdo/Entrega.
+
+### 6.3 Interfaces públicas, models e tipos
+
+```typescript
+// shared/storage/tipos.ts
+
+export interface RecursoDeArmazenamento {
+  /** ID do recurso no provedor (ex.: fileId/folderId do Drive). Opaco para quem chama. */
+  id: string;
+  nome: string;
+  tipo: "arquivo" | "pasta";
+  /** Caminho lógico só para log/depuração — nunca usado para localizar o recurso de novo. */
+  caminhoLogico: string;
+  tamanhoBytes?: number;
+  tipoMime?: string;
+  criadoEm: string;   // ISO 8601
+  atualizadoEm: string;
+}
+
+export interface PaginaDeRecursos {
+  itens: RecursoDeArmazenamento[];
+  proximoToken?: string;
+}
+
+export interface ParametrosDeEnvio {
+  pastaId: string;
+  nomeArquivo: string;
+  conteudo: Buffer;
+  tipoMime: string;
+  /** Obrigatório — ver §6.7 (Idempotência). Nunca gerado dentro do provedor. */
+  chaveDeIdempotencia: string;
+}
+
+// shared/storage/provedorDeArmazenamento.ts
+
+export interface ProvedorDeArmazenamento {
+  criarPasta(nome: string, pastaPaiId: string | null): Promise<RecursoDeArmazenamento>;
+  enviarArquivo(params: ParametrosDeEnvio): Promise<RecursoDeArmazenamento>;
+  baixarArquivo(recursoId: string): Promise<{ conteudo: NodeJS.ReadableStream; tipoMime: string; tamanhoBytes: number }>;
+  renomear(recursoId: string, novoNome: string): Promise<RecursoDeArmazenamento>;
+  remover(recursoId: string): Promise<void>;
+  listar(pastaId: string, tamanhoPagina?: number, tokenPagina?: string): Promise<PaginaDeRecursos>;
+  obterMetadados(recursoId: string): Promise<RecursoDeArmazenamento>;
+}
+
+// shared/storage/servicoDeArmazenamento.ts
+
+export interface ServicoDeArmazenamento {
+  /** Resolve (e provisiona, se ainda não existir) a pasta lógica Parceira × MesReferencia. */
+  resolverPastaDaColaboracao(parceiraId: string, mesReferencia: string): Promise<RecursoDeArmazenamento>;
+  enviarMaterialDaEntrega(params: {
+    entregaId: string;
+    parceiraId: string;
+    mesReferencia: string;
+    formato: string;
+    nomeOriginal: string;
+    conteudo: Buffer;
+    tipoMime: string;
+  }): Promise<RecursoDeArmazenamento>;
+}
+```
+
+`ParametrosDeEnvio.chaveDeIdempotencia` é obrigatório por desenho — não existe overload sem
+ela. Isso força todo chamador a decidir explicitamente sua estratégia de idempotência
+(§6.7) em vez de descobrir o problema em produção.
+
+### 6.4 `ProvedorDeArmazenamentoGoogleDrive` — desenho da implementação concreta
+
+**[PROPOSTA — decisão a validar no Gate 2]** Manter `fetch` nativo (sem `googleapis`/
+`google-auth-library`), estendendo a mesma decisão já tomada em ADR-017 para a validação de
+OAuth. A API v3 do Drive é REST simples; os 6 endpoints necessários (`files.create` em duas
+variantes — metadata-only para pasta, multipart para arquivo —, `files.get` com `alt=media`
+para download, `files.update`, `files.delete`, `files.list`) não justificam uma dependência
+de ~2 MB cuja tipagem própria (`googleapis`) tende a divergir da forma como o projeto já
+modela tipos (interfaces próprias em português). Trade-off aceito: escrever manualmente os
+poucos tipos de resposta necessários (mesmo padrão de `RespostaTokenGoogle` em
+`googleDriveClient.ts`), em vez de importar os tipos gerados do SDK.
+
+**Reaproveitamento:** todo método chama `obterAccessTokenDrive()` (já implementado e
+validado, `shared/googleDrive/googleDriveClient.ts`) antes de cada requisição — nenhuma
+duplicação da lógica de renovação de token dentro do provedor.
+
+**Mapeamento de operações:**
+
+| Método da interface | Endpoint Drive API v3 | Observação |
+|---|---|---|
+| `criarPasta` | `POST /files` (`mimeType: application/vnd.google-apps.folder`) | `parents: [pastaPaiId]`; se `pastaPaiId` for `null`, cria sob a raiz do OAuth Client (drive.file) |
+| `enviarArquivo` | `POST /upload/drive/v3/files?uploadType=multipart` | Corpo multipart: metadata (nome, parents, `appProperties.chaveDeIdempotencia`) + mídia |
+| `baixarArquivo` | `GET /files/{id}?alt=media` | Retorna stream; `tipoMime`/`tamanhoBytes` lidos dos headers de resposta |
+| `renomear` | `PATCH /files/{id}` (`name`) | Metadata-only, sem novo upload |
+| `remover` | `DELETE /files/{id}` | Delete definitivo — Drive não tem "soft delete" nativo acessível via `drive.file`; ver §6.8 (Riscos) |
+| `listar` | `GET /files?q=%27{pastaId}%27+in+parents&pageSize=...&pageToken=...` | Pagina nativa da API (`nextPageToken`) |
+| `obterMetadados` | `GET /files/{id}?fields=...` | Usado internamente pela verificação de idempotência (§6.7) |
+
+### 6.5 Fluxo OAuth e renovação de token
+
+**[DOCUMENTADO — já implementado em ADR-017, reaproveitado sem alteração]** O Storage não
+implementa nada de OAuth por conta própria — consome `obterAccessTokenDrive()`, que já:
+troca `refresh_token` por `access_token` via `grant_type=refresh_token`; memoiza em variável
+de módulo (`cache`) até 60s antes da expiração real (`expires_in` do Google); lança
+`ErroOAuthGoogleDrive` em falha. Nenhuma mudança proposta a esse arquivo.
+
+**[PROPOSTA]** Limitação conhecida e aceita: o cache é por processo Node, não compartilhado
+entre instâncias (se o backend escalar horizontalmente, cada processo renova seu próprio
+access token de forma independente — não é um bug, só uma pequena redundância de chamadas ao
+endpoint de token do Google, que não tem custo de quota relevante). Reavaliar só se/quando o
+backend passar a rodar em múltiplas instâncias simultâneas — não é requisito hoje.
+
+### 6.6 Retry
+
+**[PROPOSTA]** Backoff exponencial com jitter, encapsulado numa função utilitária
+`comRetentativa<T>(fn, opcoes)` usada por todo método de `ProvedorDeArmazenamentoGoogleDrive`
+que faz chamada de rede:
+
+- Tentativas: 5 no máximo (1 original + 4 retentativas).
+- Atraso base: 250ms, dobrando a cada tentativa, com teto de 8s, mais jitter aleatório de
+  ±20% para evitar sincronização entre múltiplas requisições concorrentes.
+- Respeita o header `Retry-After` quando presente (comum em `429`), usando-o em vez do
+  backoff calculado se for maior.
+- **Retryable:** `429` (`rateLimitExceeded`/`userRateLimitExceeded`), `500`/`502`/`503`/
+  `504`, erro de rede/timeout do `fetch`.
+- **Não retryable (falha imediata):** `400` (requisição malformada — bug, não instabilidade),
+  `403` que não seja de rate limit (`insufficientPermissions`, escopo incorreto), `404`
+  (recurso não existe — retentar não muda isso).
+- **Caso especial `401`:** não é backoff — é sinal de access token vencido antes da margem de
+  segurança (relógio dessincronizado, revogação). Uma única tentativa de invalidar o cache de
+  `obterAccessTokenDrive()` e renovar, depois trata como não retryable se persistir.
+
+### 6.7 Idempotência
+
+**[PROPOSTA]** Problema real a resolver: se a conexão cair depois que o Drive já criou o
+arquivo mas antes da resposta chegar à aplicação, um retry ingênuo (do backend ou do
+`comRetentativa`) criaria um arquivo duplicado — `files.create` não é naturalmente idempotente
+na API do Google.
+
+**Decisão:** usar `appProperties` do próprio Drive (metadado chave-valor nativo, até 30
+entradas por arquivo, visível/gravável só pelo app que criou o recurso — compatível com
+`drive.file`) para carregar `chaveDeIdempotencia`, em vez de criar uma tabela própria de
+"registro de operações" no Postgres.
+
+Fluxo em `enviarArquivo`:
+1. Antes de criar, `listar` (ou `files.list` filtrando por `appProperties has { key='chaveDeIdempotencia' and value='...' }` e `parents in pastaId`) — se encontrar, retorna o recurso existente, **sem** nova chamada de criação.
+2. Se não encontrar, cria normalmente, gravando `chaveDeIdempotencia` em `appProperties` no mesmo request de criação (não numa segunda chamada — evita uma janela onde o arquivo existe sem a chave).
+3. Chamador (`ServicoDeArmazenamento`) é responsável por gerar uma `chaveDeIdempotencia`
+   estável para a mesma intenção lógica — proposta: `entregaId` sozinho é suficiente para o
+   caso de uso real (Fase 4: um material por Entrega), sem precisar de hash de conteúdo.
+
+**Alternativa descartada:** tabela própria de idempotência no Postgres (`storage_operacoes`).
+Rejeitada nesta fase por adicionar escopo de schema fora do que o Gate 2 pede — o Drive já
+resolve o mesmo problema nativamente via `appProperties`, sem persistência adicional. Se um
+provedor futuro (S3, por exemplo) não tiver equivalente nativo, essa alternativa volta a ser
+avaliada nesse momento — não antecipada aqui (mesmo princípio já usado em ADR-017 para a
+decisão de biblioteca cliente).
+
+### 6.8 Tratamento de erros
+
+**[PROPOSTA]** Hierarquia de erros própria, mesmo padrão de `ErroOAuthGoogleDrive` já
+existente (classe que estende `Error`, nome semântico, dados brutos do provedor preservados
+só para log — nunca repassados crus para quem chama a camada de serviço):
+
+```typescript
+// shared/storage/erros.ts
+
+export abstract class ErroDeArmazenamento extends Error {
+  constructor(message: string, public readonly causaOriginal?: unknown) {
+    super(message);
+  }
+}
+
+export class ErroDeAutenticacaoStorage extends ErroDeArmazenamento {}   // 401 persistente após renovação
+export class ErroDeAutorizacaoStorage extends ErroDeArmazenamento {}    // 403 não relacionado a rate limit
+export class RecursoDeArmazenamentoNaoEncontrado extends ErroDeArmazenamento {} // 404
+export class LimiteDeRequisicaoExcedido extends ErroDeArmazenamento {}  // 429 após esgotar retries
+export class ErroTransitorioDeArmazenamento extends ErroDeArmazenamento {} // 5xx/rede após esgotar retries
+export class ErroDeValidacaoDeArmazenamento extends ErroDeArmazenamento {} // 400, tipo/tamanho inválido
+```
+
+`ServicoDeArmazenamento` nunca deixa um erro de `ProvedorDeArmazenamento` vazar sem tradução
+para quem o chama em Gate 5 — mantém o mesmo princípio já registrado em §2 ("nunca expor PII
+em log") aplicado a mensagens de erro: mensagem de erro do Google pode conter detalhe de
+configuração interna (client ID, nome de campo da API) que não deve chegar à Parceira.
+
+**Risco residual documentado (não bloqueante):** `remover` na Drive API não tem soft-delete
+acessível via `drive.file` (a lixeira do Drive é por conta, e mover-para-lixeira ainda
+consome `files.update` com `trashed: true`, que é reversível — mas não é o mesmo que um
+soft-delete de aplicação). Proposta: `ProvedorDeArmazenamentoGoogleDrive.remover` usa
+`trashed: true` (reversível por 30 dias, padrão do Drive), não `DELETE` definitivo — mais
+seguro por padrão, sem exigir nova decisão de produto agora.
+
+### 6.9 Estratégia de logs
+
+**[PROPOSTA]** Log estruturado (JSON), um evento por operação, correlacionado por
+`chaveDeIdempotencia` e `recursoId` quando disponível. Campos: `operacao`, `pastaId`/
+`recursoId`, `tamanhoBytes`, `duracaoMs`, `resultado` (`sucesso`/`erro`/`retentativa`),
+`tentativaNumero`, `codigoErroGoogle` (quando houver).
+
+**Nunca logado:** `access_token`, `refresh_token`, conteúdo binário do arquivo, nome
+original do arquivo em texto puro (pode conter dado pessoal da Parceira — logar só o
+`recursoId` interno e o `formato`/`entregaId`, nunca o nome do arquivo enviado pela
+usuária). Mesma disciplina já registrada em §2 para PII em geral.
+
+### 6.10 Estrutura lógica de pastas
+
+**[PROPOSTA]**
+
+```
+<raiz do Portal, criada pela própria app na primeira execução>
+└── Parceiras/
+    └── {parceiraId}/              (UUID — nunca o nome comercial da Parceira, ver §6.11)
+        └── {mesReferencia}/       (formato "YYYY-MM", mesmo formato já usado em Entrega)
+            └── {formato}-{entregaId}.{extensaoOriginal}
+```
+
+Uma pasta por `parceiraId`, uma subpasta por `mesReferencia` — não uma subpasta por
+`formato`, para manter a árvore rasa (2 níveis) e navegável diretamente no Drive por quem
+precisar auditar manualmente. `ServicoDeArmazenamento.resolverPastaDaColaboracao` provisiona
+(`criarPasta`) sob demanda — não há criação antecipada em lote.
+
+**ID da pasta raiz:** persistido como configuração (`GOOGLE_DRIVE_ROOT_FOLDER_ID` no `.env`,
+mesmo padrão dos demais segredos de infraestrutura), criado manualmente uma única vez via
+script análogo a `testarOAuthGoogleDrive.ts` — não em tempo de request. Consequência de
+`drive.file` (§6.1): essa pasta raiz só pode ser a que o próprio OAuth Client criou.
+
+### 6.11 Convenções de nomenclatura
+
+**[PROPOSTA]**
+
+- Pasta de Parceira nomeada pelo **UUID** (`parceiraId`), nunca pelo nome comercial — evita
+  expor PII a quem tiver acesso de leitura ao Drive e evita colisão por nomes comerciais
+  duplicados/digitados de forma diferente.
+- Nome de arquivo gerado pela aplicação (`{formato}-{entregaId}.{ext}`), nunca o nome
+  original enviado pela Parceira — mesmo padrão já usado em `ArmazenamentoLocalEmDisco`
+  (`${entregaId}-${randomUUID()}${extensao}`), adaptado para usar `formato` em vez de UUID
+  aleatório (mais legível para auditoria manual, ainda único porque uma Entrega tem no
+  máximo um material). Nome original preservado só como metadado (`appProperties.nomeOriginal`).
+- `mesReferencia` sempre `YYYY-MM`, mesmo formato já usado em `Entrega`/`ColaboracaoMensal` —
+  nenhuma tradução de formato entre camadas.
+
+### 6.12 Injeção de dependência
+
+**[PROPOSTA]** Sem framework de DI (o projeto não usa um hoje — `material.storage.ts`
+exporta uma instância singleton diretamente). Manter o mesmo padrão, mas com seleção por
+config em vez de import direto da classe concreta:
+
+```typescript
+// shared/storage/index.ts
+
+export function criarProvedorDeArmazenamento(config: ConfiguracaoDeArmazenamento): ProvedorDeArmazenamento {
+  switch (config.tipo) {
+    case "google-drive":
+      return new ProvedorDeArmazenamentoGoogleDrive(config.googleDrive);
+    default:
+      throw new Error(`Provedor de armazenamento não suportado: ${config.tipo}`);
+  }
+}
+
+export const servicoDeArmazenamento: ServicoDeArmazenamento =
+  new ServicoDeArmazenamentoImpl(criarProvedorDeArmazenamento(env.storage));
+```
+
+Testes injetam um `ProvedorDeArmazenamento` fake diretamente no construtor de
+`ServicoDeArmazenamentoImpl`, sem precisar de mock de rede — mesmo padrão de isolamento que
+`ArmazenamentoDeMaterial` já permite hoje em `material.storage.test.ts`.
+
+### 6.13 Fluxos de sequência
+
+**Envio de material (fluxo só de Storage — a transição de estado da Entrega é do Gate 5,
+fora de escopo aqui):**
+
+```
+ServicoDeArmazenamento.enviarMaterialDaEntrega(entregaId, parceiraId, mesReferencia, ...)
+   │
+   ├─▶ resolverPastaDaColaboracao(parceiraId, mesReferencia)
+   │      │
+   │      ├─▶ ProvedorDeArmazenamento.listar(pastaDeParceirasId) — pasta já existe?
+   │      │      sim ─▶ retorna pastaId existente
+   │      │      não ─▶ criarPasta(parceiraId) ─▶ criarPasta(mesReferencia, sob a anterior)
+   │      ▼
+   │   pastaId resolvido
+   │
+   ├─▶ ProvedorDeArmazenamento.enviarArquivo({ pastaId, nomeArquivo, conteudo,
+   │      chaveDeIdempotencia: entregaId })
+   │      │
+   │      ├─▶ GoogleDrive: files.list (appProperties.chaveDeIdempotencia == entregaId)
+   │      │      encontrado ─▶ retorna recurso existente (idempotência, §6.7)
+   │      │      não encontrado ─▶ obterAccessTokenDrive() ─▶ files.create (multipart)
+   │      │                          │
+   │      │                          ├─ 401 ─▶ invalida cache de token ─▶ retenta 1x
+   │      │                          ├─ 429/5xx ─▶ comRetentativa (backoff, §6.6)
+   │      │                          └─ sucesso ─▶ RecursoDeArmazenamento
+   ▼
+RecursoDeArmazenamento devolvido ao chamador (Gate 5 decide o que fazer com ele)
+```
+
+**Renovação de token dentro de uma chamada (já implementado, reafirmado aqui por
+completude):**
+
+```
+ProvedorDeArmazenamentoGoogleDrive.<qualquer método>
+   │
+   ▼
+obterAccessTokenDrive()
+   │
+   ├─ cache válido (>60s de margem) ─▶ retorna token em memória, nenhuma chamada de rede
+   └─ cache ausente/expirando ─▶ POST oauth2.googleapis.com/token (grant_type=refresh_token)
+          │
+          ├─ sucesso ─▶ memoiza, retorna novo access_token
+          └─ falha ─▶ ErroOAuthGoogleDrive (propaga, sem retry automático nesta camada —
+                       retry de 401 é responsabilidade do provedor, não do cliente de token)
+```
+
+### 6.14 Estratégia de testes
+
+**[PROPOSTA]**
+
+- **Unitários — `ProvedorDeArmazenamentoGoogleDrive`:** `fetch` injetado como dependência
+  (mesmo padrão testável já usado implicitamente em `googleDriveClient.ts`, que usa o
+  `fetch` global — proposta aqui é torná-lo injetável explicitamente para teste, sem mudar o
+  comportamento em produção). Casos: sucesso de cada operação; `401` seguido de renovação e
+  sucesso; `429` seguido de backoff e sucesso; `404` sem retry; `403` não-rate-limit sem
+  retry; idempotência (segunda chamada com mesma `chaveDeIdempotencia` não gera novo
+  `files.create`).
+- **Unitários — `ServicoDeArmazenamento`:** `ProvedorDeArmazenamento` fake em memória (sem
+  rede nenhuma). Casos: provisionamento de pasta só na primeira chamada por
+  Parceira×MesReferencia; reuso de pasta em chamadas seguintes; erro do provedor propagado
+  como `ErroDeArmazenamento` traduzido, nunca cru.
+- **Integração manual (Gate 4, não em CI):** script análogo a `testarOAuthGoogleDrive.ts`
+  já existente, cobrindo a lista completa pedida pelo Gate 4 (criação de pasta, upload,
+  download, rename, delete, leitura, paginação, erro real de rede/limite, renovação de
+  token) contra a API real do Drive. Não roda em pipeline automatizado — mesma decisão já
+  tomada para o script de OAuth existente, por depender de credencial real.
+- **Fora de escopo do Gate 2/3:** teste e2e de upload funcional via HTTP — só existe a partir
+  do Gate 5, quando houver rota real.
 
 ## 7. Modelo de permissões
 
