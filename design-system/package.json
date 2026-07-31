@@ -1,0 +1,6 @@
+{
+  "name": "@criativododo/design-system",
+  "version": "3.1.0",
+  "private": true,
+  "main": "src/index.js"
+}

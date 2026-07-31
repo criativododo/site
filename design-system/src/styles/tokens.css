@@ -1,0 +1,62 @@
+/* Criativo Dodô — Design Tokens v3.1
+   Fonte: portal-frontend/src/styles/tokens.css (código real, autoridade final)
+   + DESIGN.md (auditoria de app/src e portal-frontend/src, 2026-07-28).
+   Não redefinir cor/tipografia aqui sem checar app/src/index.css primeiro —
+   em qualquer divergência, o código da Landing prevalece (ADR-001/ADR-004). */
+
+@font-face {
+  font-family: "Work Sans";
+  src: url("../../fonts/WorkSans.ttf") format("truetype-variations");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Elms Sans";
+  src: url("../../fonts/ElmsSans.ttf") format("truetype-variations");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  /* Cor — 4 tokens, sem "branco" separado (Cotton cumpre os dois papéis) */
+  --color-cotton: #edebdd; /* fundo neutro do sistema inteiro */
+  --color-cherry: #810100; /* ação, ênfase, identidade — 9.05:1 sobre cotton (AAA) */
+  --color-maroon: #630000; /* variação escura — nunca ao lado de cherry (1.27:1 entre si, reprova AA) */
+  --color-noir:   #1b1717; /* texto padrão — 14.84:1 sobre cotton (AAA) */
+
+  /* Tipografia — display=Work Sans, body=Elms Sans (confirmado contra o código;
+     nomes trocados no projeto avulso anterior — corrigido nesta versão) */
+  --font-display: "Work Sans", sans-serif;
+  --font-body: "Elms Sans", sans-serif;
+  /* pesos realmente usados em produção: 300, 400, 600, 700, 800 — nunca 100–299, 500 ou 900 */
+
+  /* Espaçamento — conjunto observado no código real (não é progressão geométrica fechada) */
+  --space-2: 2px; --space-6: 6px; --space-8: 8px; --space-10: 10px; --space-12: 12px;
+  --space-14: 14px; --space-16: 16px; --space-20: 20px; --space-24: 24px; --space-28: 28px;
+  --space-32: 32px; --space-36: 36px; --space-40: 40px; --space-48: 48px; --space-60: 60px;
+  --space-80: 80px; --space-120: 120px; --space-140: 140px;
+
+  /* Layout */
+  --container-max: 1026px;
+  --breakpoint-tablet: 1100px;
+  --breakpoint-mobile: 768px;
+
+  /* Raio, borda, elevação — vocabulário inteiramente do Portal (a Landing só usa --radius-pill) */
+  --radius-pill: 24px;       /* botão médio */
+  --radius-badge: 999px;     /* badge/status */
+  --radius-block: 12px;      /* .portal-list-row, .financeiro-kpi */
+  --radius-block-lg: 14px;   /* .pendencia-item */
+  --radius-field: 8px;       /* campo de formulário */
+  --border-hairline: 1px solid rgba(27, 23, 23, 0.1);
+  --border-hairline-strong: 1px solid rgba(27, 23, 23, 0.14);
+  --border-attention: 1px solid var(--color-cherry);
+  --bg-attention: rgba(129, 1, 0, 0.055);
+  --shadow-card: 0 10px 24px rgba(27, 23, 23, 0.07);
+  --shadow-cta: 0 6px 14px rgba(129, 1, 0, 0.18);
+
+  /* Motion — único token formal; prefers-reduced-motion é gap conhecido (DESIGN.md §13/§29),
+     não resolvido no produto real — qualquer novo trabalho de motion deve fechá-lo. */
+  --ease-editorial: cubic-bezier(0.25, 1, 0.5, 1);
+}
