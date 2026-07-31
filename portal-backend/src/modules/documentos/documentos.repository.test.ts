@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { TemplateRepositorioEmMemoria, TemplateVersaoRepositorioEmMemoria } from "./documentos.repository.js";
-import type { Template, TemplateVersao } from "./documentos.types.js";
+import {
+  DocumentoEmitidoRepositorioEmMemoria,
+  TemplateRepositorioEmMemoria,
+  TemplateVersaoRepositorioEmMemoria,
+} from "./documentos.repository.js";
+import type { DocumentoEmitido, Template, TemplateVersao } from "./documentos.types.js";
 
 function template(overrides: Partial<Template> = {}): Template {
   return {
@@ -126,5 +130,85 @@ describe("TemplateVersaoRepositorioEmMemoria — imutabilidade", () => {
     original.conteudo = "Alterado depois de criar — não deve refletir no repositório";
 
     expect((await repo.buscarPorId("v1"))?.conteudo).not.toBe(original.conteudo);
+  });
+});
+
+function documentoEmitido(overrides: Partial<DocumentoEmitido> = {}): DocumentoEmitido {
+  return {
+    id: "documento-1",
+    tipo: "CONTRATO",
+    templateVersaoId: "versao-1",
+    parceiraId: "parceira-1",
+    colaboracaoMensalId: null,
+    geradoEm: "2026-07-01T00:00:00.000Z",
+    geradoPor: "operador-1",
+    status: "GERADO",
+    hash: "hash-1",
+    urlStorage: "https://storage.example/documentos/documento-1.pdf",
+    storageFileId: "storage-file-1",
+    ...overrides,
+  };
+}
+
+describe("DocumentoEmitidoRepositorioEmMemoria.criar/buscarPorId/listarPorParceiraId", () => {
+  it("adiciona o DocumentoEmitido e o torna visível para as demais consultas", async () => {
+    const repo = new DocumentoEmitidoRepositorioEmMemoria([]);
+    const novo = documentoEmitido({ id: "novo" });
+
+    const criado = await repo.criar(novo);
+
+    expect(criado).toEqual(novo);
+    expect(await repo.buscarPorId("novo")).toEqual(novo);
+    expect(await repo.listarPorParceiraId("parceira-1")).toEqual([novo]);
+  });
+
+  it("retorna null para id inexistente", async () => {
+    const repo = new DocumentoEmitidoRepositorioEmMemoria([]);
+    expect(await repo.buscarPorId("nao-existe")).toBeNull();
+  });
+
+  it("lista apenas os documentos da parceiraId pedida", async () => {
+    const repo = new DocumentoEmitidoRepositorioEmMemoria([
+      documentoEmitido({ id: "d1", parceiraId: "parceira-a", hash: "hash-a" }),
+      documentoEmitido({ id: "d2", parceiraId: "parceira-b", hash: "hash-b" }),
+    ]);
+
+    expect(await repo.listarPorParceiraId("parceira-a")).toEqual([
+      documentoEmitido({ id: "d1", parceiraId: "parceira-a", hash: "hash-a" }),
+    ]);
+  });
+});
+
+describe("DocumentoEmitidoRepositorioEmMemoria — hash único", () => {
+  it("lança erro ao tentar criar um DocumentoEmitido com hash já registrado em outro", async () => {
+    const repo = new DocumentoEmitidoRepositorioEmMemoria([documentoEmitido({ id: "d1", hash: "hash-repetido" })]);
+
+    await expect(repo.criar(documentoEmitido({ id: "d2", hash: "hash-repetido" }))).rejects.toThrow();
+  });
+});
+
+describe("DocumentoEmitidoRepositorioEmMemoria — imutabilidade", () => {
+  it("preserva o documento anterior intacto quando um novo é criado", async () => {
+    const repo = new DocumentoEmitidoRepositorioEmMemoria([]);
+    const d1 = await repo.criar(documentoEmitido({ id: "d1", hash: "hash-1", status: "GERADO" }));
+    await repo.criar(documentoEmitido({ id: "d2", hash: "hash-2" }));
+
+    expect(await repo.buscarPorId("d1")).toEqual(d1);
+  });
+
+  it("não expõe operação de atualização ou remoção nesta etapa (workflow de emissão fora de escopo)", () => {
+    const repo = new DocumentoEmitidoRepositorioEmMemoria([]);
+    expect((repo as unknown as Record<string, unknown>).atualizar).toBeUndefined();
+    expect((repo as unknown as Record<string, unknown>).remover).toBeUndefined();
+  });
+
+  it("não é afetada por mutação do objeto original após a criação (cópia defensiva)", async () => {
+    const repo = new DocumentoEmitidoRepositorioEmMemoria([]);
+    const original = documentoEmitido({ id: "d1" });
+
+    await repo.criar(original);
+    original.status = "ARQUIVADO";
+
+    expect((await repo.buscarPorId("d1"))?.status).not.toBe(original.status);
   });
 });
