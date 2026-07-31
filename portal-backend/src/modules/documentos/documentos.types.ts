@@ -11,3 +11,18 @@ export interface Template {
   dataCriacao: string;
   dataAtualizacao: string;
 }
+
+/**
+ * Conteúdo publicado de um `Template`, numa versão específica (Fase 5, motor §1, critério de
+ * aceite: "TemplateVersao publicada é imutável; qualquer alteração cria nova versão").
+ * Por isso não existe `dataAtualizacao` nem operação de atualização/remoção no repositório —
+ * mudar o conteúdo sempre cria uma nova `TemplateVersao` com `numeroVersao` incrementado,
+ * preservando as versões anteriores intactas para o histórico.
+ */
+export interface TemplateVersao {
+  id: string;
+  templateId: string;
+  numeroVersao: number;
+  conteudo: string;
+  dataCriacao: string;
+}
