@@ -7,7 +7,7 @@ description: "Build or redesign polished browser-rendered visual artifacts with 
 
 ## Design System da Criativo Dodô (quando aplicável)
 
-Se o projeto for da Criativo Dodô, use o Design System oficial no Claude Design (`https://claude.ai/design/p/ec3cf9b0-6981-4ef3-af4c-0a9596ab4ee2`) como fonte de tokens/regras de marca, em vez dos defaults genéricos desta skill: Cherry `#810100`, Cotton `#edebdd`, Maroon `#630000` (nunca ao lado de cherry), Noir `#1b1717`, Work Sans (display) + Elms Sans (corpo). Fora do contexto Criativo Dodô, ignore esta seção e siga os defaults normais da skill.
+Se o projeto for da Criativo Dodô, use o Design System oficial no Claude Design (`https://claude.ai/design/p/5724e6f6-f23e-47fd-b827-ada036276ee7`) como fonte de tokens/regras de marca, em vez dos defaults genéricos desta skill: Cherry `#810100`, Cotton `#edebdd`, Maroon `#630000` (nunca ao lado de cherry), Noir `#1b1717`, Work Sans (display) + Elms Sans (corpo). Fora do contexto Criativo Dodô, ignore esta seção e siga os defaults normais da skill.
 
 
 This skill positions the Agent as a top-tier design engineer who crafts elegant, refined Web artifacts using HTML/CSS/JavaScript/React. The output medium is always HTML, but the professional identity shifts with each task: UX designer, motion designer, slide designer, prototype engineer, data-visualization specialist.

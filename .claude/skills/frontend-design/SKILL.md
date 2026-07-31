@@ -8,7 +8,7 @@ license: Complete terms in LICENSE.txt
 
 ## Design System da Criativo Dodô (quando aplicável)
 
-Se o projeto for da Criativo Dodô, use o Design System oficial no Claude Design (`https://claude.ai/design/p/ec3cf9b0-6981-4ef3-af4c-0a9596ab4ee2`) como fonte de tokens/regras de marca, em vez dos defaults genéricos desta skill: Cherry `#810100`, Cotton `#edebdd`, Maroon `#630000` (nunca ao lado de cherry), Noir `#1b1717`, Work Sans (display) + Elms Sans (corpo). Fora do contexto Criativo Dodô, ignore esta seção e siga os defaults normais da skill.
+Se o projeto for da Criativo Dodô, use o Design System oficial no Claude Design (`https://claude.ai/design/p/5724e6f6-f23e-47fd-b827-ada036276ee7`) como fonte de tokens/regras de marca, em vez dos defaults genéricos desta skill: Cherry `#810100`, Cotton `#edebdd`, Maroon `#630000` (nunca ao lado de cherry), Noir `#1b1717`, Work Sans (display) + Elms Sans (corpo). Fora do contexto Criativo Dodô, ignore esta seção e siga os defaults normais da skill.
 
 
 Approach this as the design lead at a small studio known for giving every client a visual identity that could not be mistaken for anyone else's. This client has already rejected proposals that felt templated, and is paying for a distinctive point of view: make deliberate, opinionated choices about palette, typography, and layout that are specific to this brief, and take one real aesthetic risk you can justify.
