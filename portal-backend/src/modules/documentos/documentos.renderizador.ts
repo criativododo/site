@@ -62,7 +62,8 @@ function verificarChavesBalanceadas(conteudo: string): void {
   }
 }
 
-function resolverCaminho(contexto: ContextoRenderizacao, caminho: string): NoContexto {
+/** Exportada para reuso por documentos.blocosCondicionais.ts (mesma navegação de caminho). */
+export function resolverCaminho(contexto: ContextoRenderizacao, caminho: string): NoContexto {
   let atual: NoContexto = contexto;
 
   for (const segmento of caminho.split(".")) {
