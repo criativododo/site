@@ -1,7 +1,9 @@
 /**
  * Renderizador de placeholders (Fase 5, motor §1.5) — Incremento 1: só substituição de
- * `{{namespace.campo}}` por valor do contexto. Sem blocos condicionais (Incremento 2) e sem
- * integração com AuditLog para PII (Incremento 3).
+ * `{{namespace.campo}}` por valor do contexto. Blocos condicionais em
+ * `documentos.blocosCondicionais.ts` (Incremento 2); integração com AuditLog para PII em
+ * `documentos.renderizadorAuditado.ts` (Incremento 3) — este módulo permanece puro de
+ * propósito, nunca ganha o import da `Porta` de auditoria.
  *
  * Função pura: sem I/O, sem acesso a banco — quem chama monta o `ContextoRenderizacao` já
  * pronto. HTML é o formato oficial de `TemplateVersao.conteudo`: todo valor substituído sofre
