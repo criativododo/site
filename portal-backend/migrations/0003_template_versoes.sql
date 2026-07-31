@@ -2,10 +2,14 @@
 -- Template (critério de aceite: "TemplateVersao publicada é imutável; qualquer alteração
 -- cria nova versão"). Sem coluna `data_atualizacao` de propósito: não existe update.
 --
--- `template_id` é texto sem FK: `templates` ainda não tem tabela Postgres (Template segue só
--- em memória, fora do escopo desta etapa) — mesma convenção já usada em `parceira_id` nas
--- migrações 0001/0002 (referência por id em texto, sem FK, quando a tabela referenciada não
--- existe ou o vínculo formal ainda não foi decidido).
+-- `template_id` é texto sem FK. Decisão de consistência de padrão de schema, não limitação
+-- técnica: este projeto já convive com referências sem FK apontando para tabelas que existem
+-- (`parceira_id` em `entregas`/`briefings`/`obrigacoes_financeiras` nunca teve FK para
+-- `parceiras`, mesmo com a tabela presente desde 0001_init.sql). `templates` ainda não tem
+-- tabela Postgres nesta etapa, mas mesmo quando a migração 0004 criar essa tabela, esta coluna
+-- permanece intencionalmente sem `REFERENCES templates (id)` — não é um FK adiado a ser
+-- "corrigido" depois, é o padrão vigente do schema. Só migrações que formalizam um vínculo
+-- novo (ex.: 0002_colaboracao_mensal.sql, ADR-016) adicionam FK explícito.
 --
 -- UNIQUE (template_id, numero_versao) garante no banco que a numeração de versão nunca colide
 -- para o mesmo template, reforçando a imutabilidade a nível de dado.

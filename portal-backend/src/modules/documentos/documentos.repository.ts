@@ -2,11 +2,6 @@ import type { Pool } from "pg";
 import { pool } from "../../config/database.js";
 import type { Template, TemplateVersao } from "./documentos.types.js";
 
-/**
- * Fase 5 (scaffold): só a versão em memória. Persistência Postgres + migração de `Template`
- * ficam para uma próxima etapa desta fase — fora do escopo da etapa que implementou
- * `TemplateVersao` (imutável, com persistência Postgres própria mais abaixo).
- */
 export class TemplateRepositorioEmMemoria {
   private templates: Template[];
 
@@ -45,6 +40,81 @@ export class TemplateRepositorioEmMemoria {
     this.templates.splice(indice, 1);
   }
 }
+
+interface LinhaTemplate {
+  id: string;
+  nome: string;
+  descricao: string;
+  ativo: boolean;
+  dataCriacao: Date;
+  dataAtualizacao: Date;
+}
+
+function paraTemplate(linha: LinhaTemplate): Template {
+  return {
+    id: linha.id,
+    nome: linha.nome,
+    descricao: linha.descricao,
+    ativo: linha.ativo,
+    dataCriacao: linha.dataCriacao.toISOString(),
+    dataAtualizacao: linha.dataAtualizacao.toISOString(),
+  };
+}
+
+const SELECT_COLUNAS_TEMPLATE = `
+  id, nome, descricao, ativo, data_criacao AS "dataCriacao", data_atualizacao AS "dataAtualizacao"
+`;
+
+/** Fase 5 do Plano Mestre: mesma interface pública da versão em memória (padrão do módulo briefing). */
+export class TemplateRepositorioPostgres {
+  constructor(private readonly db: Pool) {}
+
+  async listarTodos(): Promise<Template[]> {
+    const resultado = await this.db.query<LinhaTemplate>(`SELECT ${SELECT_COLUNAS_TEMPLATE} FROM templates`);
+    return resultado.rows.map(paraTemplate);
+  }
+
+  async buscarPorId(id: string): Promise<Template | null> {
+    const resultado = await this.db.query<LinhaTemplate>(
+      `SELECT ${SELECT_COLUNAS_TEMPLATE} FROM templates WHERE id = $1`,
+      [id],
+    );
+    return resultado.rows[0] ? paraTemplate(resultado.rows[0]) : null;
+  }
+
+  async criar(template: Template): Promise<Template> {
+    const resultado = await this.db.query<LinhaTemplate>(
+      `INSERT INTO templates (id, nome, descricao, ativo, data_criacao, data_atualizacao)
+       VALUES ($1, $2, $3, $4, $5, $6)
+       RETURNING ${SELECT_COLUNAS_TEMPLATE}`,
+      [template.id, template.nome, template.descricao, template.ativo, template.dataCriacao, template.dataAtualizacao],
+    );
+    return paraTemplate(resultado.rows[0]);
+  }
+
+  async atualizar(templateAtualizado: Template): Promise<Template> {
+    const resultado = await this.db.query<LinhaTemplate>(
+      `UPDATE templates SET
+         nome = $2, descricao = $3, ativo = $4, data_atualizacao = now()
+       WHERE id = $1
+       RETURNING ${SELECT_COLUNAS_TEMPLATE}`,
+      [templateAtualizado.id, templateAtualizado.nome, templateAtualizado.descricao, templateAtualizado.ativo],
+    );
+    if (!resultado.rows[0]) {
+      throw new Error(`Template inexistente para atualização: ${templateAtualizado.id}`);
+    }
+    return paraTemplate(resultado.rows[0]);
+  }
+
+  async remover(id: string): Promise<void> {
+    const resultado = await this.db.query(`DELETE FROM templates WHERE id = $1`, [id]);
+    if (resultado.rowCount === 0) {
+      throw new Error(`Template inexistente para remoção: ${id}`);
+    }
+  }
+}
+
+export const templateRepositorio = new TemplateRepositorioPostgres(pool);
 
 /**
  * Sem `atualizar`/`remover` de propósito: `TemplateVersao` é imutável (ver comentário em
@@ -99,8 +169,9 @@ const SELECT_COLUNAS_VERSAO = `
 
 /**
  * Sem `atualizar`/`remover` — mesma imutabilidade estrutural da versão em memória. `template_id`
- * é texto sem FK: `templates` ainda não tem tabela Postgres (Template segue só em memória),
- * mesma convenção já usada em `parceira_id` nas migrações da Fase 1/2.
+ * é texto sem FK por consistência de padrão de schema (não por limitação técnica — ver
+ * comentário completo em `migrations/0003_template_versoes.sql`), mesma convenção de
+ * `parceira_id`. Continua assim mesmo após a migração 0004 dar tabela Postgres a `Template`.
  */
 export class TemplateVersaoRepositorioPostgres {
   constructor(private readonly db: Pool) {}
