@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import { PortalLayout } from "./components/PortalLayout";
 import { RotaProtegida } from "./components/RotaProtegida";
+import { useSession } from "./lib/session";
 import { AdminPage } from "./pages/Admin";
 import { AdminBriefingsPage } from "./pages/AdminBriefings";
 import { AdminColaboracoesMensaisPage } from "./pages/AdminColaboracoesMensais";
@@ -15,6 +16,27 @@ import { LoginPage } from "./pages/Login";
 import { PendenciasPage } from "./pages/Pendencias";
 import { PerfilPage } from "./pages/Perfil";
 import { PrivacidadePage } from "./pages/Privacidade";
+
+/**
+ * Espelha a regra de destino pós-login do backend (auth.routes.ts: callback do Google) para
+ * os casos em que o app carrega direto na raiz ou numa rota não mapeada com sessão já
+ * existente — sem isso, todo papel caía em /pendencias (exclusiva de Parceira).
+ */
+function RedirecionamentoInicial() {
+	const { sessao, carregando } = useSession();
+
+	if (carregando) {
+		return null;
+	}
+
+	if (!sessao || sessao.estadoConta !== "ACTIVE") {
+		return <Navigate to="/login" replace />;
+	}
+
+	const destino =
+		sessao.papelAtor === "ADMINISTRADOR" ? "/admin/dashboard" : "/pendencias";
+	return <Navigate to={destino} replace />;
+}
 
 function App() {
 	return (
@@ -46,8 +68,8 @@ function App() {
 				<Route path="/admin" element={<AdminPage />} />
 			</Route>
 
-			<Route path="/" element={<Navigate to="/pendencias" replace />} />
-			<Route path="*" element={<Navigate to="/pendencias" replace />} />
+			<Route path="/" element={<RedirecionamentoInicial />} />
+			<Route path="*" element={<RedirecionamentoInicial />} />
 		</Routes>
 	);
 }
