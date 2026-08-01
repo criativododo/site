@@ -32,15 +32,21 @@ npm ci
 npm run build
 mkdir -p logs
 
+echo "==> Backend: aplicando migrações pendentes (idempotente, tsx scripts/migrate.ts)"
+npm run db:migrate
+
 echo "==> Frontend: instalando dependências e buildando"
 cd "$REPO_DIR/portal-frontend"
 npm ci
 npm run build
 
-echo "==> Publicando build do frontend em /var/www/dodo-portal/portal-frontend/dist"
-# Ajustar o destino se o server_name/root do deploy/nginx.conf for diferente.
-sudo mkdir -p /var/www/dodo-portal/portal-frontend
-sudo rsync -a --delete "$REPO_DIR/portal-frontend/dist/" /var/www/dodo-portal/portal-frontend/dist/
+echo "==> Publicando build do frontend em /var/www/portal-criativododo"
+# Caminho reconciliado em 01/08/2026: é o que o nginx de produção de fato serve (root do
+# server_name portal.criativododo.com.br) — ajustar aqui e em deploy/nginx.conf juntos se
+# o root mudar de novo.
+sudo mkdir -p /var/www/portal-criativododo
+sudo rsync -a --delete "$REPO_DIR/portal-frontend/dist/" /var/www/portal-criativododo/
+sudo chown -R www-data:www-data /var/www/portal-criativododo
 
 echo "==> Reiniciando backend via PM2"
 cd "$REPO_DIR"
