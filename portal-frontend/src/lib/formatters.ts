@@ -31,3 +31,14 @@ export function mesReferenciaCorrente(): string {
 	const mes = String(agora.getUTCMonth() + 1).padStart(2, "0");
 	return `${ano}-${mes}`;
 }
+
+/**
+ * Bloco 2 do Dashboard editorial ("o que vem a seguir") — traduz a contagem de dias que o
+ * backend já calculou (`ProximoPrazo.diasRestantes`) para a frase em português; o Portal não
+ * recalcula a data, só formata.
+ */
+export function formatarPrazoRelativo(diasRestantes: number): string {
+	if (diasRestantes <= 0) return "vence hoje";
+	if (diasRestantes === 1) return "vence amanhã";
+	return `vence em ${diasRestantes} dias`;
+}

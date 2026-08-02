@@ -677,6 +677,78 @@ textarea:focus-visible {
 .pendencias-group + .pendencias-group {
 	margin-top: 32px;
 }
+
+/*
+ * Dashboard editorial (Sprint 2, ART_DIRECTION_GUIDE.md): 3 blocos de peso decrescente.
+ * Sem caixa/borda por item (§1 "sublinhar, não emoldurar") — ênfase é sublinhado no
+ * hover/foco, nunca contorno. Sem grade simétrica (§2 anti-princípio).
+ */
+.dashboard-bloco.is-normalidade {
+	margin-top: 56px;
+}
+
+.dashboard-acao-item {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 16px;
+	padding: 10px 0;
+	color: inherit;
+	text-decoration: none;
+}
+.dashboard-acao-item-label {
+	font-size: 15px;
+}
+.dashboard-acao-item:hover .dashboard-acao-item-label,
+.dashboard-acao-item:focus-visible .dashboard-acao-item-label {
+	text-decoration: underline;
+	text-underline-offset: 4px;
+}
+.dashboard-acao-item-valor {
+	font-family: var(--font-display);
+	font-size: 22px;
+	font-weight: 700;
+	flex-shrink: 0;
+}
+.dashboard-acao-item.is-destaque .dashboard-acao-item-valor {
+	color: var(--color-cherry);
+}
+.dashboard-acao-item-justificativa {
+	display: block;
+	margin-top: 2px;
+	font-size: 13px;
+	color: var(--color-grafite-70);
+}
+
+.dashboard-prazo-lista {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+.dashboard-prazo-item {
+	display: flex;
+	justify-content: space-between;
+	gap: 16px;
+	font-size: 14px;
+}
+.dashboard-prazo-item-quando {
+	flex-shrink: 0;
+	color: var(--color-grafite-70);
+	white-space: nowrap;
+}
+.dashboard-prazo-vazio {
+	font-size: 14px;
+	color: var(--color-grafite-70);
+}
+
+.dashboard-normalidade {
+	max-width: 480px;
+	margin-top: 8px;
+	font-size: 15px;
+	line-height: 1.7;
+	color: var(--color-grafite-90);
+}
+
 .pendencias-aviso {
 	margin-bottom: 14px;
 	font-size: 14px;
