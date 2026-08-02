@@ -10,7 +10,7 @@ ciclo de colaboração mensal — cadastro, aprovação, briefings, entrega/uplo
 aprovação de materiais, pagamentos, contratos e histórico/auditoria.
 
 Organização oficial no GitHub: **criativododo**. Este repositório é o único do ecossistema
-web do projeto: `https://github.com/criativododo/criativododosite`. Referências a contas,
+web do projeto: `https://github.com/criativododo/site`. Referências a contas,
 organizações, remotes ou URLs de repositório diferentes desta são legado.
 
 ## Estado físico real do repositório (não presumir, verificar)

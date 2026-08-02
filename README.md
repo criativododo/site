@@ -15,7 +15,7 @@ aprovação de conteúdo, pagamentos, contratos e histórico/auditoria.
 > `knowledge/PROJECT_SOURCE_OF_TRUTH.md`.
 
 Organização oficial no GitHub: **criativododo**. Este repositório:
-`https://github.com/criativododo/criativododosite`.
+`https://github.com/criativododo/site`.
 
 ---
 
