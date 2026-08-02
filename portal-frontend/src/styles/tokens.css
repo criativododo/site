@@ -26,6 +26,23 @@
 	--color-maroon: #630000;
 	--color-noir: #1b1717;
 
+	/*
+	 * Superfície "papel" (ART_DIRECTION_GUIDE.md §7): fundo de leitura geral do Portal,
+	 * mais claro que o cotton, sem perder o subtom quente do papel. Cotton fica reservado
+	 * a blocos/cartões que merecem destaque de superfície (ex.: sidebar).
+	 */
+	--color-paper: color-mix(in srgb, var(--color-cotton) 55%, white);
+
+	/*
+	 * Escala de grafite (ART_DIRECTION_GUIDE.md §7): tons neutros derivados de --color-noir
+	 * por mistura com a superfície de papel, para texto secundário e estrutura (bordas,
+	 * divisores) — substitui rgba(27,23,23,X) ad-hoc por token formal.
+	 */
+	--color-grafite-90: color-mix(in srgb, var(--color-noir) 90%, var(--color-paper));
+	--color-grafite-70: color-mix(in srgb, var(--color-noir) 70%, var(--color-paper));
+	--color-grafite-40: color-mix(in srgb, var(--color-noir) 40%, var(--color-paper));
+	--color-grafite-15: color-mix(in srgb, var(--color-noir) 15%, var(--color-paper));
+
 	--font-display: "Work Sans", sans-serif;
 	--font-body: "Elms Sans", sans-serif;
 
