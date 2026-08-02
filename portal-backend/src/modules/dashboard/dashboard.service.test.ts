@@ -90,6 +90,7 @@ describe("calcularIndicadores", () => {
       financeiro: { pendentes: 0, valorPendente: 0 },
       lgpd: { solicitacoesExclusaoPendentes: 0 },
       moderacao: { contasPendentes: 0 },
+      proximosPrazos: [],
     });
   });
 
