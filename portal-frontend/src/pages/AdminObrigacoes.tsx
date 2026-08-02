@@ -70,48 +70,6 @@ const LABEL_ESTADO_ENTREGA: Record<EstadoEntrega, string> = {
 };
 
 
-const estiloInput = {
-	height: 40,
-	borderRadius: 8,
-	border: "1px solid rgba(27, 23, 23, 0.2)",
-	padding: "0 12px",
-	fontSize: 14,
-	fontWeight: 400,
-} as const;
-
-const estiloLabel = {
-	display: "flex",
-	flexDirection: "column",
-	gap: 6,
-	fontSize: 13,
-	fontWeight: 700,
-} as const;
-
-const estiloBotaoOutlineNeutro = {
-	height: 36,
-	padding: "0 16px",
-	fontSize: 13,
-	borderRadius: 24,
-	border: "1px solid rgba(27, 23, 23, 0.2)",
-	background: "none",
-} as const;
-
-const estiloBotaoOutlineCherry = {
-	height: 36,
-	padding: "0 16px",
-	fontSize: 13,
-	borderRadius: 24,
-	border: "1px solid var(--color-cherry)",
-	background: "none",
-	color: "var(--color-cherry)",
-} as const;
-
-const estiloBotaoPrimarioPequeno = {
-	height: 36,
-	padding: "0 16px",
-	fontSize: 13,
-} as const;
-
 /** UC-020.01 (Mensal) / UC-020.02 (Avulso) — Mensal só lista Parceiras ATIVA; Avulso, qualquer uma. */
 function FormularioNovaObrigacao({
 	parceiras,
@@ -184,24 +142,15 @@ function FormularioNovaObrigacao({
 	}
 
 	return (
-		<div
-			style={{
-				display: "grid",
-				gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-				gap: 12,
-				marginTop: 16,
-				paddingTop: 16,
-				borderTop: "1px solid rgba(27, 23, 23, 0.1)",
-			}}
-		>
-			<label style={estiloLabel}>
+		<div className="admin-form-grid">
+			<label className="admin-field">
 				tipo
 				<select
+					className="admin-select"
 					value={tipo}
 					onChange={(evento) =>
 						aoTrocarTipo(evento.target.value as TipoObrigacao)
 					}
-					style={estiloInput}
 				>
 					<option value="MENSAL">mensal</option>
 					<option value="AVULSO">avulso</option>
@@ -209,21 +158,18 @@ function FormularioNovaObrigacao({
 			</label>
 
 			{parceirasDisponiveis.length === 0 ? (
-				<p
-					className="portal-page-feedback is-error"
-					style={{ margin: 0, gridColumn: "1 / -1" }}
-				>
+				<p className="portal-page-feedback is-error admin-form-error">
 					{tipo === "MENSAL"
 						? "nenhuma parceira ativa cadastrada — ative uma parceira antes de lançar obrigação mensal."
 						: "nenhuma parceira cadastrada ainda."}
 				</p>
 			) : (
-				<label style={estiloLabel}>
+				<label className="admin-field">
 					parceira
 					<select
+						className="admin-select"
 						value={parceiraId}
 						onChange={(evento) => setParceiraId(evento.target.value)}
-						style={estiloInput}
 					>
 						{parceirasDisponiveis.map((parceira) => (
 							<option key={parceira.id} value={parceira.id}>
@@ -234,59 +180,44 @@ function FormularioNovaObrigacao({
 				</label>
 			)}
 
-			<label style={estiloLabel}>
+			<label className="admin-field">
 				competência (aaaa-mm)
 				<input
+					className="admin-input"
 					value={mesReferencia}
 					onChange={(evento: ChangeEvent<HTMLInputElement>) =>
 						setMesReferencia(evento.target.value)
 					}
 					placeholder="2026-07"
-					style={estiloInput}
 				/>
 			</label>
 
-			<label style={estiloLabel}>
+			<label className="admin-field">
 				valor (r$)
 				<input
+					className="admin-input"
 					type="number"
 					value={valor}
 					onChange={(evento) => setValor(evento.target.value)}
-					style={estiloInput}
 				/>
 			</label>
 
 			{erro && (
-				<p
-					className="portal-page-feedback is-error"
-					style={{ margin: 0, gridColumn: "1 / -1" }}
-				>
+				<p className="portal-page-feedback is-error admin-form-error">
 					{erro}
 				</p>
 			)}
 
-			<div
-				style={{
-					display: "flex",
-					gap: 8,
-					alignItems: "center",
-					gridColumn: "1 / -1",
-				}}
-			>
+			<div className="admin-form-actions">
 				<button
 					type="button"
-					className="btn-primary"
+					className="btn-primary is-compact"
 					disabled={salvando || parceirasDisponiveis.length === 0}
 					onClick={() => void salvar()}
-					style={estiloBotaoPrimarioPequeno}
 				>
 					{salvando ? "salvando..." : "salvar"}
 				</button>
-				<button
-					type="button"
-					onClick={aoCancelar}
-					style={{ ...estiloBotaoOutlineNeutro, border: "none" }}
-				>
+				<button type="button" className="btn-plain" onClick={aoCancelar}>
 					cancelar
 				</button>
 			</div>
@@ -334,45 +265,30 @@ function FormularioEdicaoValor({
 	}
 
 	return (
-		<div
-			style={{
-				display: "flex",
-				gap: 12,
-				alignItems: "flex-end",
-				marginTop: 16,
-				paddingTop: 16,
-				borderTop: "1px solid rgba(27, 23, 23, 0.1)",
-				flexWrap: "wrap",
-			}}
-		>
-			<label style={estiloLabel}>
+		<div className="admin-form-inline">
+			<label className="admin-field">
 				valor (r$)
 				<input
+					className="admin-input"
 					type="number"
 					value={valor}
 					onChange={(evento) => setValor(evento.target.value)}
-					style={estiloInput}
 				/>
 			</label>
 			{erro && (
-				<p className="portal-page-feedback is-error" style={{ margin: 0 }}>
+				<p className="portal-page-feedback is-error admin-form-error">
 					{erro}
 				</p>
 			)}
 			<button
 				type="button"
-				className="btn-primary"
+				className="btn-primary is-compact"
 				disabled={salvando}
 				onClick={() => void salvar()}
-				style={estiloBotaoPrimarioPequeno}
 			>
 				{salvando ? "salvando..." : "salvar"}
 			</button>
-			<button
-				type="button"
-				onClick={aoCancelar}
-				style={{ ...estiloBotaoOutlineNeutro, border: "none" }}
-			>
+			<button type="button" className="btn-plain" onClick={aoCancelar}>
 				cancelar
 			</button>
 		</div>
@@ -414,26 +330,15 @@ function LinhaObrigacao({
 	return (
 		<li className="portal-list-row operational-row">
 			<span
-				className="portal-list-row-status"
-				style={{
-					fontWeight: 700,
-					color:
-						obrigacao.estado === "PAGO" ? "inherit" : "var(--color-cherry)",
-				}}
+				className={`portal-list-row-status status-pill${obrigacao.estado !== "PAGO" ? " is-alert" : ""}`}
 			>
 				{LABEL_ESTADO[obrigacao.estado]}
 			</span>
 
 			<button
 				type="button"
+				className="admin-row-title-button"
 				onClick={aoAlternarDetalhes}
-				style={{
-					textAlign: "left",
-					background: "none",
-					border: "none",
-					padding: 0,
-					cursor: "pointer",
-				}}
 			>
 				<strong className="portal-list-row-title">{nomeParceira}</strong>
 				<p className="portal-list-row-meta">
@@ -459,28 +364,23 @@ function LinhaObrigacao({
 			<div className="portal-list-row-actions">
 				{obrigacao.estado === "EM_ABERTO" && (
 					<>
-						<button
-							type="button"
-							onClick={aoAlternarEdicao}
-							style={estiloBotaoOutlineNeutro}
-						>
+						<button type="button" className="btn-outline" onClick={aoAlternarEdicao}>
 							{editando ? "fechar edição" : "editar"}
 						</button>
 						<button
 							type="button"
-							className="btn-primary"
+							className="btn-primary is-compact"
 							disabled={!podeLiberar || emAcao}
 							onClick={aoLiberar}
 							title={motivoBloqueioLiberacao}
-							style={estiloBotaoPrimarioPequeno}
 						>
 							{emAcao ? "..." : "liberar"}
 						</button>
 						<button
 							type="button"
+							className="btn-outline is-cherry"
 							disabled={emAcao}
 							onClick={aoRemover}
-							style={estiloBotaoOutlineCherry}
 						>
 							{emAcao ? "..." : "remover"}
 						</button>
@@ -489,10 +389,9 @@ function LinhaObrigacao({
 				{obrigacao.estado === "APROVADO" && (
 					<button
 						type="button"
-						className="btn-primary"
+						className="btn-primary is-compact"
 						disabled={emAcao}
 						onClick={aoPagar}
-						style={estiloBotaoPrimarioPequeno}
 					>
 						{emAcao ? "..." : "marcar como pago"}
 					</button>
@@ -505,16 +404,8 @@ function LinhaObrigacao({
 			</div>
 
 			{expandida && (
-				<div
-					style={{
-						gridColumn: "1 / -1",
-						paddingTop: 12,
-						marginTop: 4,
-						borderTop: "1px solid rgba(27, 23, 23, 0.1)",
-						width: "100%",
-					}}
-				>
-					<p style={{ fontWeight: 700, fontSize: 13, marginBottom: 8 }}>
+				<div className="admin-row-expanded">
+					<p className="admin-row-expanded-heading">
 						entregas da competência ({obrigacao.entregasDaCompetencia.length})
 					</p>
 					{obrigacao.entregasDaCompetencia.length === 0 ? (
@@ -522,7 +413,7 @@ function LinhaObrigacao({
 							nenhuma entrega nesta competência.
 						</p>
 					) : (
-						<ul style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+						<ul className="portal-list is-tight">
 							{obrigacao.entregasDaCompetencia.map((item) => (
 								<li key={item.id} className="portal-list-row-meta">
 									{LABEL_FORMATO[item.formato]} —{" "}
@@ -536,7 +427,7 @@ function LinhaObrigacao({
 			)}
 
 			{editando && (
-				<div style={{ gridColumn: "1 / -1", width: "100%" }}>
+				<div className="admin-row-editing">
 					<FormularioEdicaoValor
 						obrigacao={obrigacao}
 						aoSalvarComSucesso={aoSalvarEdicao}
@@ -700,7 +591,7 @@ export function AdminObrigacoesPage() {
 	}
 
 	return (
-		<section className="portal-page" style={{ maxWidth: 1080 }}>
+		<section className="portal-page is-admin-wide">
 			<p className="portal-eyebrow">administração</p>
 			<h1 className="title-editorial portal-page-title">obrigações</h1>
 			<p className="portal-page-intro">
@@ -717,32 +608,24 @@ export function AdminObrigacoesPage() {
 
 			{!carregando && obrigacoes && (
 				<>
-					<div
-						style={{
-							display: "flex",
-							flexWrap: "wrap",
-							gap: 12,
-							alignItems: "flex-end",
-							marginBottom: 16,
-						}}
-					>
-						<label style={{ ...estiloLabel, flex: "2 1 220px" }}>
+					<div className="admin-toolbar">
+						<label className="admin-field is-wide">
 							buscar por parceira
 							<input
+								className="admin-input"
 								placeholder="nome da parceira"
 								value={busca}
 								onChange={(evento) => setBusca(evento.target.value)}
-								style={estiloInput}
 							/>
 						</label>
-						<label style={{ ...estiloLabel, flex: "1 1 170px" }}>
+						<label className="admin-field is-narrow">
 							estado
 							<select
+								className="admin-select"
 								value={filtroEstado}
 								onChange={(evento) =>
 									setFiltroEstado(evento.target.value as FiltroEstado)
 								}
-								style={estiloInput}
 							>
 								<option value="TODOS">todos</option>
 								{Object.entries(LABEL_ESTADO).map(([valor, rotulo]) => (
@@ -754,22 +637,15 @@ export function AdminObrigacoesPage() {
 						</label>
 						<button
 							type="button"
-							className="btn-primary"
+							className="btn-primary is-medium"
 							onClick={() => setFormularioAberto((atual) => !atual)}
-							style={{ height: 40, padding: "0 24px", fontSize: 14 }}
 						>
 							{formularioAberto ? "fechar" : "+ nova obrigação"}
 						</button>
 					</div>
 
 					{formularioAberto && (
-						<div
-							style={{
-								marginBottom: 24,
-								paddingBottom: 24,
-								borderBottom: "1px solid rgba(27, 23, 23, 0.1)",
-							}}
-						>
+						<div className="admin-form-panel">
 							<FormularioNovaObrigacao
 								parceiras={parceiras ?? []}
 								aoSalvarComSucesso={(nova) => {

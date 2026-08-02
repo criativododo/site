@@ -328,7 +328,7 @@ function LinhaParceira({
 			)}
 
 			{editando && (
-				<div style={{ gridColumn: "1 / -1", width: "100%" }}>
+				<div className="admin-row-editing">
 					<FormularioParceira
 						parceira={parceira}
 						aoSalvarComSucesso={aoSalvarEdicao}
@@ -502,7 +502,7 @@ export function AdminParceirasPage() {
 								onChange={(evento) => setBusca(evento.target.value)}
 							/>
 						</label>
-						<label className="admin-field" style={{ flex: "1 1 140px" }}>
+						<label className="admin-field is-compact">
 							status
 							<select
 								className="admin-select"

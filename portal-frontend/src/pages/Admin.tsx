@@ -67,17 +67,16 @@ function GerarConvite() {
 	return (
 		<div className="portal-section-divider">
 			<p className="pendencias-summary is-quiet">links de convite pré-aprovado</p>
-			<p className="portal-page-feedback" style={{ marginTop: 4, marginBottom: 12 }}>
+			<p className="portal-page-feedback is-caption">
 				quem se cadastra por um destes links entra direto, sem passar pela fila de
 				aprovação abaixo.
 			</p>
 
 			<button
 				type="button"
-				className="btn-primary"
+				className="btn-primary is-compact"
 				disabled={gerando}
 				onClick={() => void gerar()}
-				style={{ height: 36, padding: "0 20px", fontSize: 13 }}
 			>
 				{gerando ? "gerando..." : "gerar novo link"}
 			</button>
@@ -85,20 +84,11 @@ function GerarConvite() {
 			{erro && <p className="portal-page-feedback is-error">{erro}</p>}
 
 			{convites && convites.length > 0 && (
-				<ul className="portal-list" style={{ marginTop: 16 }}>
+				<ul className="portal-list is-spaced">
 					{convites.map((convite) => (
 						<li key={convite.token} className="portal-list-row">
-							<div style={{ minWidth: 0, width: "100%", maxWidth: "100%" }}>
-								<strong
-									className="portal-list-row-title"
-									style={{
-										display: "block",
-										maxWidth: "100%",
-										overflow: "hidden",
-										textOverflow: "ellipsis",
-										whiteSpace: "nowrap",
-									}}
-								>
+							<div className="portal-list-row-body">
+								<strong className="portal-list-row-title text-truncate">
 									{convite.url}
 								</strong>
 								<p className="portal-list-row-meta">
@@ -108,15 +98,8 @@ function GerarConvite() {
 							<div className="portal-list-row-actions">
 								<button
 									type="button"
+									className="btn-outline"
 									onClick={() => void copiar(convite.url)}
-									style={{
-										height: 36,
-										padding: "0 20px",
-										fontSize: 13,
-										borderRadius: 24,
-										border: "1px solid rgba(27, 23, 23, 0.2)",
-										background: "none",
-									}}
 								>
 									{copiado === convite.url ? "copiado!" : "copiar"}
 								</button>
@@ -224,26 +207,17 @@ function FilaDeExclusao({
 							<div className="portal-list-row-actions">
 								<button
 									type="button"
-									className="btn-primary"
+									className="btn-primary is-compact"
 									disabled={emAcao === solicitacao.id}
 									onClick={() => void decidir(solicitacao.id, true)}
-									style={{ height: 36, padding: "0 20px", fontSize: 13 }}
 								>
 									aprovar
 								</button>
 								<button
 									type="button"
+									className="btn-outline is-cherry"
 									disabled={emAcao === solicitacao.id}
 									onClick={() => void decidir(solicitacao.id, false)}
-									style={{
-										height: 36,
-										padding: "0 20px",
-										fontSize: 13,
-										borderRadius: 24,
-										border: "1px solid var(--color-cherry)",
-										background: "none",
-										color: "var(--color-cherry)",
-									}}
 								>
 									negar
 								</button>
@@ -343,26 +317,17 @@ export function AdminPage() {
 							<div className="portal-list-row-actions">
 								<button
 									type="button"
-									className="btn-primary"
+									className="btn-primary is-compact"
 									disabled={emAcao === conta.subProvider}
 									onClick={() => void decidir(conta.subProvider, "aprovar")}
-									style={{ height: 36, padding: "0 20px", fontSize: 13 }}
 								>
 									aprovar
 								</button>
 								<button
 									type="button"
+									className="btn-outline is-cherry"
 									disabled={emAcao === conta.subProvider}
 									onClick={() => void decidir(conta.subProvider, "rejeitar")}
-									style={{
-										height: 36,
-										padding: "0 20px",
-										fontSize: 13,
-										borderRadius: 24,
-										border: "1px solid var(--color-cherry)",
-										background: "none",
-										color: "var(--color-cherry)",
-									}}
 								>
 									rejeitar
 								</button>

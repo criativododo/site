@@ -174,7 +174,7 @@ function HistoricoDoPeriodo({ mesReferencia }: { mesReferencia: string }) {
 			{historico.entregas.length > 0 && (
 				<>
 					<p className="portal-list-row-meta">conteúdos entregues</p>
-					<ul className="portal-list" style={{ marginBottom: 16 }}>
+					<ul className="portal-list is-spaced-bottom">
 						{historico.entregas.map((entrega) => (
 							<li key={entrega.id} className="portal-list-row">
 								<span className="portal-list-row-title">
@@ -287,26 +287,12 @@ export function FinanceiroPage() {
 
 			{!carregando && !erro && periodos && periodos.length > 0 && (
 				<>
-					<label
-						style={{
-							display: "flex",
-							flexDirection: "column",
-							gap: 6,
-							maxWidth: 240,
-							marginBottom: 24,
-						}}
-					>
-						<span style={{ fontSize: 13, fontWeight: 700 }}>período</span>
+					<label className="portal-field">
+						<span className="portal-field-label">período</span>
 						<select
+							className="portal-field-select"
 							value={periodoSelecionado ?? ""}
 							onChange={(evento) => setPeriodoSelecionado(evento.target.value)}
-							style={{
-								height: 40,
-								borderRadius: 8,
-								border: "1px solid rgba(27, 23, 23, 0.2)",
-								padding: "0 12px",
-								fontSize: 14,
-							}}
 						>
 							{periodos.map((periodo) => (
 								<option key={periodo} value={periodo}>

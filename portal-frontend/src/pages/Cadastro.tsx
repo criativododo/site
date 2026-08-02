@@ -4,23 +4,6 @@ import logoPrincipal from "../assets/brand/principal-cherry.svg";
 import { ApiError, apiFetch } from "../lib/api";
 import { useSession } from "../lib/session";
 
-const estiloInput = {
-	height: 44,
-	borderRadius: 8,
-	border: "1px solid rgba(27, 23, 23, 0.2)",
-	padding: "0 14px",
-	fontSize: 15,
-	fontWeight: 400,
-} as const;
-
-const estiloLabel = {
-	display: "flex",
-	flexDirection: "column",
-	gap: 6,
-	fontSize: 13,
-	fontWeight: 700,
-} as const;
-
 interface RespostaCadastro {
 	estadoConta: "PENDING" | "ACTIVE" | string;
 }
@@ -101,12 +84,11 @@ export function CadastroPage() {
 			</header>
 
 			<section
-				className="portal-login-content"
-				style={{ width: "min(100% - 48px, 480px)" }}
+				className="portal-login-content is-wide"
 				aria-labelledby="portal-cadastro-title"
 			>
 				<p className="portal-login-overline">quase lá</p>
-				<h1 id="portal-cadastro-title" className="portal-login-title" style={{ fontSize: 30 }}>
+				<h1 id="portal-cadastro-title" className="portal-login-title is-compact">
 					complete seu cadastro.
 				</h1>
 				<p className="portal-login-description">
@@ -119,71 +101,71 @@ export function CadastroPage() {
 						evento.preventDefault();
 						if (formularioValido) void enviar();
 					}}
-					style={{ display: "flex", flexDirection: "column", gap: 14, marginTop: 28 }}
+					className="portal-login-form"
 				>
-					<label style={estiloLabel}>
+					<label className="portal-login-field">
 						nome completo
 						<input
+							className="portal-login-input"
 							value={nome}
 							onChange={(evento) => setNome(evento.target.value)}
-							style={estiloInput}
 							required
 						/>
 					</label>
-					<label style={estiloLabel}>
+					<label className="portal-login-field">
 						chave / nome artístico
 						<input
+							className="portal-login-input"
 							value={chave}
 							onChange={(evento) => setChave(evento.target.value)}
-							style={estiloInput}
 							placeholder="como você quer ser identificada"
 							required
 						/>
 					</label>
-					<label style={estiloLabel}>
+					<label className="portal-login-field">
 						cnpj
 						<input
+							className="portal-login-input"
 							value={cnpj}
 							onChange={(evento) => setCnpj(evento.target.value)}
-							style={estiloInput}
 							required
 						/>
 					</label>
-					<label style={estiloLabel}>
+					<label className="portal-login-field">
 						pix
 						<input
+							className="portal-login-input"
 							value={pix}
 							onChange={(evento) => setPix(evento.target.value)}
-							style={estiloInput}
 							required
 						/>
 					</label>
 
-					<div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-						<label style={estiloLabel}>
+					<div className="portal-login-form-row">
+						<label className="portal-login-field">
 							cep
 							<input
+								className="portal-login-input"
 								value={cep}
 								onChange={(evento) => setCep(evento.target.value)}
-								style={estiloInput}
 								required
 							/>
 						</label>
-						<label style={estiloLabel}>
+						<label className="portal-login-field">
 							número
 							<input
+								className="portal-login-input"
 								value={numero}
 								onChange={(evento) => setNumero(evento.target.value)}
-								style={estiloInput}
 							/>
 						</label>
 					</div>
-					<label style={estiloLabel}>
+					<label className="portal-login-field">
 						complemento
 						<input
+							className="portal-login-input"
 							value={complemento}
 							onChange={(evento) => setComplemento(evento.target.value)}
-							style={estiloInput}
 						/>
 					</label>
 

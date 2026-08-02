@@ -39,12 +39,6 @@ button {
 	color: var(--color-cotton);
 }
 
-.container {
-	width: 100%;
-	max-width: 1026px;
-	margin: 0 auto;
-}
-
 .title-editorial {
 	font-family: var(--font-display);
 	font-weight: 800;
@@ -208,6 +202,12 @@ textarea:focus-visible {
 .admin-field.is-narrow {
 	flex: 1 1 170px;
 }
+.admin-field.is-compact {
+	flex: 1 1 140px;
+}
+.admin-field.is-full {
+	grid-column: 1 / -1;
+}
 .admin-input,
 .admin-select {
 	height: 40px;
@@ -242,6 +242,16 @@ textarea:focus-visible {
 .admin-form-grid.is-wide {
 	grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
+/* Par em linha (flex) de .admin-form-grid — edição pontual de um único campo. */
+.admin-form-inline {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	gap: 12px;
+	margin-top: 16px;
+	padding-top: 16px;
+	border-top: 1px solid rgba(27, 23, 23, 0.1);
+}
 .admin-form-error {
 	margin: 0;
 	grid-column: 1 / -1;
@@ -275,6 +285,17 @@ textarea:focus-visible {
 }
 .admin-row-expanded dt {
 	font-weight: 700;
+}
+.admin-row-expanded-heading {
+	margin-bottom: 8px;
+	font-size: 13px;
+	font-weight: 700;
+}
+/* Envolve o formulário de edição inline de uma linha operacional — sem borda própria,
+   o .admin-form-grid interno já traz seu próprio border-top. */
+.admin-row-editing {
+	grid-column: 1 / -1;
+	width: 100%;
 }
 /* Botão "invisível" que envolve o nome/meta de uma linha operacional para expandir detalhes. */
 .admin-row-title-button {
@@ -458,6 +479,10 @@ textarea:focus-visible {
 	justify-self: center;
 	padding: 64px 0;
 }
+/* Cadastro tem mais campos que o Login (só um botão OAuth) — precisa de mais largura. */
+.portal-login-content.is-wide {
+	width: min(100% - 48px, 480px);
+}
 .portal-login-overline {
 	margin-bottom: 12px;
 	color: var(--color-cherry);
@@ -474,6 +499,9 @@ textarea:focus-visible {
 	font-weight: 800;
 	line-height: 1.1;
 	letter-spacing: -0.01em;
+}
+.portal-login-title.is-compact {
+	font-size: 30px;
 }
 .portal-login-description {
 	margin-top: 20px;
@@ -537,6 +565,37 @@ textarea:focus-visible {
 	animation: portal-spin 0.8s linear infinite;
 }
 
+/* Formulário do Cadastro — único formulário de texto do fluxo de Login/Cadastro. */
+.portal-login-form {
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+	margin-top: 28px;
+}
+.portal-login-form-row {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 14px;
+}
+.portal-login-field {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	font-size: 13px;
+	font-weight: 700;
+}
+.portal-login-input {
+	height: 44px;
+	border-radius: 8px;
+	border: 1px solid rgba(27, 23, 23, 0.2);
+	padding: 0 14px;
+	font-size: 15px;
+	font-weight: 400;
+	font-family: inherit;
+	color: var(--color-noir);
+	background: var(--color-cotton);
+}
+
 @keyframes portal-spin {
 	to {
 		transform: rotate(360deg);
@@ -545,6 +604,12 @@ textarea:focus-visible {
 
 .portal-page {
 	max-width: 760px;
+}
+/* Página de texto corrido, estática (ex.: Privacidade) — centralizada, mais estreita. */
+.portal-page.is-prose {
+	margin: 0 auto;
+	padding: 64px 24px;
+	max-width: 640px;
 }
 .portal-eyebrow {
 	margin-bottom: 12px;
@@ -558,6 +623,9 @@ textarea:focus-visible {
 	margin-bottom: 60px;
 	font-size: 38.4px;
 	line-height: 1.1;
+}
+.portal-page-title.is-tight {
+	margin-bottom: 24px;
 }
 .portal-page-intro {
 	max-width: 430px;
@@ -574,6 +642,13 @@ textarea:focus-visible {
 .pendencia-feedback {
 	color: var(--color-cherry);
 }
+.portal-page-feedback.is-caption {
+	margin-top: 4px;
+	margin-bottom: 12px;
+}
+.portal-page-feedback.is-close {
+	margin-top: 8px;
+}
 
 .portal-section-divider {
 	margin-top: 40px;
@@ -586,6 +661,110 @@ textarea:focus-visible {
 	flex-direction: column;
 	gap: 12px;
 	list-style: none;
+}
+.portal-list.is-tight {
+	gap: 4px;
+}
+.portal-list.is-spaced {
+	margin-top: 16px;
+}
+.portal-list.is-spaced-bottom {
+	margin-bottom: 16px;
+}
+
+/* Campo de formulário avulso em página não-administrativa (ex.: seletor de período do
+   Financeiro) — mesma tipografia de .admin-field/.admin-input, fora do contexto admin. */
+.portal-field {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	max-width: 240px;
+	margin-bottom: 24px;
+}
+.portal-field-label {
+	font-size: 13px;
+	font-weight: 700;
+}
+.portal-field-select,
+.portal-field-input {
+	height: 40px;
+	border-radius: 8px;
+	border: 1px solid rgba(27, 23, 23, 0.2);
+	padding: 0 12px;
+	font-size: 14px;
+	font-family: inherit;
+	color: var(--color-noir);
+	background: var(--color-cotton);
+}
+
+/* Pilha vertical de campos de um formulário curto embutido na própria página (ex.: editar
+   contato/endereço no Perfil) — par do .admin-form-grid para fora do contexto admin. */
+.portal-form-stack {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	max-width: 360px;
+	margin-top: 16px;
+}
+
+/* Botão "link" — texto puro colorido, sem contorno nem fundo (ex.: "editar" ao lado de um
+   dado exibido). Menor prima de .btn-plain, sem exigir altura fixa de linha de ação. */
+.link-button {
+	border: none;
+	background: none;
+	padding: 0;
+	font-family: inherit;
+	font-size: 13px;
+	font-weight: 700;
+	color: var(--color-cherry);
+}
+.link-button.is-large {
+	font-size: 15px;
+}
+
+/* Exibição de perfil em pares rótulo/valor (Perfil da Parceira). */
+.profile-dl {
+	display: grid;
+	grid-template-columns: auto 1fr;
+	gap: 14px 20px;
+	max-width: 480px;
+	font-size: 15px;
+}
+.profile-dl dt {
+	font-weight: 700;
+}
+.profile-dl dd {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+.profile-dl dd.is-top {
+	align-items: flex-start;
+}
+.profile-address-lines {
+	display: flex;
+	flex-direction: column;
+}
+
+.lgpd-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	margin-top: 12px;
+}
+
+/* Filho de .portal-list-row (flex) que precisa encolher para permitir truncamento interno. */
+.portal-list-row-body {
+	min-width: 0;
+	width: 100%;
+	max-width: 100%;
+}
+.text-truncate {
+	display: block;
+	max-width: 100%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 .portal-list-row {
@@ -612,6 +791,14 @@ textarea:focus-visible {
 }
 .portal-list-row-status {
 	font-size: 14px;
+}
+
+.portal-prose {
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+	font-size: 15px;
+	line-height: 1.7;
 }
 
 /*
@@ -942,9 +1129,6 @@ textarea:focus-visible {
 }
 
 @media (max-width: 1100px) {
-	.container {
-		padding: 0 40px;
-	}
 	/*
 	 * .operational-row tem 5 colunas de largura fixa (68/1.4fr/120/130/230 + gaps) que somam
 	 * ~812px mínimos — mais do que sobra ao lado da sidebar de 264px neste intervalo (achado

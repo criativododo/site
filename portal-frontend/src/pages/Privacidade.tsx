@@ -15,13 +15,13 @@ export function PrivacidadePage() {
 				</Link>
 			</header>
 
-			<section className="portal-page" style={{ margin: "0 auto", padding: "64px 24px", maxWidth: 640 }}>
+			<section className="portal-page is-prose">
 				<p className="portal-eyebrow">privacidade</p>
-				<h1 className="title-editorial portal-page-title" style={{ marginBottom: 24 }}>
+				<h1 className="title-editorial portal-page-title is-tight">
 					política de privacidade e lgpd
 				</h1>
 
-				<div style={{ display: "flex", flexDirection: "column", gap: 20, fontSize: 15, lineHeight: 1.7 }}>
+				<div className="portal-prose">
 					<p>
 						o portal criativo dodô trata os dados pessoais necessários para gerir a
 						colaboração mensal com cada parceira: nome, e-mail, cnpj, pix e endereço,
