@@ -1,7 +1,16 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { ApiError, apiFetch } from "../lib/api";
-import { formatadorMoeda } from "../lib/formatters";
+import { formatadorMoeda, formatarPrazoRelativo } from "../lib/formatters";
 import { useSession } from "../lib/session";
+
+interface ProximoPrazo {
+	tipo: "entrega" | "postagem";
+	parceiraNome: string;
+	formato: string;
+	data: string;
+	diasRestantes: number;
+}
 
 interface IndicadoresAdministrativos {
 	parceiras: { ativas: number; inativas: number; total: number };
@@ -9,23 +18,56 @@ interface IndicadoresAdministrativos {
 	financeiro: { pendentes: number; valorPendente: number };
 	lgpd: { solicitacoesExclusaoPendentes: number };
 	moderacao: { contasPendentes: number };
+	proximosPrazos: ProximoPrazo[];
 }
 
-function Indicador({
-	label,
-	valor,
-	destaque,
-}: {
+interface ItemAtencao {
 	label: string;
-	valor: string | number;
+	valor: number;
+	href: string;
 	destaque?: boolean;
-}) {
+	justificativa?: string;
+}
+
+function ItemDeAtencao({ item }: { item: ItemAtencao }) {
 	return (
-		<div className={`financeiro-kpi${destaque ? " is-destaque" : ""}`}>
-			<span className="financeiro-kpi-label">{label}</span>
-			<p className="financeiro-kpi-value">{valor}</p>
-		</div>
+		<Link
+			to={item.href}
+			className={`dashboard-acao-item${item.destaque ? " is-destaque" : ""}`}
+			aria-label={`${item.label}: ${item.valor}. ver lista.`}
+		>
+			<span className="dashboard-acao-item-label">
+				{item.label}
+				{item.justificativa && (
+					<span className="dashboard-acao-item-justificativa">{item.justificativa}</span>
+				)}
+			</span>
+			<span className="dashboard-acao-item-valor">{item.valor}</span>
+		</Link>
 	);
+}
+
+function fraseDeNormalidade(indicadores: IndicadoresAdministrativos): string {
+	const entregasNoPrazo = indicadores.entregas.aguardandoMaterial - indicadores.entregas.atrasadas;
+	const partes: string[] = [
+		indicadores.parceiras.ativas === 1
+			? "1 parceira segue ativa"
+			: `${indicadores.parceiras.ativas} parceiras seguem ativas`,
+	];
+
+	if (entregasNoPrazo > 0) {
+		partes.push(
+			entregasNoPrazo === 1
+				? "1 entrega aguarda material dentro do prazo"
+				: `${entregasNoPrazo} entregas aguardam material dentro do prazo`,
+		);
+	}
+
+	if (indicadores.financeiro.pendentes > 0) {
+		partes.push(`${formatadorMoeda.format(indicadores.financeiro.valorPendente)} em pagamentos pendentes`);
+	}
+
+	return `o restante está dentro do esperado: ${partes.join("; ")}.`;
 }
 
 export function AdminDashboardPage() {
@@ -66,15 +108,37 @@ export function AdminDashboardPage() {
 		);
 	}
 
-	const requerAcao = indicadores
-		? indicadores.entregas.atrasadas +
-			indicadores.entregas.emRevisao +
-			indicadores.moderacao.contasPendentes +
-			indicadores.lgpd.solicitacoesExclusaoPendentes
-		: 0;
+	const itensAtencao: ItemAtencao[] = indicadores
+		? (
+				[
+					indicadores.entregas.atrasadas > 0 && {
+						label: "materiais atrasados",
+						valor: indicadores.entregas.atrasadas,
+						href: "/admin/entregas",
+						destaque: true,
+						justificativa: "já passaram da data prevista",
+					},
+					indicadores.entregas.emRevisao > 0 && {
+						label: "aprovações aguardando",
+						valor: indicadores.entregas.emRevisao,
+						href: "/admin/entregas",
+					},
+					indicadores.moderacao.contasPendentes > 0 && {
+						label: "cadastros para moderar",
+						valor: indicadores.moderacao.contasPendentes,
+						href: "/admin",
+					},
+					indicadores.lgpd.solicitacoesExclusaoPendentes > 0 && {
+						label: "solicitações lgpd pendentes",
+						valor: indicadores.lgpd.solicitacoesExclusaoPendentes,
+						href: "/admin",
+					},
+				] as Array<ItemAtencao | false>
+			).filter((item): item is ItemAtencao => item !== false)
+		: [];
 
 	return (
-		<section className="portal-page" style={{ maxWidth: 920 }}>
+		<section className="portal-page is-admin-wide">
 			<p className="portal-eyebrow">administração</p>
 			<h1 className="title-editorial portal-page-title">
 				painel administrativo
@@ -90,58 +154,42 @@ export function AdminDashboardPage() {
 
 			{!carregando && !erro && indicadores && (
 				<>
-					<p className="pendencias-summary">
-						{requerAcao === 0
-							? "nada pendente de ação agora"
-							: `requer sua ação (${requerAcao})`}
-					</p>
-					<div className="financeiro-kpis">
-						<Indicador
-							label="materiais atrasados"
-							valor={indicadores.entregas.atrasadas}
-							destaque={indicadores.entregas.atrasadas > 0}
-						/>
-						<Indicador
-							label="aprovações aguardando"
-							valor={indicadores.entregas.emRevisao}
-							destaque={indicadores.entregas.emRevisao > 0}
-						/>
-						<Indicador
-							label="cadastros para moderar"
-							valor={indicadores.moderacao.contasPendentes}
-							destaque={indicadores.moderacao.contasPendentes > 0}
-						/>
-						<Indicador
-							label="solicitações lgpd"
-							valor={indicadores.lgpd.solicitacoesExclusaoPendentes}
-							destaque={indicadores.lgpd.solicitacoesExclusaoPendentes > 0}
-						/>
+					<div className="dashboard-bloco is-atencao">
+						<p className="pendencias-summary">
+							{itensAtencao.length === 0
+								? "nada pendente de ação agora"
+								: `requer sua ação (${itensAtencao.length})`}
+						</p>
+						{itensAtencao.map((item) => (
+							<ItemDeAtencao key={item.label} item={item} />
+						))}
 					</div>
 
-					<div className="portal-section-divider">
-						<p className="pendencias-summary is-quiet">indicadores gerais</p>
-						<div className="financeiro-kpis">
-							<Indicador
-								label="parceiras ativas"
-								valor={indicadores.parceiras.ativas}
-							/>
-							<Indicador
-								label="parceiras inativas"
-								valor={indicadores.parceiras.inativas}
-							/>
-							<Indicador
-								label="entregas pendentes"
-								valor={indicadores.entregas.aguardandoMaterial}
-							/>
-							<Indicador
-								label="pagamentos pendentes"
-								valor={indicadores.financeiro.pendentes}
-							/>
-							<Indicador
-								label="valor pendente"
-								valor={formatadorMoeda.format(indicadores.financeiro.valorPendente)}
-							/>
-						</div>
+					<div className="portal-section-divider dashboard-bloco">
+						<p className="pendencias-summary is-quiet">próximos prazos</p>
+						{indicadores.proximosPrazos.length === 0 ? (
+							<p className="dashboard-prazo-vazio">nada previsto para os próximos dias.</p>
+						) : (
+							<ul className="dashboard-prazo-lista">
+								{indicadores.proximosPrazos.map((prazo) => (
+									<li
+										key={`${prazo.tipo}-${prazo.parceiraNome}-${prazo.data}`}
+										className="dashboard-prazo-item"
+									>
+										<span>
+											{prazo.tipo === "entrega" ? "entrega" : "postagem"} de {prazo.parceiraNome}
+										</span>
+										<span className="dashboard-prazo-item-quando">
+											{formatarPrazoRelativo(prazo.diasRestantes)}
+										</span>
+									</li>
+								))}
+							</ul>
+						)}
+					</div>
+
+					<div className="dashboard-bloco is-normalidade">
+						<p className="dashboard-normalidade">{fraseDeNormalidade(indicadores)}</p>
 					</div>
 				</>
 			)}
