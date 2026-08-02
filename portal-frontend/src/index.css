@@ -1,4 +1,71 @@
+@import "tailwindcss";
 @import "./styles/tokens.css";
+
+/*
+ * Ponte shadcn ⇄ Design System DODÔ.
+ * tokens.css (importado acima) é a fonte soberana — nada aqui define cor/raio/fonte nova,
+ * só realoca os tokens já existentes (--color-cherry, --color-cotton, --color-noir,
+ * --radius-block etc.) nos slots semânticos que os componentes shadcn instalados em
+ * src/components/ui/ esperam (bg-primary, bg-card, --radius, font-heading...). Onde o
+ * Design System não distingue um conceito do shadcn (ex.: não existe token de "erro"
+ * separado de "marca"), reaproveita-se o token real já usado com esse papel em produção
+ * (--color-cherry já é a cor de `.is-error` hoje) em vez de inventar um novo.
+ */
+:root {
+	--background: var(--color-cotton);
+	--foreground: var(--color-noir);
+	--card: var(--color-cotton);
+	--card-foreground: var(--color-noir);
+	--popover: var(--color-cotton);
+	--popover-foreground: var(--color-noir);
+	--primary: var(--color-cherry);
+	--primary-foreground: var(--color-cotton);
+	/* Portal não tem "segunda cor de marca" fora de cherry/maroon, e maroon nunca pode
+	   ficar ao lado de cherry (1.27:1, reprova AA) — secondary/muted/accent derivam do
+	   neutro (cotton/noir), não da paleta de marca. */
+	--secondary: color-mix(in oklch, var(--color-cotton), var(--color-noir) 6%);
+	--secondary-foreground: var(--color-noir);
+	--muted: color-mix(in oklch, var(--color-cotton), var(--color-noir) 4%);
+	--muted-foreground: color-mix(in oklch, var(--color-noir), transparent 35%);
+	--accent: var(--secondary);
+	--accent-foreground: var(--color-noir);
+	--destructive: var(--color-cherry);
+	--border: rgba(27, 23, 23, 0.1); /* = --border-hairline */
+	--input: rgba(27, 23, 23, 0.2); /* = borda de .dodo-field */
+	--ring: var(--color-cherry); /* já é a cor real de a:focus-visible no Portal */
+	/* Base 12px = --radius-block (o raio mais comum do Portal hoje); a escala derivada do
+	   shadcn (sm/md/lg/xl) fica: 8/10/12/16 — 8px coincide com --radius-field, 12px com
+	   --radius-block, 16px aproxima --radius-block-lg (14px). Pílula/badge continuam com
+	   os tokens próprios (--radius-pill, --radius-badge), sem equivalente nesta escala. */
+	--radius: var(--radius-block);
+}
+
+@theme inline {
+	--color-background: var(--background);
+	--color-foreground: var(--foreground);
+	--color-card: var(--card);
+	--color-card-foreground: var(--card-foreground);
+	--color-popover: var(--popover);
+	--color-popover-foreground: var(--popover-foreground);
+	--color-primary: var(--primary);
+	--color-primary-foreground: var(--primary-foreground);
+	--color-secondary: var(--secondary);
+	--color-secondary-foreground: var(--secondary-foreground);
+	--color-muted: var(--muted);
+	--color-muted-foreground: var(--muted-foreground);
+	--color-accent: var(--accent);
+	--color-accent-foreground: var(--accent-foreground);
+	--color-destructive: var(--destructive);
+	--color-border: var(--border);
+	--color-input: var(--input);
+	--color-ring: var(--ring);
+	--radius-sm: calc(var(--radius) - 4px);
+	--radius-md: calc(var(--radius) - 2px);
+	--radius-lg: var(--radius);
+	--radius-xl: calc(var(--radius) + 4px);
+	--font-sans: var(--font-body);
+	--font-heading: var(--font-display);
+}
 
 * {
 	box-sizing: border-box;

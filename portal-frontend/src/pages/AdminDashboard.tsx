@@ -1,7 +1,17 @@
+import { ArrowRight } from "lucide-react";
 import { useEffect, useState } from "react";
-import { ApiError, apiFetch } from "../lib/api";
+import { Link } from "react-router-dom";
+import {
+	Card,
+	CardAction,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "../components/ui/card";
+import { apiFetch, ApiError } from "../lib/api";
 import { formatadorMoeda } from "../lib/formatters";
 import { useSession } from "../lib/session";
+import { cn } from "../lib/utils";
 
 interface IndicadoresAdministrativos {
 	parceiras: { ativas: number; inativas: number; total: number };
@@ -15,17 +25,57 @@ function Indicador({
 	label,
 	valor,
 	destaque,
+	href,
 }: {
 	label: string;
 	valor: string | number;
 	destaque?: boolean;
+	href?: string;
 }) {
-	return (
-		<div className={`financeiro-kpi${destaque ? " is-destaque" : ""}`}>
-			<span className="financeiro-kpi-label">{label}</span>
-			<p className="financeiro-kpi-value">{valor}</p>
-		</div>
+	const card = (
+		<Card
+			size="sm"
+			className={cn(
+				"transition-all",
+				href && "cursor-pointer group-hover:-translate-y-0.5 group-hover:shadow-md",
+				destaque && "bg-primary/[0.04] ring-primary/25",
+			)}
+		>
+			<CardHeader>
+				<CardDescription className="text-[13px]">{label}</CardDescription>
+				<CardTitle
+					className={cn(
+						"text-[22px] font-bold",
+						destaque ? "text-primary" : "text-card-foreground",
+					)}
+				>
+					{valor}
+				</CardTitle>
+				{href && (
+					<CardAction>
+						<ArrowRight
+							aria-hidden="true"
+							className="size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary"
+						/>
+					</CardAction>
+				)}
+			</CardHeader>
+		</Card>
 	);
+
+	if (href) {
+		return (
+			<Link
+				to={href}
+				className="group block no-underline"
+				aria-label={`${label}: ${valor}. ver lista.`}
+			>
+				{card}
+			</Link>
+		);
+	}
+
+	return card;
 }
 
 export function AdminDashboardPage() {
@@ -74,7 +124,7 @@ export function AdminDashboardPage() {
 		: 0;
 
 	return (
-		<section className="portal-page" style={{ maxWidth: 920 }}>
+		<section className="portal-page is-admin-wide">
 			<p className="portal-eyebrow">administração</p>
 			<h1 className="title-editorial portal-page-title">
 				painel administrativo
@@ -95,32 +145,36 @@ export function AdminDashboardPage() {
 							? "nada pendente de ação agora"
 							: `requer sua ação (${requerAcao})`}
 					</p>
-					<div className="financeiro-kpis">
+					<div className="grid grid-cols-2 gap-4 md:grid-cols-4 mb-8">
 						<Indicador
 							label="materiais atrasados"
 							valor={indicadores.entregas.atrasadas}
 							destaque={indicadores.entregas.atrasadas > 0}
+							href="/admin/entregas"
 						/>
 						<Indicador
 							label="aprovações aguardando"
 							valor={indicadores.entregas.emRevisao}
 							destaque={indicadores.entregas.emRevisao > 0}
+							href="/admin/entregas"
 						/>
 						<Indicador
 							label="cadastros para moderar"
 							valor={indicadores.moderacao.contasPendentes}
 							destaque={indicadores.moderacao.contasPendentes > 0}
+							href="/admin"
 						/>
 						<Indicador
 							label="solicitações lgpd"
 							valor={indicadores.lgpd.solicitacoesExclusaoPendentes}
 							destaque={indicadores.lgpd.solicitacoesExclusaoPendentes > 0}
+							href="/admin"
 						/>
 					</div>
 
 					<div className="portal-section-divider">
 						<p className="pendencias-summary is-quiet">indicadores gerais</p>
-						<div className="financeiro-kpis">
+						<div className="grid grid-cols-2 gap-4 md:grid-cols-5">
 							<Indicador
 								label="parceiras ativas"
 								valor={indicadores.parceiras.ativas}
