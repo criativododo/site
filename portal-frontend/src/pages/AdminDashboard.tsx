@@ -48,6 +48,10 @@ function ItemDeAtencao({ item }: { item: ItemAtencao }) {
 }
 
 function fraseDeNormalidade(indicadores: IndicadoresAdministrativos): string {
+	if (indicadores.parceiras.total === 0) {
+		return "nada em andamento ainda.";
+	}
+
 	const entregasNoPrazo = indicadores.entregas.aguardandoMaterial - indicadores.entregas.atrasadas;
 	const partes: string[] = [
 		indicadores.parceiras.ativas === 1
@@ -171,9 +175,9 @@ export function AdminDashboardPage() {
 							<p className="dashboard-prazo-vazio">nada previsto para os próximos dias.</p>
 						) : (
 							<ul className="dashboard-prazo-lista">
-								{indicadores.proximosPrazos.map((prazo) => (
+								{indicadores.proximosPrazos.map((prazo, indice) => (
 									<li
-										key={`${prazo.tipo}-${prazo.parceiraNome}-${prazo.data}`}
+										key={`${prazo.tipo}-${prazo.data}-${indice}`}
 										className="dashboard-prazo-item"
 									>
 										<span>
