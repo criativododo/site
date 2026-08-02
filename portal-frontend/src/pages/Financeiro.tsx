@@ -1,11 +1,22 @@
 import { useEffect, useState } from "react";
 import { ApiError, apiFetch } from "../lib/api";
-import { formatadorMoeda } from "../lib/formatters";
+import { formatadorMoeda, formatarMoedaPartes } from "../lib/formatters";
 
 interface ResumoFinanceiro {
 	mesReferencia: string;
 	previsto: number;
 	pago: number;
+}
+
+/** Número com precisão visível (ART_DIRECTION_GUIDE.md §5) — reais em destaque, centavos discretos. */
+function ValorEmReais({ valor }: { valor: number }) {
+	const { reais, centavos } = formatarMoedaPartes(valor);
+	return (
+		<>
+			{reais}
+			<span className="money-cents">{centavos}</span>
+		</>
+	);
 }
 
 function ResumoDoPeriodo({ mesReferencia }: { mesReferencia: string }) {
@@ -54,19 +65,19 @@ function ResumoDoPeriodo({ mesReferencia }: { mesReferencia: string }) {
 			<div className="financeiro-kpi is-destaque">
 				<span className="financeiro-kpi-label">a receber</span>
 				<p className="financeiro-kpi-value">
-					{formatadorMoeda.format(aReceber)}
+					<ValorEmReais valor={aReceber} />
 				</p>
 			</div>
 			<div className="financeiro-kpi">
 				<span className="financeiro-kpi-label">já pago</span>
 				<p className="financeiro-kpi-value">
-					{formatadorMoeda.format(resumo.pago)}
+					<ValorEmReais valor={resumo.pago} />
 				</p>
 			</div>
 			<div className="financeiro-kpi">
 				<span className="financeiro-kpi-label">previsto no período</span>
 				<p className="financeiro-kpi-value">
-					{formatadorMoeda.format(resumo.previsto)}
+					<ValorEmReais valor={resumo.previsto} />
 				</p>
 			</div>
 		</div>

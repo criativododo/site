@@ -1,5 +1,6 @@
 import type { ChangeEvent } from "react";
 import { useEffect, useMemo, useState } from "react";
+import { OperationalRowHeader } from "../components/OperationalRowHeader";
 import { ApiError, apiFetch } from "../lib/api";
 import { formatarData, mesReferenciaCorrente } from "../lib/formatters";
 import { useSession } from "../lib/session";
@@ -210,16 +211,17 @@ function LinhaEntrega({
 				</p>
 			</div>
 
-			<p className="portal-list-row-meta">
-				entrega em {formatarData(entrega.dataEntrega)}
-			</p>
+			<p className="portal-list-row-meta">{formatarData(entrega.dataEntrega)}</p>
 
 			<p className="portal-list-row-meta">
 				{entrega.materialEnviado ? "material enviado" : "sem material ainda"}
 			</p>
 
-			{entrega.estado === "EM_REVISAO" && (
-				<div className="portal-list-row-actions">
+			{/* Sempre ocupa a 5ª coluna do grid, mesmo sem ação disponível (AGUARDANDO_MATERIAL/
+			    PUBLICADO) — do contrário a linha só tem 4 filhos e a grade de 5 colunas desalinha
+			    com as linhas vizinhas que têm ação (achado de grid da Fase B). */}
+			<div className="portal-list-row-actions">
+				{entrega.estado === "EM_REVISAO" && (
 					<button
 						type="button"
 						className="btn-primary is-compact"
@@ -228,11 +230,8 @@ function LinhaEntrega({
 					>
 						{emAcao ? "..." : "aprovar"}
 					</button>
-				</div>
-			)}
-
-			{entrega.estado === "APROVADO" && (
-				<div className="portal-list-row-actions">
+				)}
+				{entrega.estado === "APROVADO" && (
 					<button
 						type="button"
 						className="btn-primary is-compact"
@@ -241,8 +240,8 @@ function LinhaEntrega({
 					>
 						{emAcao ? "..." : "publicar"}
 					</button>
-				</div>
-			)}
+				)}
+			</div>
 		</li>
 	);
 }
@@ -458,21 +457,26 @@ export function AdminEntregasPage() {
 					)}
 
 					{filtradas.length > 0 && (
-						<ul className="portal-list">
-							{filtradas.map((entrega) => (
-								<LinhaEntrega
-									key={entrega.id}
-									entrega={entrega}
-									nomeParceira={
-										nomePorParceiraId.get(entrega.parceiraId) ??
-										"parceira desconhecida"
-									}
-									emAcao={idEmAcao === entrega.id}
-									aoAprovar={() => void aprovar(entrega)}
-									aoPublicar={() => void publicar(entrega)}
-								/>
-							))}
-						</ul>
+						<>
+							<OperationalRowHeader
+								labels={["status", "parceira", "entrega em", "material", "ações"]}
+							/>
+							<ul className="portal-list">
+								{filtradas.map((entrega) => (
+									<LinhaEntrega
+										key={entrega.id}
+										entrega={entrega}
+										nomeParceira={
+											nomePorParceiraId.get(entrega.parceiraId) ??
+											"parceira desconhecida"
+										}
+										emAcao={idEmAcao === entrega.id}
+										aoAprovar={() => void aprovar(entrega)}
+										aoPublicar={() => void publicar(entrega)}
+									/>
+								))}
+							</ul>
+						</>
 					)}
 				</>
 			)}

@@ -349,8 +349,24 @@ textarea:focus-visible {
 	display: flex;
 	flex-direction: column;
 	align-items: flex-start;
-	gap: 14.4px;
 	margin-top: 12px;
+}
+
+/*
+ * Agrupa a navegação do admin em blocos por espaço puro (sem caixa/rótulo — "vazio como
+ * decisão", ART_DIRECTION_GUIDE.md §1): "trabalho do dia" (dashboard/entregas/briefings)
+ * separado de "administração" (parceiras/obrigações/colaboração mensal/moderação). Dá à
+ * sidebar uma silhueta própria em vez de repetir a nav horizontal da Landing rotacionada.
+ * Nav da Parceira (3 itens) usa um único grupo — visualmente idêntica a antes.
+ */
+.portal-nav-group {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 14.4px;
+}
+.portal-nav-group + .portal-nav-group {
+	margin-top: 24px;
 }
 
 .portal-sidebar-user {
@@ -393,6 +409,11 @@ textarea:focus-visible {
 .portal-nav-link.is-active::after {
 	transform: scaleX(1);
 	transform-origin: bottom left;
+}
+/* Hierarquia por peso, não por escala (ART_DIRECTION_GUIDE.md §1): o item ativo ganha peso
+   extra além do sublinhado, sem introduzir tamanho ou cor de fundo diferentes. */
+.portal-nav-link.is-active {
+	font-weight: 700;
 }
 
 .portal-main {
@@ -783,6 +804,15 @@ textarea:focus-visible {
 	margin-top: 2px;
 	font-size: 14px;
 	opacity: 0.8;
+	font-variant-numeric: tabular-nums;
+}
+/* Segunda linha, mais quieta, dentro de uma célula .portal-list-row-meta que carrega 2 dados
+   (ex.: postagem + aprovação interna em AdminBriefings). */
+.portal-list-row-meta-secondary {
+	display: block;
+	margin-top: 2px;
+	font-size: 12px;
+	color: var(--color-grafite-70);
 }
 .portal-list-row-actions {
 	display: flex;
@@ -816,6 +846,15 @@ textarea:focus-visible {
 .operational-row > * {
 	min-width: 0;
 }
+/* Cabeçalho de coluna (achado P0-3 da auditoria de UX) — mesma grade, rótulos discretos,
+   não compete com o conteúdo das linhas abaixo. */
+.operational-row-header {
+	padding: 0 20px 8px;
+	color: var(--color-grafite-40);
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.04em;
+}
 
 .financeiro-kpis {
 	display: flex;
@@ -839,9 +878,18 @@ textarea:focus-visible {
 	font-family: var(--font-display);
 	font-size: 22px;
 	font-weight: 700;
+	font-variant-numeric: tabular-nums;
 }
 .financeiro-kpi.is-destaque .financeiro-kpi-value {
 	color: var(--color-cherry);
+}
+/* Número com precisão visível (ART_DIRECTION_GUIDE.md §5): centavos em peso/tamanho menor,
+   mesma linha — confirma exatidão sem competir com a parte que importa (os reais). */
+.financeiro-kpi-value .money-cents {
+	margin-left: 1px;
+	font-size: 0.6em;
+	font-weight: 400;
+	opacity: 0.75;
 }
 
 .pendencias-list {
@@ -873,6 +921,14 @@ textarea:focus-visible {
 .dashboard-bloco.is-normalidade {
 	margin-top: 56px;
 }
+/*
+ * Densidade elástica (ART_DIRECTION_GUIDE.md §1/§5): o bloco "requer sua ação" é o único
+ * ponto de decisão da tela — cada item é um link para agir, não uma linha de leitura passiva
+ * — por isso respira mais que os blocos de prazos/normalidade, que são só informativos.
+ */
+.dashboard-bloco.is-atencao .dashboard-acao-item {
+	padding: 14px 0;
+}
 
 .dashboard-acao-item {
 	display: flex;
@@ -896,9 +952,13 @@ textarea:focus-visible {
 	font-size: 22px;
 	font-weight: 700;
 	flex-shrink: 0;
+	font-variant-numeric: tabular-nums;
 }
+/* Hierarquia por peso, não por escala: o item mais urgente da tela ganha peso extra (800),
+   não um salto de tamanho — mesmo tamanho, mais presença. */
 .dashboard-acao-item.is-destaque .dashboard-acao-item-valor {
 	color: var(--color-cherry);
+	font-weight: 800;
 }
 .dashboard-acao-item-justificativa {
 	display: block;
@@ -922,18 +982,21 @@ textarea:focus-visible {
 	flex-shrink: 0;
 	color: var(--color-grafite-70);
 	white-space: nowrap;
+	font-variant-numeric: tabular-nums;
 }
 .dashboard-prazo-vazio {
 	font-size: 14px;
 	color: var(--color-grafite-70);
 }
 
+/* Fecha o arco tipográfico da tela (atenção → prazos → normalidade): tom mais quieto que os
+   blocos acima, o silêncio visual que o próprio texto ("dentro do esperado") já descreve. */
 .dashboard-normalidade {
 	max-width: 480px;
 	margin-top: 8px;
 	font-size: 15px;
 	line-height: 1.7;
-	color: var(--color-grafite-90);
+	color: var(--color-grafite-70);
 }
 
 .pendencias-aviso {
@@ -997,6 +1060,7 @@ textarea:focus-visible {
 	font-size: 13.6px;
 	line-height: 1.6;
 	font-weight: 400;
+	font-variant-numeric: tabular-nums;
 }
 .pendencia-status {
 	display: flex;
@@ -1140,6 +1204,10 @@ textarea:focus-visible {
 		grid-template-columns: 1fr;
 		row-gap: 10px;
 	}
+	/* Sem sentido empilhado em cartão único — cada rótulo já está implícito no dado abaixo dele. */
+	.operational-row-header {
+		display: none;
+	}
 	.operational-row .portal-list-row-actions {
 		width: 100%;
 	}
@@ -1201,6 +1269,11 @@ textarea:focus-visible {
 		margin-top: 0;
 		min-width: 0;
 		overflow-x: auto;
+	}
+	/* Dissolve o agrupamento em uma única linha horizontal — mesma técnica de
+	   .portal-sidebar-top acima, sem duplicar DOM entre os dois layouts. */
+	.portal-nav-group {
+		display: contents;
 	}
 	.portal-sidebar-user {
 		grid-area: user;
@@ -1271,5 +1344,21 @@ textarea:focus-visible {
 	.pendencia-upload-controls {
 		align-items: flex-start;
 		flex-direction: column;
+	}
+	/*
+	 * Dashboard editorial (Sprint 2) nunca tinha regra mobile (achado P1-4 da auditoria de
+	 * UX): rótulo longo + valor de dois dígitos na mesma linha (align-items:baseline,
+	 * justify-content:space-between) apertava abaixo de 768px. Empilha, como
+	 * .pendencia-trigger já faz — o valor nunca comprime contra o texto.
+	 */
+	.dashboard-acao-item {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 2px;
+	}
+	.dashboard-prazo-item {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 2px;
 	}
 }

@@ -1,5 +1,6 @@
 import type { ChangeEvent } from "react";
 import { useEffect, useMemo, useState } from "react";
+import { OperationalRowHeader } from "../components/OperationalRowHeader";
 import { ApiError, apiFetch } from "../lib/api";
 import { formatarData } from "../lib/formatters";
 import { useSession } from "../lib/session";
@@ -330,11 +331,14 @@ function LinhaBriefing({
 				</p>
 			</div>
 
-			<p className="portal-list-row-meta">
-				entrega {formatarData(briefing.dataEntrega)} · postagem{" "}
-				{formatarData(briefing.dataPostagem)} · aprovação interna{" "}
-				{formatarData(briefing.dataAprovacaoInterna)}
-			</p>
+			<p className="portal-list-row-meta">{formatarData(briefing.dataEntrega)}</p>
+
+			<div className="portal-list-row-meta">
+				<span>{formatarData(briefing.dataPostagem)}</span>
+				<span className="portal-list-row-meta-secondary">
+					aprovação {formatarData(briefing.dataAprovacaoInterna)}
+				</span>
+			</div>
 
 			<div className="portal-list-row-actions">
 				<button type="button" className="btn-outline" onClick={aoAlternarEdicao}>
@@ -554,9 +558,13 @@ export function AdminBriefingsPage() {
 					)}
 
 					{filtrados.length > 0 && (
-						<ul className="portal-list">
-							{filtrados.map((briefing) => (
-								<LinhaBriefing
+						<>
+							<OperationalRowHeader
+								labels={["status", "parceira", "entrega", "postagem", "ações"]}
+							/>
+							<ul className="portal-list">
+								{filtrados.map((briefing) => (
+									<LinhaBriefing
 									key={briefing.id}
 									briefing={briefing}
 									nomeParceira={
@@ -577,7 +585,8 @@ export function AdminBriefingsPage() {
 									aoRemover={() => void remover(briefing)}
 								/>
 							))}
-						</ul>
+							</ul>
+						</>
 					)}
 				</>
 			)}

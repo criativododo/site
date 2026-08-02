@@ -1,5 +1,6 @@
 import type { ChangeEvent } from "react";
 import { useEffect, useMemo, useState } from "react";
+import { OperationalRowHeader } from "../components/OperationalRowHeader";
 import { ApiError, apiFetch } from "../lib/api";
 import {
 	formatadorMoeda,
@@ -671,38 +672,43 @@ export function AdminObrigacoesPage() {
 					)}
 
 					{filtradas.length > 0 && (
-						<ul className="portal-list">
-							{filtradas.map((obrigacao) => (
-								<LinhaObrigacao
-									key={obrigacao.id}
-									obrigacao={obrigacao}
-									nomeParceira={
-										nomePorParceiraId.get(obrigacao.parceiraId) ??
-										"parceira desconhecida"
-									}
-									expandida={expandidaId === obrigacao.id}
-									editando={emEdicaoId === obrigacao.id}
-									emAcao={idEmAcao === obrigacao.id}
-									aoAlternarDetalhes={() =>
-										setExpandidaId((atual) =>
-											atual === obrigacao.id ? null : obrigacao.id,
-										)
-									}
-									aoAlternarEdicao={() =>
-										setEmEdicaoId((atual) =>
-											atual === obrigacao.id ? null : obrigacao.id,
-										)
-									}
-									aoSalvarEdicao={(atualizada) => {
-										atualizarNaLista(atualizada);
-										setEmEdicaoId(null);
-									}}
-									aoLiberar={() => void liberar(obrigacao)}
-									aoPagar={() => void pagar(obrigacao)}
-									aoRemover={() => void remover(obrigacao)}
-								/>
-							))}
-						</ul>
+						<>
+							<OperationalRowHeader
+								labels={["status", "parceira", "valor", "entregas", "ações"]}
+							/>
+							<ul className="portal-list">
+								{filtradas.map((obrigacao) => (
+									<LinhaObrigacao
+										key={obrigacao.id}
+										obrigacao={obrigacao}
+										nomeParceira={
+											nomePorParceiraId.get(obrigacao.parceiraId) ??
+											"parceira desconhecida"
+										}
+										expandida={expandidaId === obrigacao.id}
+										editando={emEdicaoId === obrigacao.id}
+										emAcao={idEmAcao === obrigacao.id}
+										aoAlternarDetalhes={() =>
+											setExpandidaId((atual) =>
+												atual === obrigacao.id ? null : obrigacao.id,
+											)
+										}
+										aoAlternarEdicao={() =>
+											setEmEdicaoId((atual) =>
+												atual === obrigacao.id ? null : obrigacao.id,
+											)
+										}
+										aoSalvarEdicao={(atualizada) => {
+											atualizarNaLista(atualizada);
+											setEmEdicaoId(null);
+										}}
+										aoLiberar={() => void liberar(obrigacao)}
+										aoPagar={() => void pagar(obrigacao)}
+										aoRemover={() => void remover(obrigacao)}
+									/>
+								))}
+							</ul>
+						</>
 					)}
 				</>
 			)}

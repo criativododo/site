@@ -1,5 +1,6 @@
 import type { ChangeEvent } from "react";
 import { useEffect, useMemo, useState } from "react";
+import { OperationalRowHeader } from "../components/OperationalRowHeader";
 import { ApiError, apiFetch } from "../lib/api";
 import { formatadorMoeda, formatarData } from "../lib/formatters";
 import { useSession } from "../lib/session";
@@ -569,6 +570,9 @@ export function AdminParceirasPage() {
 
 					{filtradas.length > 0 && (
 						<>
+							<OperationalRowHeader
+								labels={["status", "parceira", "cadastro", "valor mensal", "ações"]}
+							/>
 							<ul className="portal-list">
 								{itensDaPagina.map((parceira) => (
 									<LinhaParceira
