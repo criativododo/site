@@ -109,13 +109,44 @@ próximos prazos
   lista compacta, ordenada por proximidade de data (Entrega.dataEntrega,
   BlocoBriefing.dataPostagem/dataAprovacaoInterna). Sem decoração por item.
 
-────────────────────────────────────────────────
+  (sem traço aqui — transição para o Bloco 3 é só espaço/peso, ver abaixo)
 BLOCO 3 · o que pode esperar
   frase de normalidade primeiro (ex.: "o restante está dentro do esperado.")
   números citados dentro da frase, como confirmação — nunca como lista de itens
   nem como abertura do bloco. Não enumerar todas as 5 métricas secundárias como
   inventário; citar só o que sustenta a frase de normalidade.
 ```
+
+Há **uma única divisória** na página inteira (traço fino entre Bloco 1 e Bloco 2) — é a
+única quebra "dura", entre a zona de decisão e o resto. Uma segunda divisória entre Bloco 2
+e Bloco 3 violaria o anti-princípio "excesso de linhas divisórias separando blocos que já
+estão separados pelo espaço" (§2); essa transição é só espaço + queda de peso tipográfico.
+
+## Ritmo, densidade e estados
+
+Três "temperaturas" em sequência só decrescente — quente (Bloco 1) → morna (Bloco 2) → fria
+(Bloco 3) — nunca sobe de novo. É o que sustenta a leitura "do início ao fim sem retomada"
+(§4): ao entrar no Bloco 3, a pessoa já sabe que viu tudo que precisava de decisão.
+
+| Bloco | Densidade | Peso tipográfico | Papel |
+|---|---|---|---|
+| 1 — atenção agora | linhas compactas (lista de trabalho), mas o bloco como unidade tem respiro generoso — é também zona de decisão | mais alto do corpo da página; cherry só no item genuinamente atrasado, com frase justificando | ler rápido *e* decidir |
+| 2 — vem a seguir | a mais densa da página, sem respiro extra | peso normal do corpo, rótulo em tom quieto (mesmo tratamento de `.pendencias-summary.is-quiet` já usado hoje) | ler rápido, sem decisão |
+| 3 — pode esperar | a mais generosa da página — folga comunica "nada aqui exige seu tempo" | o mais leve da página; prosa corrida, não lista; números citados dentro da frase, nunca abrindo-a nem em destaque | confirmar normalidade |
+
+**Estados vazio/carregado:**
+
+| Bloco | Vazio | Carregando/erro |
+|---|---|---|
+| 1 | "nada pendente de ação agora" — mesma posição/peso do resumo, tom de constatação, não celebração | — |
+| 2 | "nada previsto para os próximos dias." — frase única, sem lista | — |
+| 3 | sempre tem frase (é resumo, não lista); no limite de zero dados em todo o sistema, a frase se ajusta para descrever esse estado sem inventar número | — |
+
+Carregamento e erro continuam **únicos para a página inteira** (um só fetch, um só estado
+`carregando`/`erro`), reaproveitando o padrão já existente
+(`<p className="portal-page-feedback">carregando...</p>`) — sem skeleton por bloco: um
+skeleton simularia conteúdo que ainda não existe, o que o próprio guia rejeita como
+interface a serviço de si mesma, não do conteúdo (§1 "interface a serviço do conteúdo").
 
 ## Contrato de dados
 
