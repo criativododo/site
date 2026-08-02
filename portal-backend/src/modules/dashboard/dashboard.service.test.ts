@@ -80,6 +80,7 @@ const semDados = {
   obrigacoes: [] as ObrigacaoFinanceira[],
   contasPendentes: [] as Identidade[],
   solicitacoesExclusao: [] as SolicitacaoExclusao[],
+  blocosBriefing: [] as BlocoBriefing[],
 };
 
 describe("calcularIndicadores", () => {
@@ -149,6 +150,19 @@ describe("calcularIndicadores", () => {
     });
     expect(resultado.lgpd.solicitacoesExclusaoPendentes).toBe(2);
     expect(resultado.moderacao.contasPendentes).toBe(1);
+  });
+
+  it("preenche proximosPrazos a partir de Entregas e Blocos de Briefing recebidos", () => {
+    const resultado = calcularIndicadores({
+      ...semDados,
+      hoje: "2026-07-15",
+      parceiras: [parceira({ id: "p1", nome: "Parceira Um" })],
+      entregas: [entrega({ estado: "AGUARDANDO_MATERIAL", dataEntrega: "2026-07-17" })],
+      blocosBriefing: [],
+    });
+    expect(resultado.proximosPrazos).toEqual([
+      { tipo: "entrega", parceiraNome: "Parceira Um", formato: "Reel", data: "2026-07-17", diasRestantes: 2 },
+    ]);
   });
 });
 

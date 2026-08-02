@@ -1,3 +1,4 @@
+import { briefingRepositorio } from "../briefing/briefing.repository.js";
 import type { BlocoBriefing } from "../briefing/briefing.types.js";
 import type { Entrega } from "../conteudo/entrega.types.js";
 import type { Identidade } from "../identidade/identidade.types.js";
@@ -27,6 +28,7 @@ export function calcularIndicadores(dados: {
   obrigacoes: ObrigacaoFinanceira[];
   contasPendentes: Identidade[];
   solicitacoesExclusao: SolicitacaoExclusao[];
+  blocosBriefing: BlocoBriefing[];
   hoje?: string;
 }): IndicadoresAdministrativos {
   const hoje = dados.hoje ?? hojeISO();
@@ -55,7 +57,12 @@ export function calcularIndicadores(dados: {
     moderacao: {
       contasPendentes: dados.contasPendentes.length,
     },
-    proximosPrazos: [],
+    proximosPrazos: calcularProximosPrazos({
+      entregas: dados.entregas,
+      blocosBriefing: dados.blocosBriefing,
+      parceiras: dados.parceiras,
+      hoje,
+    }),
   };
 }
 
@@ -105,13 +112,14 @@ export function calcularProximosPrazos(dados: {
 
 /** UC administrativo: reúne o estado atual de todos os módulos e aplica `calcularIndicadores`. */
 export async function obterIndicadoresAdministrativos(): Promise<IndicadoresAdministrativos> {
-  const [parceiras, entregas, obrigacoes, contasPendentes, solicitacoesExclusao] = await Promise.all([
+  const [parceiras, entregas, obrigacoes, contasPendentes, solicitacoesExclusao, blocosBriefing] = await Promise.all([
     parceiraRepositorio.listarTodas(),
     entregaRepositorio.listarTodas(),
     obrigacaoRepositorio.listarTodas(),
     listarContasPendentes(),
     listarSolicitacoesPendentes(),
+    briefingRepositorio.listarTodos(),
   ]);
 
-  return calcularIndicadores({ parceiras, entregas, obrigacoes, contasPendentes, solicitacoesExclusao });
+  return calcularIndicadores({ parceiras, entregas, obrigacoes, contasPendentes, solicitacoesExclusao, blocosBriefing });
 }
