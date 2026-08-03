@@ -96,6 +96,24 @@ em `DESIGN.md` (Parte I) e no código real de `app/`. Cada camada abaixo dela é
 contradizer a Creative Direction; nenhuma tela de Landing ou Portal pode contradizer o Design
 System sem que a contradição suba a arquitetura para ser resolvida na camada correta.
 
+Cada camada é fonte de verdade de uma pergunta diferente, nunca da mesma pergunta que outra
+camada já respondeu:
+
+- **Manifesto** define os **valores** — em que a marca acredita.
+- **Vision Book** define o **produto** — que produto estamos construindo e para quem.
+- **Concept Book** define a **metáfora** — a ideia central que amarra visão a forma.
+- **Reference Library** define o **repertório** — o que foi estudado e por quê.
+- **Creative Direction** define o **tom** — o critério de julgamento de qualquer peça nova.
+- **Visual Language** define a **gramática** — como a linguagem se comporta em uso.
+- **Design System** **documenta a implementação** dessa linguagem — não a define, não a
+  reinterpreta, não a substitui.
+
+Esta distinção é o núcleo desta ADR: ela existe para impedir que o Design System volte a
+concentrar decisões estratégicas de identidade, como aconteceu antes desta sessão (`DESIGN.md`
+tratando manifesto, tom e tokens técnicos como um único documento indiferenciado). Um Design
+System que redefine a linguagem, em vez de documentá-la, viola esta ADR mesmo que os valores
+técnicos resultantes pareçam corretos.
+
 **Design System é consumidor desta arquitetura, não seu assunto.** Esta ADR institui a
 arquitetura de produto; não é uma ADR de Design System.
 
@@ -180,6 +198,63 @@ título:
   ponte declarada para o conteúdo técnico hoje em `DESIGN.md` — marcados `Draft`, pendentes de
   reescrita completa depois que 04–09 estiverem `Vigente`.
 
+### Mapa de dependências invertidas (blast radius)
+
+A tabela acima responde "de quem eu dependo". Esta responde a pergunta inversa — "se este
+documento mudar, quais outros **precisam obrigatoriamente** ser revisados" — como fecho
+transitivo do grafo, não só dependência direta. É o mecanismo que evita deriva documental:
+nenhuma edição em 00–11 é considerada concluída sem revisar a lista correspondente.
+
+| Se este mudar... | ...revisar obrigatoriamente |
+|---|---|
+| `00_MANIFESTO` | 01, 02, 03, 04, 05, 06, 07, 08, 09, 10, 11, 12 (todos) |
+| `01_VISION_BOOK` | 02, 03, 04, 05, 06, 07, 08, 09, 10, 11, 12 |
+| `02_CONCEPT_BOOK` | 03, 04, 05, 06, 07, 08, 09, 10, 11, 12 |
+| `03_REFERENCE_LIBRARY` | 04, 05, 06, 07, 08, 09, 10, 11, 12 |
+| `04_CREATIVE_DIRECTION` | 05, 06, 07, 08, 09, 10, 11, 12 |
+| `05_VISUAL_LANGUAGE` | 06, 07, 08, 09, 10, 11, 12 |
+| `06_SIGNATURE_MOMENTS` | 07, 10, 11, 12 |
+| `07_EDITORIAL_PATTERNS` | 10, 11, 12 |
+| `08_CHROME_GUIDELINES` | 10, 11, 12 |
+| `09_MOTION_LANGUAGE` | 10, 11, 12 |
+| `10_DESIGN_SYSTEM` | 11, 12 |
+| `11_COMPONENTS` | 12 |
+| `12_ANTI_PATTERNS` | nenhum, formalmente — mas é o único documento com um laço de retorno (ver nota) |
+
+**Nota sobre o laço de retorno de `12_ANTI_PATTERNS`:** é o único ponto do grafo que não é
+estritamente unidirecional. Um anti-padrão novo, descoberto numa revisão de tela real, é
+sintoma de uma lacuna em `04_CREATIVE_DIRECTION` ou `06_SIGNATURE_MOMENTS` — registrar o
+anti-padrão sem revisar o documento de origem trata o sintoma, não a causa. Isso é
+intencional (não um erro de modelagem): `12` é o único documento com permissão de sinalizar
+revisão rio acima.
+
+**Nota sobre `10`/`11` nesta sessão:** como só recebem a constituição, a obrigação acima
+("revisar 10/11 sempre que 04–09 mudar") só passa a valer de fato quando `10_DESIGN_SYSTEM`
+for reescrito por completo e passar a `Vigente` — até lá, a linha correspondente fica
+registrada como dívida arquitetural explícita, não como pendência silenciosa.
+
+### Critério de sucesso por documento
+
+Todo documento termina com uma seção fixa **"Como saber que este documento cumpriu sua
+missão?"** — um critério verificável, não uma lista de conteúdo. Texto-base de cada um,
+incorporado literalmente no arquivo correspondente:
+
+| Documento | Como saber que cumpriu sua missão |
+|---|---|
+| `00_MANIFESTO` | Se alguém ler este documento, deve entender por que o Portal (e o Dodô) existe. |
+| `01_VISION_BOOK` | Deve conseguir explicar que produto estamos construindo, e para quem. |
+| `02_CONCEPT_BOOK` | Deve conseguir explicar por que o Portal é uma redação, não um dashboard. |
+| `03_REFERENCE_LIBRARY` | Deve permitir apontar, para qualquer princípio da Creative Direction, de onde ele veio. |
+| `04_CREATIVE_DIRECTION` | Deve orientar decisões visuais sem falar de componentes. |
+| `05_VISUAL_LANGUAGE` | Deve permitir reconhecer a linguagem do produto antes mesmo de existir um componente. |
+| `06_SIGNATURE_MOMENTS` | Deve permitir apontar uma tela como "isto é Dodô" ou "isto não é" sem consultar mais nada. |
+| `07_EDITORIAL_PATTERNS` | Deve permitir montar a estrutura de uma tela nova sem inventar a ordem dos blocos do zero. |
+| `08_CHROME_GUIDELINES` | Deve permitir decidir se um elemento é "chrome" ou "conteúdo" sem ambiguidade. |
+| `09_MOTION_LANGUAGE` | Deve permitir decidir se uma animação proposta é legítima ou decorativa, só com este documento. |
+| `10_DESIGN_SYSTEM` | Deve conseguir documentar a linguagem sem redefini-la. |
+| `11_COMPONENTS` | Deve permitir implementar um componente sem tomar nenhuma decisão de identidade nova. |
+| `12_ANTI_PATTERNS` | Deve permitir rejeitar uma tela errada apontando o item exato da lista, sem debater gosto. |
+
 ---
 
 ## 4. Migração de `ART_DIRECTION_GUIDE.md` e `DESIGN.md`
@@ -206,57 +281,75 @@ Migração controlada, não exclusão:
 ## 5. Reference Library — curadoria inicial (para revisão)
 
 Doze referências, cobrindo editorial, moda, fotografia, museus, cinema, publicações, estúdios
-criativos e produtos digitais com identidade marcante — nenhuma limitada a SaaS. Formato por
-referência: o que aprendemos / o que não copiar / princípio extraído / relação com o Dodô.
-Texto completo será escrito em `03_REFERENCE_LIBRARY.md`; abaixo, a lista e a tese de cada uma,
-para validação da curadoria antes da prosa final.
+criativos e produtos digitais com identidade marcante — nenhuma limitada a SaaS. Este não é um
+moodboard: é pesquisa com rastreabilidade. Quatro campos obrigatórios por referência, o quarto
+sempre apontando para um documento/seção concreto da arquitetura, nunca para uma "relação"
+vaga:
 
-1. **Kinfolk** (revista) — minimalismo emocional; redesign de 10 anos (Schick Toikka) trocou
-   neutralidade por tipografia expressiva própria. Não copiar: literalmente o vazio "escandinavo"
-   como estética — o Dodô precisa de calor, não de frieza. Princípio: tipografia própria é a
-   assinatura mais barata e mais difícil de copiar.
-2. **Cereal Magazine** — fotografia editorial e viagem como método; grid rígido a serviço da
-   imagem. Não copiar: dependência de fotografia de altíssima produção (o Dodô hoje não tem
-   isso). Princípio: grid rígido não é frieza quando a imagem (ou o conteúdo real) carrega peso.
-3. **Apartamento** — informalidade autoral, "anti-perfeição" editorial deliberada. Não copiar:
-   a bagunça como estética — o Dodô é preciso, não caótico. Princípio: imperfeição deliberada
-   sinaliza voz humana por trás do produto — relevante para o tom "de quem já sabe e está
-   contando".
-4. **A24** (estúdio de cinema) — identidade como selo de qualidade; "deixe o trabalho falar por
-   si"; anima o próprio logotipo por filme, nunca por hábito. Não copiar: minimalismo que serve
-   ao mercado de nicho cinéfilo, não a um produto de trabalho diário. Princípio: uma marca forte
-   dispensa decoração — o reconhecimento vem de decisões repetidas, não de ornamento.
-5. **Criterion Collection / MUBI** — curadoria como produto; tom de quem seleciona, não de quem
-   vende. Não copiar: ritmo de consumo lento (o Portal é uma ferramenta de trabalho, não lazer).
-   Princípio: a cada peça, provar critério, não volume — ecoa "frase antes do número".
-6. **Aesop** — copy como ingrediente; restrição cromática extrema; texto denso como sinal de
-   confiança, não de fricção. Não copiar: preço/posicionamento de luxo como valor em si.
-   Princípio: texto explicativo bem escrito substitui decoração visual como prova de cuidado.
-7. **Bottega Veneta** (moda) — silêncio de marca ("stealth wealth"); ausência de logotipo como
-   afirmação de confiança. Não copiar: apagamento total da marca — o Dodô precisa ser
-   identificável sem logo, não invisível. Princípio: confiança vem de comportamento consistente,
-   não de selo — já é regra do Dodô ("ausência de selos").
-8. **Cooper Hewitt / Pentagram** — identidade institucional de museu construída sobre tipografia
-   própria e sistema de grid, não sobre paleta. Não copiar: escala e orçamento de um projeto de
-   museu nacional. Princípio: um sistema tipográfico bem definido carrega identidade mais que
-   cor.
-9. **NASA Graphics Standards Manual (1976)** — sistema de identidade guiado inteiramente por
-   princípio e regra de aplicação, décadas antes de "design system" existir como termo. Não
-   copiar: rigidez absoluta sem espaço para densidade elástica. Princípio: regra clara e poucas
-   exceções sobrevivem a gerações de quem implementa.
-10. **Dieter Rams / Braun** — os dez princípios como manifesto operacional, não como lista de
-    adjetivos. Não copiar: linguagem de produto físico industrial 1:1. Princípio: "bom design é
-    o mínimo de design possível" — justifica diretamente "vazio como decisão" e "interface a
-    serviço do conteúdo".
-11. **GOV.UK Design Principles** — documentação "princípio antes de componente" em produto
-    digital de larga escala e alta seriedade (governo). Não copiar: tom burocrático-neutro — o
-    Dodô tem voz autoral, GOV.UK deliberadamente não tem. Princípio: "do less" e "be consistent,
-    not uniform" — justificam sequência fixa de leitura sem exigir telas idênticas.
-12. **Massimo Vignelli / grid suíço** — hierarquia por peso e posição, nunca por decoração;
-    tipografia como estrutura, não ornamento. Não copiar: frieza corporativa do estilo suíço
-    puro. Princípio: é, literalmente, a origem do princípio já vigente "hierarquia por peso, não
-    por escala" do ART_DIRECTION_GUIDE.md — a Reference Library aqui confirma uma decisão já
-    tomada, não inventa uma nova.
+- O que aprendemos.
+- O que **não** queremos copiar.
+- Qual princípio extraímos.
+- Onde esse princípio aparece na arquitetura (documento + seção específicos).
+
+Texto completo será escrito em `03_REFERENCE_LIBRARY.md`; abaixo, a curadoria para validação
+antes da prosa final.
+
+1. **Kinfolk** (revista) — Aprendemos: redesign de 10 anos (Schick Toikka) trocou neutralidade
+   por tipografia expressiva própria como assinatura. Não copiar: o vazio "escandinavo" como
+   estética fria. Princípio: tipografia própria é a assinatura mais barata e mais difícil de
+   copiar. Aparece em: `04_CREATIVE_DIRECTION` (papel quente, nunca frio) e `06_SIGNATURE_
+   MOMENTS` (título em minúsculas como assinatura tipográfica).
+2. **Cereal Magazine** — Aprendemos: grid rígido a serviço da imagem/conteúdo, não da estética
+   por si. Não copiar: dependência de fotografia de altíssima produção que o Dodô hoje não tem.
+   Princípio: grid rígido não é frieza quando o conteúdo real carrega peso. Aparece em:
+   `07_EDITORIAL_PATTERNS` (estrutura fixa de página) e `10_DESIGN_SYSTEM` (grid, quando
+   reescrito).
+3. **Apartamento** — Aprendemos: imperfeição deliberada sinaliza voz humana por trás do
+   produto. Não copiar: a bagunça como estética — o Dodô é preciso, não caótico. Princípio: tom
+   de quem fala, não de quem rotula. Aparece em: `05_VISUAL_LANGUAGE` (linguagem editorial,
+   tom).
+4. **A24** (estúdio de cinema) — Aprendemos: uma marca forte dispensa decoração; o
+   reconhecimento vem de decisões repetidas, nunca de ornamento. Não copiar: minimalismo que
+   serve a um nicho cinéfilo, não a uma ferramenta de trabalho diário. Princípio: "deixe o
+   trabalho falar por si". Aparece em: `04_CREATIVE_DIRECTION` (anti-princípio "componentes
+   chamando mais atenção que o conteúdo").
+5. **Criterion Collection / MUBI** — Aprendemos: tom de quem seleciona, não de quem vende;
+   prova critério a cada peça, não volume. Não copiar: ritmo de consumo lento — o Portal é
+   ferramenta de trabalho, não lazer. Princípio: "frase antes do número". Aparece em:
+   `05_VISUAL_LANGUAGE` (abertura de página) e `07_EDITORIAL_PATTERNS` (como uma página começa).
+6. **Aesop** — Aprendemos: texto explicativo bem escrito substitui decoração visual como prova
+   de cuidado. Não copiar: preço/posicionamento de luxo como valor em si. Princípio: copy é
+   ingrediente, não preenchimento. Aparece em: `05_VISUAL_LANGUAGE` (ritmo de parágrafo) e
+   `08_CHROME_GUIDELINES` (o que é conteúdo vs. o que é chrome).
+7. **Bottega Veneta** (moda) — Aprendemos: confiança vem de comportamento consistente, não de
+   selo. Não copiar: apagamento total da marca — o Dodô precisa ser identificável sem logo, não
+   invisível. Princípio: "ausência de selos". Aparece em: `04_CREATIVE_DIRECTION`
+   (anti-princípio já vigente, herdado de `ART_DIRECTION_GUIDE.md` §2).
+8. **Cooper Hewitt / Pentagram** — Aprendemos: um sistema tipográfico bem definido carrega
+   identidade mais que paleta de cor. Não copiar: escala e orçamento de um projeto de museu
+   nacional. Princípio: tipografia própria como âncora de sistema. Aparece em:
+   `06_SIGNATURE_MOMENTS` e `10_DESIGN_SYSTEM` (quando reescrito — hierarquia tipográfica antes
+   de paleta).
+9. **NASA Graphics Standards Manual (1976)** — Aprendemos: sistema de identidade guiado
+   inteiramente por princípio e regra de aplicação sobrevive a gerações de quem implementa. Não
+   copiar: rigidez absoluta sem espaço para exceção contextual. Princípio: regra clara, poucas
+   exceções, todas registradas. Aparece em: `04_CREATIVE_DIRECTION` (mecanismo de exceção
+   justificada) e `12_ANTI_PATTERNS` (proibição de exceção sem registro).
+10. **Dieter Rams / Braun** — Aprendemos: os dez princípios funcionam como manifesto
+    operacional, não como lista de adjetivos soltos. Não copiar: linguagem de produto físico
+    industrial 1:1. Princípio: "bom design é o mínimo de design possível". Aparece em:
+    `00_MANIFESTO` (formato de crença operacional) e `04_CREATIVE_DIRECTION` (vazio como
+    decisão; interface a serviço do conteúdo).
+11. **GOV.UK Design Principles** — Aprendemos: documentação "princípio antes de componente"
+    funciona mesmo em produto digital de larga escala e alta seriedade. Não copiar: tom
+    burocrático-neutro — o Dodô tem voz autoral, GOV.UK deliberadamente não tem. Princípio: "do
+    less" e "be consistent, not uniform". Aparece em: `07_EDITORIAL_PATTERNS` (sequência fixa
+    de leitura sem exigir telas idênticas).
+12. **Massimo Vignelli / grid suíço** — Aprendemos: hierarquia por peso e posição, nunca por
+    decoração; tipografia como estrutura. Não copiar: frieza corporativa do estilo suíço puro.
+    Princípio: é a origem direta do princípio já vigente "hierarquia por peso, não por escala".
+    Aparece em: `04_CREATIVE_DIRECTION` §1 (herdado literalmente de `ART_DIRECTION_GUIDE.md`) —
+    esta referência confirma uma decisão já tomada, não inventa uma nova.
 
 ---
 
@@ -274,13 +367,20 @@ para validação da curadoria antes da prosa final.
 ## 7. Critérios de aceite
 
 - [ ] `ADR-021` criado em `knowledge/ARCHITECTURAL_DECISIONS.md`, seguindo o formato das ADRs
-      existentes na mesma série.
-- [ ] Os 13 arquivos existem em `docs/design/`, cada um com a seção "Status Arquitetural"
-      completa e consistente com a tabela de dependências acima.
+      existentes na mesma série, incluindo a lista explícita "cada camada é fonte de verdade de
+      uma pergunta diferente" (Manifesto=valores, Vision Book=produto, Concept Book=metáfora,
+      Reference Library=repertório, Creative Direction=tom, Visual Language=gramática, Design
+      System=documenta a implementação).
+- [ ] Os 13 arquivos existem em `docs/design/`, cada um com "Status Arquitetural" e "Como saber
+      que este documento cumpriu sua missão?" completos, consistentes com as tabelas de
+      dependência direta e invertida acima.
 - [ ] `00`–`09` e `12` têm conteúdo real, não placeholder, coerente com `ART_DIRECTION_GUIDE.md`
       e a PoC já aprovada — sem inventar requisito ou regra sem lastro (ADR-003).
 - [ ] `02_CONCEPT_BOOK.md` declara explicitamente, na introdução, que é uma reconstrução, nunca
       uma transcrição de artefato perdido.
+- [ ] `03_REFERENCE_LIBRARY.md` segue o formato de quatro campos obrigatórios por referência
+      (o que aprendemos / o que não copiar / princípio / onde aparece na arquitetura), nunca
+      formato de moodboard.
 - [ ] `ART_DIRECTION_GUIDE.md` e `DESIGN.md` recebem cabeçalho de estado/redirecionamento,
       preservados, não apagados.
 - [ ] Nenhum componente, tela ou token técnico novo é criado.
