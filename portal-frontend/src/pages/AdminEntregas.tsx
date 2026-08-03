@@ -1,5 +1,6 @@
 import type { ChangeEvent } from "react";
 import { useEffect, useMemo, useState } from "react";
+import { OperationalRowHeader } from "../components/OperationalRowHeader";
 import { ApiError, apiFetch } from "../lib/api";
 import { formatarData, mesReferenciaCorrente } from "../lib/formatters";
 import { useSession } from "../lib/session";
@@ -44,32 +45,6 @@ const LABEL_ESTADO: Record<EstadoEntrega, string> = {
 	APROVADO: "aprovado",
 	PUBLICADO: "publicado",
 };
-
-const estiloInput = {
-	height: 40,
-	borderRadius: 8,
-	border: "1px solid rgba(27, 23, 23, 0.2)",
-	padding: "0 12px",
-	fontSize: 14,
-	fontWeight: 400,
-} as const;
-
-const estiloLabel = {
-	display: "flex",
-	flexDirection: "column",
-	gap: 6,
-	fontSize: 13,
-	fontWeight: 700,
-} as const;
-
-const estiloBotaoOutlineNeutro = {
-	height: 36,
-	padding: "0 16px",
-	fontSize: 13,
-	borderRadius: 24,
-	border: "1px solid rgba(27, 23, 23, 0.2)",
-	background: "none",
-} as const;
 
 /**
  * UC administrativo (Backoffice, preparação para SPEC-012 escrita completa): permite à equipe
@@ -124,32 +99,20 @@ function FormularioEntrega({
 	}
 
 	return (
-		<div
-			style={{
-				display: "grid",
-				gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-				gap: 12,
-				marginTop: 16,
-				paddingTop: 16,
-				borderTop: "1px solid rgba(27, 23, 23, 0.1)",
-			}}
-		>
+		<div className="admin-form-grid">
 			{parceirasAtivas.length === 0 ? (
-				<p
-					className="portal-page-feedback is-error"
-					style={{ margin: 0, gridColumn: "1 / -1" }}
-				>
+				<p className="portal-page-feedback is-error admin-form-error">
 					nenhuma parceira ativa cadastrada — ative uma parceira antes de criar
 					entregas.
 				</p>
 			) : (
 				<>
-					<label style={estiloLabel}>
+					<label className="admin-field">
 						parceira
 						<select
+							className="admin-select"
 							value={parceiraId}
 							onChange={(evento) => setParceiraId(evento.target.value)}
-							style={estiloInput}
 						>
 							{parceirasAtivas.map((parceira) => (
 								<option key={parceira.id} value={parceira.id}>
@@ -158,25 +121,25 @@ function FormularioEntrega({
 							))}
 						</select>
 					</label>
-					<label style={estiloLabel}>
+					<label className="admin-field">
 						competência (aaaa-mm)
 						<input
+							className="admin-input"
 							value={mesReferencia}
 							onChange={(evento: ChangeEvent<HTMLInputElement>) =>
 								setMesReferencia(evento.target.value)
 							}
 							placeholder="2026-07"
-							style={estiloInput}
 						/>
 					</label>
-					<label style={estiloLabel}>
+					<label className="admin-field">
 						formato
 						<select
+							className="admin-select"
 							value={formato}
 							onChange={(evento) =>
 								setFormato(evento.target.value as FormatoEntrega)
 							}
-							style={estiloInput}
 						>
 							{Object.entries(LABEL_FORMATO).map(([valor, rotulo]) => (
 								<option key={valor} value={valor}>
@@ -185,49 +148,34 @@ function FormularioEntrega({
 							))}
 						</select>
 					</label>
-					<label style={estiloLabel}>
+					<label className="admin-field">
 						data de entrega
 						<input
+							className="admin-input"
 							type="date"
 							value={dataEntrega}
 							onChange={(evento) => setDataEntrega(evento.target.value)}
-							style={estiloInput}
 						/>
 					</label>
 				</>
 			)}
 
 			{erro && (
-				<p
-					className="portal-page-feedback is-error"
-					style={{ margin: 0, gridColumn: "1 / -1" }}
-				>
+				<p className="portal-page-feedback is-error admin-form-error">
 					{erro}
 				</p>
 			)}
 
-			<div
-				style={{
-					display: "flex",
-					gap: 8,
-					alignItems: "center",
-					gridColumn: "1 / -1",
-				}}
-			>
+			<div className="admin-form-actions">
 				<button
 					type="button"
-					className="btn-primary"
+					className="btn-primary is-compact"
 					disabled={salvando || parceirasAtivas.length === 0}
 					onClick={() => void salvar()}
-					style={{ height: 36, padding: "0 16px", fontSize: 13 }}
 				>
 					{salvando ? "salvando..." : "salvar"}
 				</button>
-				<button
-					type="button"
-					onClick={aoCancelar}
-					style={{ ...estiloBotaoOutlineNeutro, border: "none" }}
-				>
+				<button type="button" className="btn-plain" onClick={aoCancelar}>
 					cancelar
 				</button>
 			</div>
@@ -251,14 +199,7 @@ function LinhaEntrega({
 	return (
 		<li className="portal-list-row operational-row">
 			<span
-				className="portal-list-row-status"
-				style={{
-					fontWeight: 700,
-					color:
-						entrega.estado === "AGUARDANDO_MATERIAL"
-							? "var(--color-cherry)"
-							: "inherit",
-				}}
+				className={`portal-list-row-status status-pill${entrega.estado === "AGUARDANDO_MATERIAL" ? " is-alert" : ""}`}
 			>
 				{LABEL_ESTADO[entrega.estado]}
 			</span>
@@ -270,41 +211,37 @@ function LinhaEntrega({
 				</p>
 			</div>
 
-			<p className="portal-list-row-meta">
-				entrega em {formatarData(entrega.dataEntrega)}
-			</p>
+			<p className="portal-list-row-meta">{formatarData(entrega.dataEntrega)}</p>
 
 			<p className="portal-list-row-meta">
 				{entrega.materialEnviado ? "material enviado" : "sem material ainda"}
 			</p>
 
-			{entrega.estado === "EM_REVISAO" && (
-				<div className="portal-list-row-actions">
+			{/* Sempre ocupa a 5ª coluna do grid, mesmo sem ação disponível (AGUARDANDO_MATERIAL/
+			    PUBLICADO) — do contrário a linha só tem 4 filhos e a grade de 5 colunas desalinha
+			    com as linhas vizinhas que têm ação (achado de grid da Fase B). */}
+			<div className="portal-list-row-actions">
+				{entrega.estado === "EM_REVISAO" && (
 					<button
 						type="button"
-						className="btn-primary"
+						className="btn-primary is-compact"
 						disabled={emAcao}
 						onClick={aoAprovar}
-						style={{ height: 36, padding: "0 16px", fontSize: 13 }}
 					>
 						{emAcao ? "..." : "aprovar"}
 					</button>
-				</div>
-			)}
-
-			{entrega.estado === "APROVADO" && (
-				<div className="portal-list-row-actions">
+				)}
+				{entrega.estado === "APROVADO" && (
 					<button
 						type="button"
-						className="btn-primary"
+						className="btn-primary is-compact"
 						disabled={emAcao}
 						onClick={aoPublicar}
-						style={{ height: 36, padding: "0 16px", fontSize: 13 }}
 					>
 						{emAcao ? "..." : "publicar"}
 					</button>
-				</div>
-			)}
+				)}
+			</div>
 		</li>
 	);
 }
@@ -439,7 +376,7 @@ export function AdminEntregasPage() {
 	}
 
 	return (
-		<section className="portal-page" style={{ maxWidth: 1080 }}>
+		<section className="portal-page is-admin-wide">
 			<p className="portal-eyebrow">administração</p>
 			<h1 className="title-editorial portal-page-title">entregas</h1>
 			<p className="portal-page-intro">
@@ -456,34 +393,26 @@ export function AdminEntregasPage() {
 
 			{!carregando && entregas && (
 				<>
-					<div
-						style={{
-							display: "flex",
-							flexWrap: "wrap",
-							gap: 12,
-							alignItems: "flex-end",
-							marginBottom: 16,
-						}}
-					>
-						<label style={{ ...estiloLabel, flex: "2 1 220px" }}>
+					<div className="admin-toolbar">
+						<label className="admin-field is-wide">
 							buscar por parceira
 							<input
+								className="admin-input"
 								name="buscaParceira"
 								placeholder="nome da parceira"
 								value={busca}
 								onChange={(evento) => setBusca(evento.target.value)}
-								style={estiloInput}
 							/>
 						</label>
-						<label style={{ ...estiloLabel, flex: "1 1 170px" }}>
+						<label className="admin-field is-narrow">
 							estado
 							<select
+								className="admin-select"
 								name="filtroEstado"
 								value={filtroEstado}
 								onChange={(evento) =>
 									setFiltroEstado(evento.target.value as FiltroEstado)
 								}
-								style={estiloInput}
 							>
 								<option value="TODOS">todos</option>
 								{Object.entries(LABEL_ESTADO).map(([valor, rotulo]) => (
@@ -495,22 +424,15 @@ export function AdminEntregasPage() {
 						</label>
 						<button
 							type="button"
-							className="btn-primary"
+							className="btn-primary is-medium"
 							onClick={() => setFormularioAberto((atual) => !atual)}
-							style={{ height: 40, padding: "0 24px", fontSize: 14 }}
 						>
 							{formularioAberto ? "fechar" : "+ nova entrega"}
 						</button>
 					</div>
 
 					{formularioAberto && (
-						<div
-							style={{
-								marginBottom: 24,
-								paddingBottom: 24,
-								borderBottom: "1px solid rgba(27, 23, 23, 0.1)",
-							}}
-						>
+						<div className="admin-form-panel">
 							<FormularioEntrega
 								parceirasAtivas={parceirasAtivas}
 								aoSalvarComSucesso={(nova) => {
@@ -535,21 +457,26 @@ export function AdminEntregasPage() {
 					)}
 
 					{filtradas.length > 0 && (
-						<ul className="portal-list">
-							{filtradas.map((entrega) => (
-								<LinhaEntrega
-									key={entrega.id}
-									entrega={entrega}
-									nomeParceira={
-										nomePorParceiraId.get(entrega.parceiraId) ??
-										"parceira desconhecida"
-									}
-									emAcao={idEmAcao === entrega.id}
-									aoAprovar={() => void aprovar(entrega)}
-									aoPublicar={() => void publicar(entrega)}
-								/>
-							))}
-						</ul>
+						<>
+							<OperationalRowHeader
+								labels={["status", "parceira", "entrega em", "material", "ações"]}
+							/>
+							<ul className="portal-list">
+								{filtradas.map((entrega) => (
+									<LinhaEntrega
+										key={entrega.id}
+										entrega={entrega}
+										nomeParceira={
+											nomePorParceiraId.get(entrega.parceiraId) ??
+											"parceira desconhecida"
+										}
+										emAcao={idEmAcao === entrega.id}
+										aoAprovar={() => void aprovar(entrega)}
+										aoPublicar={() => void publicar(entrega)}
+									/>
+								))}
+							</ul>
+						</>
 					)}
 				</>
 			)}

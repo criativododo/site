@@ -202,10 +202,9 @@ function EnviarMaterial({
 				/>
 				<button
 					type="button"
-					className="btn-primary pendencia-submit"
+					className="btn-primary is-compact pendencia-submit"
 					disabled={!arquivo || estado === "enviando"}
 					onClick={() => void enviar()}
-					style={{ height: 36, padding: "0 20px", fontSize: 13 }}
 				>
 					{estado === "enviando"
 						? "enviando..."

@@ -49,3 +49,5 @@ architecture-report.txt
 
 # OS
 Thumbs.db
+.superpowers/
+.playwright-mcp/

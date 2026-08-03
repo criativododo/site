@@ -1,4 +1,71 @@
+@import "tailwindcss";
 @import "./styles/tokens.css";
+
+/*
+ * Ponte shadcn ⇄ Design System DODÔ.
+ * tokens.css (importado acima) é a fonte soberana — nada aqui define cor/raio/fonte nova,
+ * só realoca os tokens já existentes (--color-cherry, --color-cotton, --color-noir etc.)
+ * nos slots semânticos que os componentes shadcn instalados em
+ * src/components/ui/ esperam (bg-primary, bg-card, --radius, font-heading...). Onde o
+ * Design System não distingue um conceito do shadcn (ex.: não existe token de "erro"
+ * separado de "marca"), reaproveita-se o token real já usado com esse papel em produção
+ * (--color-cherry já é a cor de `.is-error` hoje) em vez de inventar um novo.
+ */
+:root {
+	--background: var(--color-cotton);
+	--foreground: var(--color-noir);
+	--card: var(--color-cotton);
+	--card-foreground: var(--color-noir);
+	--popover: var(--color-cotton);
+	--popover-foreground: var(--color-noir);
+	--primary: var(--color-cherry);
+	--primary-foreground: var(--color-cotton);
+	/* Portal não tem "segunda cor de marca" fora de cherry/maroon, e maroon nunca pode
+	   ficar ao lado de cherry (1.27:1, reprova AA) — secondary/muted/accent derivam do
+	   neutro (cotton/noir), não da paleta de marca. */
+	--secondary: color-mix(in oklch, var(--color-cotton), var(--color-noir) 6%);
+	--secondary-foreground: var(--color-noir);
+	--muted: color-mix(in oklch, var(--color-cotton), var(--color-noir) 4%);
+	--muted-foreground: color-mix(in oklch, var(--color-noir), transparent 35%);
+	--accent: var(--secondary);
+	--accent-foreground: var(--color-noir);
+	--destructive: var(--color-cherry);
+	--border: rgba(27, 23, 23, 0.1); /* = --border-hairline */
+	--input: rgba(27, 23, 23, 0.2); /* = borda de .dodo-field */
+	--ring: var(--color-cherry); /* já é a cor real de a:focus-visible no Portal */
+	/* O Portal ainda não tem token nomeado de raio (Fase A/B usam px literal) — 12px é o
+	   valor mais comum hoje (ex.: cards de dashboard); a escala derivada do shadcn
+	   (sm/md/lg/xl) fica 8/10/12/16, e 8px já coincide com o raio de campo/input existente.
+	   Pílula (999px/50%) continua fora desta escala, sem equivalente aqui. */
+	--radius: 12px;
+}
+
+@theme inline {
+	--color-background: var(--background);
+	--color-foreground: var(--foreground);
+	--color-card: var(--card);
+	--color-card-foreground: var(--card-foreground);
+	--color-popover: var(--popover);
+	--color-popover-foreground: var(--popover-foreground);
+	--color-primary: var(--primary);
+	--color-primary-foreground: var(--primary-foreground);
+	--color-secondary: var(--secondary);
+	--color-secondary-foreground: var(--secondary-foreground);
+	--color-muted: var(--muted);
+	--color-muted-foreground: var(--muted-foreground);
+	--color-accent: var(--accent);
+	--color-accent-foreground: var(--accent-foreground);
+	--color-destructive: var(--destructive);
+	--color-border: var(--border);
+	--color-input: var(--input);
+	--color-ring: var(--ring);
+	--radius-sm: calc(var(--radius) - 4px);
+	--radius-md: calc(var(--radius) - 2px);
+	--radius-lg: var(--radius);
+	--radius-xl: calc(var(--radius) + 4px);
+	--font-sans: var(--font-body);
+	--font-heading: var(--font-display);
+}
 
 * {
 	box-sizing: border-box;
@@ -14,7 +81,7 @@ html {
 body {
 	font-family: var(--font-body);
 	font-weight: 400;
-	background: var(--color-cotton);
+	background: var(--color-paper);
 	color: var(--color-noir);
 	-webkit-font-smoothing: antialiased;
 	min-height: 100vh;
@@ -39,12 +106,6 @@ button {
 	color: var(--color-cotton);
 }
 
-.container {
-	width: 100%;
-	max-width: 1026px;
-	margin: 0 auto;
-}
-
 .title-editorial {
 	font-family: var(--font-display);
 	font-weight: 800;
@@ -58,21 +119,21 @@ button {
 	gap: 10px;
 	height: 48px;
 	padding: 0 28px;
-	background: var(--color-cherry);
-	color: var(--color-cotton);
-	border: 1px solid var(--color-cherry);
-	border-radius: 24px;
+	background: var(--accent-signal);
+	color: var(--surface-card);
+	border: 1px solid var(--accent-signal);
+	border-radius: var(--radius-full);
 	font-size: 15px;
-	font-weight: 700;
+	font-weight: var(--weight-bold);
 	font-family: var(--font-display);
 	transition:
-		background 0.4s ease,
-		color 0.4s ease;
+		background var(--motion-base) ease,
+		color var(--motion-base) ease;
 }
 
 .btn-primary:hover {
 	background: transparent;
-	color: var(--color-cherry);
+	color: var(--accent-signal);
 }
 
 button:focus-visible,
@@ -80,7 +141,7 @@ a:focus-visible,
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
-	outline: 2px solid var(--color-cherry);
+	outline: 2px solid var(--accent-signal);
 	outline-offset: 3px;
 }
 
@@ -112,33 +173,33 @@ textarea:focus-visible {
 	justify-content: center;
 	height: 36px;
 	padding: 0 16px;
-	border-radius: 24px;
-	border: 1px solid rgba(27, 23, 23, 0.2);
+	border-radius: var(--radius-full);
+	border: 1px solid var(--ink-hairline);
 	background: none;
-	color: var(--color-noir);
+	color: var(--ink-primary);
 	font-family: var(--font-display);
 	font-size: 13px;
-	font-weight: 700;
+	font-weight: var(--weight-bold);
 	transition:
-		border-color 0.3s ease,
-		color 0.3s ease,
-		background 0.3s ease;
+		border-color var(--motion-fast) ease,
+		color var(--motion-fast) ease,
+		background var(--motion-fast) ease;
 }
 .btn-outline:hover:not(:disabled) {
-	border-color: var(--color-cherry);
-	color: var(--color-cherry);
+	border-color: var(--accent-signal);
+	color: var(--accent-signal);
 }
 .btn-outline:disabled {
 	opacity: 0.5;
 	cursor: not-allowed;
 }
 .btn-outline.is-cherry {
-	border-color: var(--color-cherry);
-	color: var(--color-cherry);
+	border-color: var(--accent-signal);
+	color: var(--accent-signal);
 }
 .btn-outline.is-cherry:hover:not(:disabled) {
-	background: var(--color-cherry);
-	color: var(--color-cotton);
+	background: var(--accent-signal);
+	color: var(--surface-card);
 }
 
 /* Botão "texto puro" — cancelar/fechar sem contorno, usado dentro de formulários inline. */
@@ -208,6 +269,12 @@ textarea:focus-visible {
 .admin-field.is-narrow {
 	flex: 1 1 170px;
 }
+.admin-field.is-compact {
+	flex: 1 1 140px;
+}
+.admin-field.is-full {
+	grid-column: 1 / -1;
+}
 .admin-input,
 .admin-select {
 	height: 40px;
@@ -241,6 +308,16 @@ textarea:focus-visible {
 }
 .admin-form-grid.is-wide {
 	grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+/* Par em linha (flex) de .admin-form-grid — edição pontual de um único campo. */
+.admin-form-inline {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	gap: 12px;
+	margin-top: 16px;
+	padding-top: 16px;
+	border-top: 1px solid rgba(27, 23, 23, 0.1);
 }
 .admin-form-error {
 	margin: 0;
@@ -276,6 +353,17 @@ textarea:focus-visible {
 .admin-row-expanded dt {
 	font-weight: 700;
 }
+.admin-row-expanded-heading {
+	margin-bottom: 8px;
+	font-size: 13px;
+	font-weight: 700;
+}
+/* Envolve o formulário de edição inline de uma linha operacional — sem borda própria,
+   o .admin-form-grid interno já traz seu próprio border-top. */
+.admin-row-editing {
+	grid-column: 1 / -1;
+	width: 100%;
+}
 /* Botão "invisível" que envolve o nome/meta de uma linha operacional para expandir detalhes. */
 .admin-row-title-button {
 	text-align: left;
@@ -298,7 +386,8 @@ textarea:focus-visible {
 	gap: 48px;
 	min-height: 100vh;
 	padding: 40px 28px;
-	border-right: 1px solid rgba(27, 23, 23, 0.1);
+	background: var(--color-cotton);
+	border-right: 1px solid var(--color-grafite-15);
 }
 
 /*
@@ -327,8 +416,24 @@ textarea:focus-visible {
 	display: flex;
 	flex-direction: column;
 	align-items: flex-start;
-	gap: 14.4px;
 	margin-top: 12px;
+}
+
+/*
+ * Agrupa a navegação do admin em blocos por espaço puro (sem caixa/rótulo — "vazio como
+ * decisão", ART_DIRECTION_GUIDE.md §1): "trabalho do dia" (dashboard/entregas/briefings)
+ * separado de "administração" (parceiras/obrigações/colaboração mensal/moderação). Dá à
+ * sidebar uma silhueta própria em vez de repetir a nav horizontal da Landing rotacionada.
+ * Nav da Parceira (3 itens) usa um único grupo — visualmente idêntica a antes.
+ */
+.portal-nav-group {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 14.4px;
+}
+.portal-nav-group + .portal-nav-group {
+	margin-top: 24px;
 }
 
 .portal-sidebar-user {
@@ -337,7 +442,7 @@ textarea:focus-visible {
 	align-items: flex-start;
 	gap: 14px;
 	padding-top: 24px;
-	border-top: 1px solid rgba(27, 23, 23, 0.1);
+	border-top: 1px solid var(--color-grafite-15);
 }
 .portal-sidebar-user-name {
 	font-size: 14px;
@@ -348,7 +453,7 @@ textarea:focus-visible {
 	position: relative;
 	display: inline-block;
 	padding-bottom: 2px;
-	color: var(--color-cherry);
+	color: var(--color-noir);
 	font-size: 15.3px;
 	font-weight: 600;
 	line-height: 1.3;
@@ -372,6 +477,11 @@ textarea:focus-visible {
 	transform: scaleX(1);
 	transform-origin: bottom left;
 }
+/* Hierarquia por peso, não por escala (ART_DIRECTION_GUIDE.md §1): o item ativo ganha peso
+   extra além do sublinhado, sem introduzir tamanho ou cor de fundo diferentes. */
+.portal-nav-link.is-active {
+	font-weight: 700;
+}
 
 .portal-main {
 	display: flex;
@@ -392,12 +502,12 @@ textarea:focus-visible {
 }
 
 .portal-breadcrumb {
-	color: rgba(27, 23, 23, 0.7);
+	color: var(--color-grafite-70);
 	font-size: 13px;
 	font-weight: 600;
 }
 .portal-breadcrumb a {
-	color: var(--color-cherry);
+	color: var(--color-grafite-90);
 }
 .portal-breadcrumb a:hover {
 	text-decoration: underline;
@@ -420,8 +530,8 @@ textarea:focus-visible {
 	min-height: 100vh;
 	display: grid;
 	grid-template-rows: auto 1fr auto;
-	background: var(--color-cotton);
-	color: var(--color-noir);
+	background: var(--surface-base);
+	color: var(--ink-primary);
 	overflow: hidden;
 }
 .portal-login-emblem {
@@ -440,10 +550,10 @@ textarea:focus-visible {
 	align-items: center;
 	justify-content: space-between;
 	padding: 36px clamp(24px, 6vw, 96px);
-	border-bottom: 1px solid rgba(27, 23, 23, 0.1);
-	color: var(--color-cherry);
+	border-bottom: 1px solid var(--ink-hairline);
+	color: var(--accent-signal);
 	font-size: 14px;
-	font-weight: 700;
+	font-weight: var(--weight-bold);
 }
 .portal-login-logo {
 	width: 115px;
@@ -455,30 +565,37 @@ textarea:focus-visible {
 	width: min(100% - 48px, 440px);
 	align-self: center;
 	justify-self: center;
-	padding: 64px 0;
+	padding: var(--space-6) 0;
+}
+/* Cadastro tem mais campos que o Login (só um botão OAuth) — precisa de mais largura. */
+.portal-login-content.is-wide {
+	width: min(100% - 48px, 480px);
 }
 .portal-login-overline {
-	margin-bottom: 12px;
-	color: var(--color-cherry);
-	font-size: 13.6px;
-	font-weight: 700;
+	margin-bottom: var(--space-2);
+	color: var(--accent-signal);
+	font-size: var(--text-meta);
+	font-weight: var(--weight-bold);
 	letter-spacing: 0.08em;
 	text-transform: uppercase;
 }
 .portal-login-title {
 	margin: 0;
-	color: var(--color-cherry);
+	color: var(--accent-signal);
 	font-family: var(--font-display);
-	font-size: 38.4px;
-	font-weight: 800;
-	line-height: 1.1;
+	font-size: var(--text-title);
+	font-weight: var(--weight-heavy);
+	line-height: var(--leading-tight);
 	letter-spacing: -0.01em;
+}
+.portal-login-title.is-compact {
+	font-size: 30px;
 }
 .portal-login-description {
 	margin-top: 20px;
-	color: var(--color-noir);
-	font-size: 16px;
-	line-height: 1.6;
+	color: var(--ink-primary);
+	font-size: var(--text-body-lg);
+	line-height: var(--leading-relaxed);
 }
 .portal-login-button {
 	width: 100%;
@@ -486,7 +603,7 @@ textarea:focus-visible {
 }
 .portal-login-retry {
 	width: 100%;
-	margin-top: 24px;
+	margin-top: var(--space-4);
 }
 .portal-login-button span {
 	font-size: 18px;
@@ -494,8 +611,8 @@ textarea:focus-visible {
 }
 .portal-login-security {
 	margin-top: 14px;
-	color: rgba(27, 23, 23, 0.7);
-	font-size: 13px;
+	color: var(--ink-secondary);
+	font-size: var(--text-meta);
 	line-height: 1.5;
 }
 .portal-login-footer {
@@ -505,13 +622,13 @@ textarea:focus-visible {
 	justify-content: space-between;
 	gap: 8px 24px;
 	padding: 28px clamp(24px, 6vw, 96px);
-	border-top: 1px solid rgba(27, 23, 23, 0.1);
-	color: rgba(27, 23, 23, 0.7);
-	font-size: 13px;
+	border-top: 1px solid var(--ink-hairline);
+	color: var(--ink-secondary);
+	font-size: var(--text-meta);
 }
 .portal-login-footer a {
-	color: var(--color-cherry);
-	font-weight: 600;
+	color: var(--accent-signal);
+	font-weight: var(--weight-medium);
 	white-space: nowrap;
 }
 .portal-login-footer a:hover {
@@ -524,16 +641,199 @@ textarea:focus-visible {
 	align-items: center;
 	justify-content: center;
 	gap: 20px;
-	color: var(--color-cherry);
+	color: var(--accent-signal);
 	font-size: 14px;
 }
-.portal-login-loader {
-	width: 28px;
-	height: 28px;
-	border: 2px solid rgba(129, 1, 0, 0.2);
-	border-top-color: var(--color-cherry);
-	border-radius: 50%;
-	animation: portal-spin 0.8s linear infinite;
+
+/*
+ * Tela de entrada (Login, estado não autenticado) — composição própria, deliberadamente
+ * independente do shell .portal-login-* que Cadastro/Privacidade continuam usando.
+ * Direção de arte fechada em sessão de 2026-08-03: o Ô oficial (icon.svg, arquivo
+ * institucional, nunca redesenhado) funciona como arquitetura silenciosa — presença muito
+ * baixa, nunca compete com o conteúdo — e o título assina em cherry como o único ponto de
+ * ênfase de cor da tela. Google é o único método funcional (ADR-007); Apple é um
+ * placeholder visual de mesmo peso hierárquico, sem integração (decisão pendente de ADR
+ * própria); e-mail fica fora desta primeira versão.
+ */
+.portal-entrada {
+	position: relative;
+	width: 100%;
+	height: 100vh;
+	overflow: hidden;
+	background: radial-gradient(
+		120% 100% at 78% 25%,
+		color-mix(in srgb, var(--color-paper) 85%, white) 0%,
+		var(--color-paper) 55%,
+		var(--color-cotton) 100%
+	);
+	color: var(--ink-primary);
+}
+.portal-entrada-emblem {
+	position: absolute;
+	left: 7%;
+	top: 12%;
+	width: 34%;
+	height: auto;
+	opacity: 0.018;
+	pointer-events: none;
+	user-select: none;
+	z-index: 0;
+}
+.portal-entrada .portal-login-footer {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	z-index: 2;
+}
+.portal-entrada-content {
+	position: absolute;
+	left: 30%;
+	top: 9%;
+	width: 40%;
+	height: 82%;
+	z-index: 2;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: flex-start;
+	gap: 14px;
+}
+.portal-entrada-wordmark {
+	width: 89px;
+	height: auto;
+	margin-bottom: 6px;
+}
+.portal-entrada-eyebrow {
+	margin: 0;
+	font-family: var(--font-display);
+	font-weight: var(--weight-bold);
+	font-size: 10px;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--accent-signal);
+}
+.portal-entrada-title {
+	margin: 0;
+	font-family: var(--font-display);
+	/* 60px — escala deliberada de "tela-bandeira" (DESIGN_LANGUAGE.md §3), maior que
+	   --text-title (38.4px): este é o único momento de primeira impressão do Portal, não
+	   uma tela de trabalho recorrente. Gap declarado (ADR-003), não um token formal ainda. */
+	font-size: 60px;
+	font-weight: var(--weight-heavy);
+	line-height: 1;
+	letter-spacing: -0.02em;
+	color: var(--accent-signal);
+}
+.portal-entrada-description {
+	margin: 0;
+	font-family: var(--font-body);
+	font-size: 13px;
+	line-height: 1.55;
+	color: var(--ink-secondary);
+	max-width: 41ch;
+}
+.portal-entrada-auth {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 10px;
+	margin-top: 8px;
+}
+.portal-entrada-auth .portal-entrada-oauth {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	width: 220px;
+	height: 38px;
+	padding: 0 16px;
+	border-radius: 999px;
+	font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+	font-size: 12.5px;
+	font-weight: 500;
+	white-space: nowrap;
+}
+.portal-entrada-auth .portal-entrada-oauth.is-google {
+	background: #fff;
+	border: 1px solid #dadce0;
+	color: #3c4043;
+}
+.portal-entrada-auth .portal-entrada-oauth.is-google:hover {
+	background: #f8f9fa;
+}
+.portal-entrada-auth .portal-entrada-oauth.is-apple {
+	background: #fff;
+	border: none;
+	color: #000;
+}
+.portal-entrada-auth .portal-entrada-oauth.is-apple:hover {
+	background: #f5f5f5;
+}
+.portal-entrada-apple-note {
+	margin: 0;
+	font-size: 11px;
+	color: var(--ink-secondary);
+}
+
+@media (max-width: 768px) {
+	.portal-entrada-content {
+		left: 8%;
+		top: 17%;
+		width: 84%;
+		height: 76%;
+	}
+	.portal-entrada-emblem {
+		left: 2%;
+		top: 8%;
+		width: 70%;
+	}
+	.portal-entrada-wordmark {
+		width: 64px;
+	}
+	.portal-entrada-title {
+		font-size: 42px;
+	}
+	.portal-entrada-description {
+		max-width: none;
+	}
+	.portal-entrada-auth {
+		width: 100%;
+	}
+	.portal-entrada-auth .portal-entrada-oauth {
+		width: 100%;
+	}
+}
+
+/* Formulário do Cadastro — único formulário de texto do fluxo de Login/Cadastro. */
+.portal-login-form {
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+	margin-top: 28px;
+}
+.portal-login-form-row {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 14px;
+}
+.portal-login-field {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	font-size: 13px;
+	font-weight: 700;
+}
+.portal-login-input {
+	height: 44px;
+	border-radius: 8px;
+	border: 1px solid rgba(27, 23, 23, 0.2);
+	padding: 0 14px;
+	font-size: 15px;
+	font-weight: 400;
+	font-family: inherit;
+	color: var(--color-noir);
+	background: var(--color-cotton);
 }
 
 @keyframes portal-spin {
@@ -542,8 +842,56 @@ textarea:focus-visible {
 	}
 }
 
+/*
+ * .dodo-mark — o "Ô." como assinatura viva da interface (decisão fechada 2026-08-03,
+ * ver /design-language.css na raiz do repositório — fonte canônica deste padrão).
+ * Wordmark permanece exclusivo de Landing/documentos/institucional; dentro do Portal,
+ * o "Ô." assina loading e estados vazios. Cherry aqui é cor de intenção, nunca
+ * estrutural — nunca ocupa área, só sinaliza.
+ */
+.dodo-mark {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	font-family: var(--font-display);
+	font-weight: var(--weight-heavy);
+	line-height: 1;
+	color: var(--accent-signal);
+	user-select: none;
+}
+.dodo-mark--loading {
+	animation: dodo-mark-pulse 1.4s var(--ease-editorial) infinite;
+}
+@keyframes dodo-mark-pulse {
+	0%,
+	100% {
+		opacity: 0.35;
+		transform: scale(1);
+	}
+	50% {
+		opacity: 1;
+		transform: scale(1.08);
+	}
+}
+.dodo-mark--watermark {
+	color: var(--ink-primary);
+	opacity: 0.05;
+}
+@media (prefers-reduced-motion: reduce) {
+	.dodo-mark--loading {
+		animation: none;
+		opacity: 0.7;
+	}
+}
+
 .portal-page {
 	max-width: 760px;
+}
+/* Página de texto corrido, estática (ex.: Privacidade) — centralizada, mais estreita. */
+.portal-page.is-prose {
+	margin: 0 auto;
+	padding: 64px 24px;
+	max-width: 640px;
 }
 .portal-eyebrow {
 	margin-bottom: 12px;
@@ -557,6 +905,9 @@ textarea:focus-visible {
 	margin-bottom: 60px;
 	font-size: 38.4px;
 	line-height: 1.1;
+}
+.portal-page-title.is-tight {
+	margin-bottom: 24px;
 }
 .portal-page-intro {
 	max-width: 430px;
@@ -573,6 +924,13 @@ textarea:focus-visible {
 .pendencia-feedback {
 	color: var(--color-cherry);
 }
+.portal-page-feedback.is-caption {
+	margin-top: 4px;
+	margin-bottom: 12px;
+}
+.portal-page-feedback.is-close {
+	margin-top: 8px;
+}
 
 .portal-section-divider {
 	margin-top: 40px;
@@ -585,6 +943,110 @@ textarea:focus-visible {
 	flex-direction: column;
 	gap: 12px;
 	list-style: none;
+}
+.portal-list.is-tight {
+	gap: 4px;
+}
+.portal-list.is-spaced {
+	margin-top: 16px;
+}
+.portal-list.is-spaced-bottom {
+	margin-bottom: 16px;
+}
+
+/* Campo de formulário avulso em página não-administrativa (ex.: seletor de período do
+   Financeiro) — mesma tipografia de .admin-field/.admin-input, fora do contexto admin. */
+.portal-field {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	max-width: 240px;
+	margin-bottom: 24px;
+}
+.portal-field-label {
+	font-size: 13px;
+	font-weight: 700;
+}
+.portal-field-select,
+.portal-field-input {
+	height: 40px;
+	border-radius: 8px;
+	border: 1px solid rgba(27, 23, 23, 0.2);
+	padding: 0 12px;
+	font-size: 14px;
+	font-family: inherit;
+	color: var(--color-noir);
+	background: var(--color-cotton);
+}
+
+/* Pilha vertical de campos de um formulário curto embutido na própria página (ex.: editar
+   contato/endereço no Perfil) — par do .admin-form-grid para fora do contexto admin. */
+.portal-form-stack {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	max-width: 360px;
+	margin-top: 16px;
+}
+
+/* Botão "link" — texto puro colorido, sem contorno nem fundo (ex.: "editar" ao lado de um
+   dado exibido). Menor prima de .btn-plain, sem exigir altura fixa de linha de ação. */
+.link-button {
+	border: none;
+	background: none;
+	padding: 0;
+	font-family: inherit;
+	font-size: 13px;
+	font-weight: 700;
+	color: var(--color-cherry);
+}
+.link-button.is-large {
+	font-size: 15px;
+}
+
+/* Exibição de perfil em pares rótulo/valor (Perfil da Parceira). */
+.profile-dl {
+	display: grid;
+	grid-template-columns: auto 1fr;
+	gap: 14px 20px;
+	max-width: 480px;
+	font-size: 15px;
+}
+.profile-dl dt {
+	font-weight: 700;
+}
+.profile-dl dd {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+.profile-dl dd.is-top {
+	align-items: flex-start;
+}
+.profile-address-lines {
+	display: flex;
+	flex-direction: column;
+}
+
+.lgpd-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	margin-top: 12px;
+}
+
+/* Filho de .portal-list-row (flex) que precisa encolher para permitir truncamento interno. */
+.portal-list-row-body {
+	min-width: 0;
+	width: 100%;
+	max-width: 100%;
+}
+.text-truncate {
+	display: block;
+	max-width: 100%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 .portal-list-row {
@@ -603,6 +1065,15 @@ textarea:focus-visible {
 	margin-top: 2px;
 	font-size: 14px;
 	opacity: 0.8;
+	font-variant-numeric: tabular-nums;
+}
+/* Segunda linha, mais quieta, dentro de uma célula .portal-list-row-meta que carrega 2 dados
+   (ex.: postagem + aprovação interna em AdminBriefings). */
+.portal-list-row-meta-secondary {
+	display: block;
+	margin-top: 2px;
+	font-size: 12px;
+	color: var(--color-grafite-70);
 }
 .portal-list-row-actions {
 	display: flex;
@@ -611,6 +1082,14 @@ textarea:focus-visible {
 }
 .portal-list-row-status {
 	font-size: 14px;
+}
+
+.portal-prose {
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+	font-size: 15px;
+	line-height: 1.7;
 }
 
 /*
@@ -627,6 +1106,15 @@ textarea:focus-visible {
 }
 .operational-row > * {
 	min-width: 0;
+}
+/* Cabeçalho de coluna (achado P0-3 da auditoria de UX) — mesma grade, rótulos discretos,
+   não compete com o conteúdo das linhas abaixo. */
+.operational-row-header {
+	padding: 0 20px 8px;
+	color: var(--color-grafite-40);
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.04em;
 }
 
 .financeiro-kpis {
@@ -651,9 +1139,18 @@ textarea:focus-visible {
 	font-family: var(--font-display);
 	font-size: 22px;
 	font-weight: 700;
+	font-variant-numeric: tabular-nums;
 }
 .financeiro-kpi.is-destaque .financeiro-kpi-value {
 	color: var(--color-cherry);
+}
+/* Número com precisão visível (ART_DIRECTION_GUIDE.md §5): centavos em peso/tamanho menor,
+   mesma linha — confirma exatidão sem competir com a parte que importa (os reais). */
+.financeiro-kpi-value .money-cents {
+	margin-left: 1px;
+	font-size: 0.6em;
+	font-weight: 400;
+	opacity: 0.75;
 }
 
 .pendencias-list {
@@ -676,6 +1173,93 @@ textarea:focus-visible {
 .pendencias-group + .pendencias-group {
 	margin-top: 32px;
 }
+
+/*
+ * Dashboard editorial (Sprint 2, ART_DIRECTION_GUIDE.md): 3 blocos de peso decrescente.
+ * Sem caixa/borda por item (§1 "sublinhar, não emoldurar") — ênfase é sublinhado no
+ * hover/foco, nunca contorno. Sem grade simétrica (§2 anti-princípio).
+ */
+.dashboard-bloco.is-normalidade {
+	margin-top: 56px;
+}
+/*
+ * Densidade elástica (ART_DIRECTION_GUIDE.md §1/§5): o bloco "requer sua ação" é o único
+ * ponto de decisão da tela — cada item é um link para agir, não uma linha de leitura passiva
+ * — por isso respira mais que os blocos de prazos/normalidade, que são só informativos.
+ */
+.dashboard-bloco.is-atencao .dashboard-acao-item {
+	padding: 14px 0;
+}
+
+.dashboard-acao-item {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 16px;
+	padding: 10px 0;
+	color: inherit;
+	text-decoration: none;
+}
+.dashboard-acao-item-label {
+	font-size: 15px;
+}
+.dashboard-acao-item:hover .dashboard-acao-item-label,
+.dashboard-acao-item:focus-visible .dashboard-acao-item-label {
+	text-decoration: underline;
+	text-underline-offset: 4px;
+}
+.dashboard-acao-item-valor {
+	font-family: var(--font-display);
+	font-size: 22px;
+	font-weight: 700;
+	flex-shrink: 0;
+	font-variant-numeric: tabular-nums;
+}
+/* Hierarquia por peso, não por escala: o item mais urgente da tela ganha peso extra (800),
+   não um salto de tamanho — mesmo tamanho, mais presença. */
+.dashboard-acao-item.is-destaque .dashboard-acao-item-valor {
+	color: var(--color-cherry);
+	font-weight: 800;
+}
+.dashboard-acao-item-justificativa {
+	display: block;
+	margin-top: 2px;
+	font-size: 13px;
+	color: var(--color-grafite-70);
+}
+
+.dashboard-prazo-lista {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+.dashboard-prazo-item {
+	display: flex;
+	justify-content: space-between;
+	gap: 16px;
+	font-size: 14px;
+}
+.dashboard-prazo-item-quando {
+	flex-shrink: 0;
+	color: var(--color-grafite-70);
+	white-space: nowrap;
+	font-variant-numeric: tabular-nums;
+}
+.dashboard-prazo-vazio {
+	font-size: 14px;
+	color: var(--color-grafite-70);
+}
+
+/* Fecha o arco tipográfico da tela (atenção → prazos → normalidade): tom mais quieto que os
+   blocos acima, o silêncio visual que o próprio texto ("dentro do esperado") já descreve. */
+.dashboard-normalidade {
+	max-width: 480px;
+	margin-top: 8px;
+	font-size: 15px;
+	line-height: 1.7;
+	color: var(--color-grafite-70);
+}
+
 .pendencias-aviso {
 	margin-bottom: 14px;
 	font-size: 14px;
@@ -737,6 +1321,7 @@ textarea:focus-visible {
 	font-size: 13.6px;
 	line-height: 1.6;
 	font-weight: 400;
+	font-variant-numeric: tabular-nums;
 }
 .pendencia-status {
 	display: flex;
@@ -869,9 +1454,6 @@ textarea:focus-visible {
 }
 
 @media (max-width: 1100px) {
-	.container {
-		padding: 0 40px;
-	}
 	/*
 	 * .operational-row tem 5 colunas de largura fixa (68/1.4fr/120/130/230 + gaps) que somam
 	 * ~812px mínimos — mais do que sobra ao lado da sidebar de 264px neste intervalo (achado
@@ -882,6 +1464,10 @@ textarea:focus-visible {
 	.operational-row {
 		grid-template-columns: 1fr;
 		row-gap: 10px;
+	}
+	/* Sem sentido empilhado em cartão único — cada rótulo já está implícito no dado abaixo dele. */
+	.operational-row-header {
+		display: none;
 	}
 	.operational-row .portal-list-row-actions {
 		width: 100%;
@@ -928,7 +1514,7 @@ textarea:focus-visible {
 		min-height: auto;
 		padding: 20px 24px;
 		border-right: none;
-		border-bottom: 1px solid rgba(27, 23, 23, 0.1);
+		border-bottom: 1px solid var(--color-grafite-15);
 	}
 	.portal-sidebar-top {
 		display: contents;
@@ -944,6 +1530,11 @@ textarea:focus-visible {
 		margin-top: 0;
 		min-width: 0;
 		overflow-x: auto;
+	}
+	/* Dissolve o agrupamento em uma única linha horizontal — mesma técnica de
+	   .portal-sidebar-top acima, sem duplicar DOM entre os dois layouts. */
+	.portal-nav-group {
+		display: contents;
 	}
 	.portal-sidebar-user {
 		grid-area: user;
@@ -968,13 +1559,13 @@ textarea:focus-visible {
 		padding-bottom: 80px;
 	}
 	.portal-login-header {
-		padding: 24px;
+		padding: var(--space-4);
 	}
 	.portal-login-content {
 		width: min(100% - 48px, 440px);
 	}
 	.portal-login-title {
-		font-size: 28.8px;
+		font-size: var(--text-title-mobile);
 	}
 	.portal-login-emblem {
 		opacity: 0.04;
@@ -982,7 +1573,7 @@ textarea:focus-visible {
 		right: -30vw;
 	}
 	.portal-login-footer {
-		padding: 24px;
+		padding: var(--space-4);
 	}
 	.portal-page-title {
 		margin-bottom: 40px;
@@ -1014,5 +1605,21 @@ textarea:focus-visible {
 	.pendencia-upload-controls {
 		align-items: flex-start;
 		flex-direction: column;
+	}
+	/*
+	 * Dashboard editorial (Sprint 2) nunca tinha regra mobile (achado P1-4 da auditoria de
+	 * UX): rótulo longo + valor de dois dígitos na mesma linha (align-items:baseline,
+	 * justify-content:space-between) apertava abaixo de 768px. Empilha, como
+	 * .pendencia-trigger já faz — o valor nunca comprime contra o texto.
+	 */
+	.dashboard-acao-item {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 2px;
+	}
+	.dashboard-prazo-item {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 2px;
 	}
 }

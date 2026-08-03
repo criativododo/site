@@ -18,38 +18,9 @@ interface PerfilParceira {
 	endereco: Endereco | null;
 }
 
-const estiloInput = {
-	height: 40,
-	borderRadius: 8,
-	border: "1px solid rgba(27, 23, 23, 0.2)",
-	padding: "0 12px",
-	fontSize: 14,
-	fontWeight: 400,
-} as const;
-
-const estiloLabel = {
-	display: "flex",
-	flexDirection: "column",
-	gap: 6,
-	fontSize: 13,
-	fontWeight: 700,
-} as const;
-
 function BotaoCancelar({ aoClicar }: { aoClicar: () => void }) {
 	return (
-		<button
-			type="button"
-			onClick={aoClicar}
-			style={{
-				alignSelf: "flex-start",
-				height: 40,
-				padding: "0 4px",
-				fontSize: 14,
-				border: "none",
-				background: "none",
-				color: "rgba(27, 23, 23, 0.7)",
-			}}
-		>
+		<button type="button" className="btn-plain" onClick={aoClicar}>
 			cancelar
 		</button>
 	);
@@ -96,47 +67,33 @@ function EditarContato({
 	}
 
 	return (
-		<div
-			style={{
-				display: "flex",
-				flexDirection: "column",
-				gap: 12,
-				maxWidth: 360,
-				marginTop: 16,
-			}}
-		>
-			<label style={estiloLabel}>
+		<div className="portal-form-stack">
+			<label className="admin-field">
 				pix
 				<input
+					className="portal-field-input"
 					value={pix}
 					onChange={(evento) => setPix(evento.target.value)}
-					style={estiloInput}
 				/>
 			</label>
-			<label style={estiloLabel}>
+			<label className="admin-field">
 				e-mail
 				<input
+					className="portal-field-input"
 					type="email"
 					value={email}
 					onChange={(evento) => setEmail(evento.target.value)}
-					style={estiloInput}
 				/>
 			</label>
 
 			{erro && <p className="portal-page-feedback is-error">{erro}</p>}
 
-			<div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+			<div className="admin-form-actions">
 				<button
 					type="button"
-					className="btn-primary"
+					className="btn-primary is-medium"
 					disabled={salvando || !formularioValido}
 					onClick={() => void salvar()}
-					style={{
-						alignSelf: "flex-start",
-						height: 40,
-						padding: "0 24px",
-						fontSize: 14,
-					}}
 				>
 					{salvando ? "salvando..." : "salvar"}
 				</button>
@@ -203,59 +160,45 @@ function EditarEndereco({
 	}
 
 	return (
-		<div
-			style={{
-				display: "flex",
-				flexDirection: "column",
-				gap: 12,
-				maxWidth: 360,
-				marginTop: 16,
-			}}
-		>
-			<label style={estiloLabel}>
+		<div className="portal-form-stack">
+			<label className="admin-field">
 				cep
 				<input
+					className="portal-field-input"
 					value={cep}
 					onChange={(evento) => setCep(mascararCep(evento.target.value))}
 					placeholder="00000-000"
 					inputMode="numeric"
-					style={estiloInput}
 				/>
 			</label>
 			{!cepCompletoOuVazio(cep) && (
 				<p className="portal-page-feedback is-error">cep incompleto — precisa de 8 dígitos.</p>
 			)}
-			<label style={estiloLabel}>
+			<label className="admin-field">
 				número
 				<input
+					className="portal-field-input"
 					value={numero}
 					onChange={(evento) => setNumero(evento.target.value)}
-					style={estiloInput}
 				/>
 			</label>
-			<label style={estiloLabel}>
+			<label className="admin-field">
 				complemento
 				<input
+					className="portal-field-input"
 					value={complemento}
 					onChange={(evento) => setComplemento(evento.target.value)}
-					style={estiloInput}
 				/>
 			</label>
 
 			{aviso && <p className="portal-page-feedback">{aviso}</p>}
 
-			<div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+			<div className="admin-form-actions">
 				<button
 					type="button"
-					className="btn-primary"
+					className="btn-primary is-medium"
 					disabled={salvando || !cepCompletoOuVazio(cep)}
 					onClick={() => void salvar()}
-					style={{
-						alignSelf: "flex-start",
-						height: 40,
-						padding: "0 24px",
-						fontSize: 14,
-					}}
 				>
 					{salvando ? "salvando..." : "salvar endereço"}
 				</button>
@@ -316,50 +259,26 @@ function MeusDadosLgpd() {
 	return (
 		<div className="portal-section-divider">
 			<p className="pendencias-summary is-quiet">seus dados (lgpd)</p>
-			<div
-				style={{
-					display: "flex",
-					flexWrap: "wrap",
-					gap: 12,
-					marginTop: 12,
-				}}
-			>
+			<div className="lgpd-actions">
 				<button
 					type="button"
+					className="btn-outline"
 					disabled={processando}
 					onClick={() => void exportar()}
-					style={{
-						height: 36,
-						padding: "0 16px",
-						fontSize: 13,
-						borderRadius: 24,
-						border: "1px solid rgba(27, 23, 23, 0.2)",
-						background: "none",
-					}}
 				>
 					baixar meus dados
 				</button>
 				<button
 					type="button"
+					className="btn-outline is-cherry"
 					disabled={processando}
 					onClick={() => void solicitarExclusao()}
-					style={{
-						height: 36,
-						padding: "0 16px",
-						fontSize: 13,
-						borderRadius: 24,
-						border: "1px solid var(--color-cherry)",
-						background: "none",
-						color: "var(--color-cherry)",
-					}}
 				>
 					solicitar exclusão de conta
 				</button>
 			</div>
 			{aviso && (
-				<p className="portal-page-feedback" style={{ marginTop: 8 }}>
-					{aviso}
-				</p>
+				<p className="portal-page-feedback is-close">{aviso}</p>
 			)}
 		</div>
 	);
@@ -389,22 +308,11 @@ function LinhaDePerfil({
 }) {
 	return (
 		<>
-			<dt style={{ fontWeight: 700 }}>{rotulo}</dt>
-			<dd style={{ display: "flex", alignItems: "center", gap: 12 }}>
+			<dt>{rotulo}</dt>
+			<dd>
 				{valor}
 				{!editando && (
-					<button
-						type="button"
-						onClick={aoEditar}
-						style={{
-							border: "none",
-							background: "none",
-							padding: 0,
-							fontSize: 13,
-							fontWeight: 700,
-							color: "var(--color-cherry)",
-						}}
-					>
+					<button type="button" className="link-button" onClick={aoEditar}>
 						editar
 					</button>
 				)}
@@ -466,15 +374,7 @@ export function PerfilPage() {
 
 			{!carregando && !erro && perfil && (
 				<>
-					<dl
-						style={{
-							display: "grid",
-							gridTemplateColumns: "auto 1fr",
-							gap: "14px 20px",
-							fontSize: 15,
-							maxWidth: 480,
-						}}
-					>
+					<dl className="profile-dl">
 						<LinhaDePerfil
 							rotulo="pix"
 							valor={perfil.pix}
@@ -489,11 +389,11 @@ export function PerfilPage() {
 						/>
 
 						<>
-							<dt style={{ fontWeight: 700 }}>endereço</dt>
-							<dd style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+							<dt>endereço</dt>
+							<dd className="is-top">
 								{perfil.endereco && linhasDeEndereco(perfil.endereco).length > 0 ? (
 									<>
-										<div style={{ display: "flex", flexDirection: "column" }}>
+										<div className="profile-address-lines">
 											{linhasDeEndereco(perfil.endereco).map((linha, indice) => (
 												<span key={indice}>{linha}</span>
 											))}
@@ -501,15 +401,8 @@ export function PerfilPage() {
 										{!editandoEndereco && (
 											<button
 												type="button"
+												className="link-button"
 												onClick={() => setEditandoEndereco(true)}
-												style={{
-													border: "none",
-													background: "none",
-													padding: 0,
-													fontSize: 13,
-													fontWeight: 700,
-													color: "var(--color-cherry)",
-												}}
 											>
 												editar
 											</button>
@@ -519,15 +412,8 @@ export function PerfilPage() {
 									!editandoEndereco && (
 										<button
 											type="button"
+											className="link-button is-large"
 											onClick={() => setEditandoEndereco(true)}
-											style={{
-												border: "none",
-												background: "none",
-												padding: 0,
-												fontSize: 15,
-												fontWeight: 700,
-												color: "var(--color-cherry)",
-											}}
 										>
 											adicionar endereço →
 										</button>

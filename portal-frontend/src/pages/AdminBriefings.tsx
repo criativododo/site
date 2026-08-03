@@ -1,5 +1,6 @@
 import type { ChangeEvent } from "react";
 import { useEffect, useMemo, useState } from "react";
+import { OperationalRowHeader } from "../components/OperationalRowHeader";
 import { ApiError, apiFetch } from "../lib/api";
 import { formatarData } from "../lib/formatters";
 import { useSession } from "../lib/session";
@@ -72,50 +73,6 @@ function remocaoPermitida(
 	);
 }
 
-const estiloInput = {
-	height: 40,
-	borderRadius: 8,
-	border: "1px solid rgba(27, 23, 23, 0.2)",
-	padding: "0 12px",
-	fontSize: 14,
-	fontWeight: 400,
-} as const;
-
-const estiloTextarea = {
-	...estiloInput,
-	height: "auto",
-	minHeight: 80,
-	padding: 12,
-	resize: "vertical",
-} as const;
-
-const estiloLabel = {
-	display: "flex",
-	flexDirection: "column",
-	gap: 6,
-	fontSize: 13,
-	fontWeight: 700,
-} as const;
-
-const estiloBotaoOutlineNeutro = {
-	height: 36,
-	padding: "0 16px",
-	fontSize: 13,
-	borderRadius: 24,
-	border: "1px solid rgba(27, 23, 23, 0.2)",
-	background: "none",
-} as const;
-
-const estiloBotaoOutlineCherry = {
-	height: 36,
-	padding: "0 16px",
-	fontSize: 13,
-	borderRadius: 24,
-	border: "1px solid var(--color-cherry)",
-	background: "none",
-	color: "var(--color-cherry)",
-} as const;
-
 function CamposDeConteudo({
 	dados,
 	setDados,
@@ -135,21 +92,21 @@ function CamposDeConteudo({
 
 	return (
 		<>
-			<label style={estiloLabel}>
+			<label className="admin-field">
 				look
-				<input {...campo("look")} style={estiloInput} />
+				<input className="admin-input" {...campo("look")} />
 			</label>
-			<label style={estiloLabel}>
+			<label className="admin-field">
 				data de entrega do material
-				<input type="date" {...campo("dataEntrega")} style={estiloInput} />
+				<input className="admin-input" type="date" {...campo("dataEntrega")} />
 			</label>
-			<label style={estiloLabel}>
+			<label className="admin-field">
 				data de postagem
-				<input type="date" {...campo("dataPostagem")} style={estiloInput} />
+				<input className="admin-input" type="date" {...campo("dataPostagem")} />
 			</label>
-			<label style={{ ...estiloLabel, gridColumn: "1 / -1" }}>
+			<label className="admin-field is-full">
 				orientação criativa
-				<textarea {...campo("orientacao")} style={estiloTextarea} />
+				<textarea className="admin-input admin-textarea" {...campo("orientacao")} />
 			</label>
 		</>
 	);
@@ -216,32 +173,20 @@ function FormularioNovoBriefing({
 	}
 
 	return (
-		<div
-			style={{
-				display: "grid",
-				gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-				gap: 12,
-				marginTop: 16,
-				paddingTop: 16,
-				borderTop: "1px solid rgba(27, 23, 23, 0.1)",
-			}}
-		>
+		<div className="admin-form-grid is-wide">
 			{entregasSemBriefing.length === 0 ? (
-				<p
-					className="portal-page-feedback is-error"
-					style={{ margin: 0, gridColumn: "1 / -1" }}
-				>
+				<p className="portal-page-feedback is-error admin-form-error">
 					todas as entregas já têm briefing — crie uma nova entrega antes de
 					criar outro briefing.
 				</p>
 			) : (
 				<>
-					<label style={{ ...estiloLabel, gridColumn: "1 / -1" }}>
+					<label className="admin-field is-full">
 						entrega
 						<select
+							className="admin-select"
 							value={entregaId}
 							onChange={(evento) => setEntregaId(evento.target.value)}
-							style={estiloInput}
 						>
 							{entregasSemBriefing.map((entrega) => (
 								<option key={entrega.id} value={entrega.id}>
@@ -255,36 +200,21 @@ function FormularioNovoBriefing({
 			)}
 
 			{erro && (
-				<p
-					className="portal-page-feedback is-error"
-					style={{ margin: 0, gridColumn: "1 / -1" }}
-				>
+				<p className="portal-page-feedback is-error admin-form-error">
 					{erro}
 				</p>
 			)}
 
-			<div
-				style={{
-					display: "flex",
-					gap: 8,
-					alignItems: "center",
-					gridColumn: "1 / -1",
-				}}
-			>
+			<div className="admin-form-actions">
 				<button
 					type="button"
-					className="btn-primary"
+					className="btn-primary is-compact"
 					disabled={salvando || entregasSemBriefing.length === 0}
 					onClick={() => void salvar()}
-					style={{ height: 36, padding: "0 16px", fontSize: 13 }}
 				>
 					{salvando ? "salvando..." : "salvar"}
 				</button>
-				<button
-					type="button"
-					onClick={aoCancelar}
-					style={{ ...estiloBotaoOutlineNeutro, border: "none" }}
-				>
+				<button type="button" className="btn-plain" onClick={aoCancelar}>
 					cancelar
 				</button>
 			</div>
@@ -338,49 +268,25 @@ function FormularioEdicaoBriefing({
 	}
 
 	return (
-		<div
-			style={{
-				display: "grid",
-				gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-				gap: 12,
-				marginTop: 16,
-				paddingTop: 16,
-				borderTop: "1px solid rgba(27, 23, 23, 0.1)",
-			}}
-		>
+		<div className="admin-form-grid is-wide">
 			<CamposDeConteudo dados={dados} setDados={setDados} />
 
 			{erro && (
-				<p
-					className="portal-page-feedback is-error"
-					style={{ margin: 0, gridColumn: "1 / -1" }}
-				>
+				<p className="portal-page-feedback is-error admin-form-error">
 					{erro}
 				</p>
 			)}
 
-			<div
-				style={{
-					display: "flex",
-					gap: 8,
-					alignItems: "center",
-					gridColumn: "1 / -1",
-				}}
-			>
+			<div className="admin-form-actions">
 				<button
 					type="button"
-					className="btn-primary"
+					className="btn-primary is-compact"
 					disabled={salvando}
 					onClick={() => void salvar()}
-					style={{ height: 36, padding: "0 16px", fontSize: 13 }}
 				>
 					{salvando ? "salvando..." : "salvar"}
 				</button>
-				<button
-					type="button"
-					onClick={aoCancelar}
-					style={{ ...estiloBotaoOutlineNeutro, border: "none" }}
-				>
+				<button type="button" className="btn-plain" onClick={aoCancelar}>
 					cancelar
 				</button>
 			</div>
@@ -410,11 +316,7 @@ function LinhaBriefing({
 	return (
 		<li className="portal-list-row operational-row">
 			<span
-				className="portal-list-row-status"
-				style={{
-					fontWeight: 700,
-					color: briefing.entregaId ? "inherit" : "var(--color-cherry)",
-				}}
+				className={`portal-list-row-status status-pill${briefing.entregaId ? "" : " is-alert"}`}
 			>
 				{briefing.estadoEntregaVinculada
 					? LABEL_ESTADO[briefing.estadoEntregaVinculada]
@@ -429,22 +331,22 @@ function LinhaBriefing({
 				</p>
 			</div>
 
-			<p className="portal-list-row-meta">
-				entrega {formatarData(briefing.dataEntrega)} · postagem{" "}
-				{formatarData(briefing.dataPostagem)} · aprovação interna{" "}
-				{formatarData(briefing.dataAprovacaoInterna)}
-			</p>
+			<p className="portal-list-row-meta">{formatarData(briefing.dataEntrega)}</p>
+
+			<div className="portal-list-row-meta">
+				<span>{formatarData(briefing.dataPostagem)}</span>
+				<span className="portal-list-row-meta-secondary">
+					aprovação {formatarData(briefing.dataAprovacaoInterna)}
+				</span>
+			</div>
 
 			<div className="portal-list-row-actions">
-				<button
-					type="button"
-					onClick={aoAlternarEdicao}
-					style={estiloBotaoOutlineNeutro}
-				>
+				<button type="button" className="btn-outline" onClick={aoAlternarEdicao}>
 					{editando ? "fechar edição" : "editar"}
 				</button>
 				<button
 					type="button"
+					className="btn-outline is-cherry"
 					disabled={!podeRemover || removendo}
 					onClick={aoRemover}
 					title={
@@ -452,14 +354,13 @@ function LinhaBriefing({
 							? undefined
 							: "a entrega vinculada já saiu de 'aguardando material' — remover perderia o rastro do que a orientou."
 					}
-					style={estiloBotaoOutlineCherry}
 				>
 					{removendo ? "removendo..." : "remover"}
 				</button>
 			</div>
 
 			{editando && (
-				<div style={{ gridColumn: "1 / -1", width: "100%" }}>
+				<div className="admin-row-editing">
 					<FormularioEdicaoBriefing
 						briefing={briefing}
 						aoSalvarComSucesso={aoSalvarEdicao}
@@ -593,7 +494,7 @@ export function AdminBriefingsPage() {
 	}
 
 	return (
-		<section className="portal-page" style={{ maxWidth: 1080 }}>
+		<section className="portal-page is-admin-wide">
 			<p className="portal-eyebrow">administração</p>
 			<h1 className="title-editorial portal-page-title">briefings</h1>
 			<p className="portal-page-intro">
@@ -610,42 +511,27 @@ export function AdminBriefingsPage() {
 
 			{!carregando && briefings && (
 				<>
-					<div
-						style={{
-							display: "flex",
-							flexWrap: "wrap",
-							gap: 12,
-							alignItems: "flex-end",
-							marginBottom: 16,
-						}}
-					>
-						<label style={{ ...estiloLabel, flex: "2 1 220px" }}>
+					<div className="admin-toolbar">
+						<label className="admin-field is-wide">
 							buscar por parceira ou look
 							<input
+								className="admin-input"
 								placeholder="nome da parceira ou look"
 								value={busca}
 								onChange={(evento) => setBusca(evento.target.value)}
-								style={estiloInput}
 							/>
 						</label>
 						<button
 							type="button"
-							className="btn-primary"
+							className="btn-primary is-medium"
 							onClick={() => setFormularioAberto((atual) => !atual)}
-							style={{ height: 40, padding: "0 24px", fontSize: 14 }}
 						>
 							{formularioAberto ? "fechar" : "+ novo briefing"}
 						</button>
 					</div>
 
 					{formularioAberto && (
-						<div
-							style={{
-								marginBottom: 24,
-								paddingBottom: 24,
-								borderBottom: "1px solid rgba(27, 23, 23, 0.1)",
-							}}
-						>
+						<div className="admin-form-panel">
 							<FormularioNovoBriefing
 								entregasSemBriefing={entregasSemBriefing}
 								descreverEntrega={descreverEntrega}
@@ -672,9 +558,13 @@ export function AdminBriefingsPage() {
 					)}
 
 					{filtrados.length > 0 && (
-						<ul className="portal-list">
-							{filtrados.map((briefing) => (
-								<LinhaBriefing
+						<>
+							<OperationalRowHeader
+								labels={["status", "parceira", "entrega", "postagem", "ações"]}
+							/>
+							<ul className="portal-list">
+								{filtrados.map((briefing) => (
+									<LinhaBriefing
 									key={briefing.id}
 									briefing={briefing}
 									nomeParceira={
@@ -695,7 +585,8 @@ export function AdminBriefingsPage() {
 									aoRemover={() => void remover(briefing)}
 								/>
 							))}
-						</ul>
+							</ul>
+						</>
 					)}
 				</>
 			)}

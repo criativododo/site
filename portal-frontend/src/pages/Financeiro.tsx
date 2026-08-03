@@ -1,11 +1,22 @@
 import { useEffect, useState } from "react";
 import { ApiError, apiFetch } from "../lib/api";
-import { formatadorMoeda } from "../lib/formatters";
+import { formatadorMoeda, formatarMoedaPartes } from "../lib/formatters";
 
 interface ResumoFinanceiro {
 	mesReferencia: string;
 	previsto: number;
 	pago: number;
+}
+
+/** Número com precisão visível (ART_DIRECTION_GUIDE.md §5) — reais em destaque, centavos discretos. */
+function ValorEmReais({ valor }: { valor: number }) {
+	const { reais, centavos } = formatarMoedaPartes(valor);
+	return (
+		<>
+			{reais}
+			<span className="money-cents">{centavos}</span>
+		</>
+	);
 }
 
 function ResumoDoPeriodo({ mesReferencia }: { mesReferencia: string }) {
@@ -54,19 +65,19 @@ function ResumoDoPeriodo({ mesReferencia }: { mesReferencia: string }) {
 			<div className="financeiro-kpi is-destaque">
 				<span className="financeiro-kpi-label">a receber</span>
 				<p className="financeiro-kpi-value">
-					{formatadorMoeda.format(aReceber)}
+					<ValorEmReais valor={aReceber} />
 				</p>
 			</div>
 			<div className="financeiro-kpi">
 				<span className="financeiro-kpi-label">já pago</span>
 				<p className="financeiro-kpi-value">
-					{formatadorMoeda.format(resumo.pago)}
+					<ValorEmReais valor={resumo.pago} />
 				</p>
 			</div>
 			<div className="financeiro-kpi">
 				<span className="financeiro-kpi-label">previsto no período</span>
 				<p className="financeiro-kpi-value">
-					{formatadorMoeda.format(resumo.previsto)}
+					<ValorEmReais valor={resumo.previsto} />
 				</p>
 			</div>
 		</div>
@@ -174,7 +185,7 @@ function HistoricoDoPeriodo({ mesReferencia }: { mesReferencia: string }) {
 			{historico.entregas.length > 0 && (
 				<>
 					<p className="portal-list-row-meta">conteúdos entregues</p>
-					<ul className="portal-list" style={{ marginBottom: 16 }}>
+					<ul className="portal-list is-spaced-bottom">
 						{historico.entregas.map((entrega) => (
 							<li key={entrega.id} className="portal-list-row">
 								<span className="portal-list-row-title">
@@ -287,26 +298,12 @@ export function FinanceiroPage() {
 
 			{!carregando && !erro && periodos && periodos.length > 0 && (
 				<>
-					<label
-						style={{
-							display: "flex",
-							flexDirection: "column",
-							gap: 6,
-							maxWidth: 240,
-							marginBottom: 24,
-						}}
-					>
-						<span style={{ fontSize: 13, fontWeight: 700 }}>período</span>
+					<label className="portal-field">
+						<span className="portal-field-label">período</span>
 						<select
+							className="portal-field-select"
 							value={periodoSelecionado ?? ""}
 							onChange={(evento) => setPeriodoSelecionado(evento.target.value)}
-							style={{
-								height: 40,
-								borderRadius: 8,
-								border: "1px solid rgba(27, 23, 23, 0.2)",
-								padding: "0 12px",
-								fontSize: 14,
-							}}
 						>
 							{periodos.map((periodo) => (
 								<option key={periodo} value={periodo}>

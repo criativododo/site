@@ -1,5 +1,6 @@
 import type { ChangeEvent } from "react";
 import { useEffect, useMemo, useState } from "react";
+import { OperationalRowHeader } from "../components/OperationalRowHeader";
 import { ApiError, apiFetch } from "../lib/api";
 import { formatadorMoeda, formatarData } from "../lib/formatters";
 import { useSession } from "../lib/session";
@@ -328,7 +329,7 @@ function LinhaParceira({
 			)}
 
 			{editando && (
-				<div style={{ gridColumn: "1 / -1", width: "100%" }}>
+				<div className="admin-row-editing">
 					<FormularioParceira
 						parceira={parceira}
 						aoSalvarComSucesso={aoSalvarEdicao}
@@ -502,7 +503,7 @@ export function AdminParceirasPage() {
 								onChange={(evento) => setBusca(evento.target.value)}
 							/>
 						</label>
-						<label className="admin-field" style={{ flex: "1 1 140px" }}>
+						<label className="admin-field is-compact">
 							status
 							<select
 								className="admin-select"
@@ -569,6 +570,9 @@ export function AdminParceirasPage() {
 
 					{filtradas.length > 0 && (
 						<>
+							<OperationalRowHeader
+								labels={["status", "parceira", "cadastro", "valor mensal", "ações"]}
+							/>
 							<ul className="portal-list">
 								{itensDaPagina.map((parceira) => (
 									<LinhaParceira

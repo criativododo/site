@@ -11,6 +11,24 @@ export const formatadorMoeda = new Intl.NumberFormat("pt-BR", {
 });
 
 /**
+ * Assinatura "número com precisão visível" (ART_DIRECTION_GUIDE.md §5): separa a parte que
+ * importa (reais) da parte que só confirma exatidão (centavos), para renderizar a primeira
+ * em peso maior e a segunda menor, na mesma linha. `formatadorMoeda` sempre produz 2 casas
+ * decimais (Intl currency), então a vírgula decimal é sempre a última da string formatada.
+ */
+export function formatarMoedaPartes(valor: number): {
+	reais: string;
+	centavos: string;
+} {
+	const formatado = formatadorMoeda.format(valor);
+	const indiceVirgula = formatado.lastIndexOf(",");
+	return {
+		reais: formatado.slice(0, indiceVirgula),
+		centavos: formatado.slice(indiceVirgula),
+	};
+}
+
+/**
  * NOTA: usa `new Date(dataIso)`, que interpreta uma data pura "AAAA-MM-DD" como meia-noite
  * UTC — em fusos negativos (ex. America/Sao_Paulo, UTC-3) `toLocaleDateString` pode exibir o
  * dia anterior. `Pendencias.tsx` tem seu próprio `formatarData` que evita isso fazendo split
@@ -30,4 +48,15 @@ export function mesReferenciaCorrente(): string {
 	const ano = agora.getUTCFullYear();
 	const mes = String(agora.getUTCMonth() + 1).padStart(2, "0");
 	return `${ano}-${mes}`;
+}
+
+/**
+ * Bloco 2 do Dashboard editorial ("o que vem a seguir") — traduz a contagem de dias que o
+ * backend já calculou (`ProximoPrazo.diasRestantes`) para a frase em português; o Portal não
+ * recalcula a data, só formata.
+ */
+export function formatarPrazoRelativo(diasRestantes: number): string {
+	if (diasRestantes <= 0) return "vence hoje";
+	if (diasRestantes === 1) return "vence amanhã";
+	return `vence em ${diasRestantes} dias`;
 }

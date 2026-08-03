@@ -9,6 +9,25 @@ const navItems = [
 	{ to: "/perfil", label: "perfil" },
 ];
 
+/**
+ * Navegação do admin em 2 grupos — trabalho do dia (o que se checa/faz todo dia) separado de
+ * administração (cadastro e ciclo financeiro, de uso menos frequente). Divisão por espaço
+ * puro na sidebar, ver .portal-nav-group em index.css.
+ */
+const gruposNavAdmin = [
+	[
+		{ to: "/admin/dashboard", label: "dashboard" },
+		{ to: "/admin/entregas", label: "entregas" },
+		{ to: "/admin/briefings", label: "briefings" },
+	],
+	[
+		{ to: "/admin/parceiras", label: "parceiras" },
+		{ to: "/admin/financeiro", label: "obrigações" },
+		{ to: "/admin/colaboracoes-mensais", label: "colaboração mensal" },
+		{ to: "/admin", label: "moderação" },
+	],
+];
+
 function PortalMain() {
 	const { breadcrumb, acoes } = usePageHeaderSlots();
 	const temCabecalho = breadcrumb.length > 0 || acoes !== null;
@@ -54,18 +73,8 @@ export function PortalLayout() {
 	// Administrador não possui `parceiraId` de sessão (ADR-008, single-tenant): rotas de
 	// self-service da Parceira (`navItems`) sempre falham para este papel (`parceiraDaSessao`
 	// lança erro sem `parceiraId` — ver middleware/isolamento.ts), então nunca aparecem aqui.
-	const itensNav =
-		sessao?.papelAtor === "ADMINISTRADOR"
-			? [
-					{ to: "/admin/dashboard", label: "dashboard" },
-					{ to: "/admin/parceiras", label: "parceiras" },
-					{ to: "/admin/entregas", label: "entregas" },
-					{ to: "/admin/briefings", label: "briefings" },
-					{ to: "/admin/financeiro", label: "obrigações" },
-					{ to: "/admin/colaboracoes-mensais", label: "colaboração mensal" },
-					{ to: "/admin", label: "moderação" },
-				]
-			: navItems;
+	const gruposNav =
+		sessao?.papelAtor === "ADMINISTRADOR" ? gruposNavAdmin : [navItems];
 
 	return (
 		<div className="portal-shell">
@@ -80,16 +89,20 @@ export function PortalLayout() {
 					</Link>
 
 					<nav className="portal-sidebar-nav" aria-label="Navegação principal">
-						{itensNav.map((item) => (
-							<NavLink
-								key={item.to}
-								to={item.to}
-								className={({ isActive }) =>
-									`portal-nav-link${isActive ? " is-active" : ""}`
-								}
-							>
-								{item.label}
-							</NavLink>
+						{gruposNav.map((grupo) => (
+							<div className="portal-nav-group" key={grupo[0].to}>
+								{grupo.map((item) => (
+									<NavLink
+										key={item.to}
+										to={item.to}
+										className={({ isActive }) =>
+											`portal-nav-link${isActive ? " is-active" : ""}`
+										}
+									>
+										{item.label}
+									</NavLink>
+								))}
+							</div>
 						))}
 					</nav>
 				</div>

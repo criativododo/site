@@ -1,10 +1,11 @@
 import { describe, expect, it } from "vitest";
+import type { BlocoBriefing } from "../briefing/briefing.types.js";
 import type { Entrega } from "../conteudo/entrega.types.js";
 import type { ObrigacaoFinanceira } from "../financeiro/obrigacao.types.js";
 import type { Identidade } from "../identidade/identidade.types.js";
 import type { SolicitacaoExclusao } from "../lgpd/exclusao.types.js";
 import type { Parceira } from "../parceira/parceira.types.js";
-import { calcularIndicadores } from "./dashboard.service.js";
+import { calcularIndicadores, calcularProximosPrazos } from "./dashboard.service.js";
 
 const condicaoComercial = {
   valorMensal: 2500,
@@ -56,12 +57,30 @@ function obrigacao(overrides: Partial<ObrigacaoFinanceira> = {}): ObrigacaoFinan
   };
 }
 
+function blocoBriefing(overrides: Partial<BlocoBriefing> = {}): BlocoBriefing {
+  return {
+    id: "b1",
+    parceiraId: "p1",
+    mesReferencia: "2026-07",
+    formato: "Carrossel",
+    look: "Look 1",
+    dataEntrega: "2026-07-05",
+    dataPostagem: "2026-07-20",
+    orientacao: "orientação de teste",
+    dataAprovacaoInterna: "2026-07-18",
+    dataCriacao: "2026-07-01T00:00:00.000Z",
+    dataAtualizacao: "2026-07-01T00:00:00.000Z",
+    ...overrides,
+  };
+}
+
 const semDados = {
   parceiras: [] as Parceira[],
   entregas: [] as Entrega[],
   obrigacoes: [] as ObrigacaoFinanceira[],
   contasPendentes: [] as Identidade[],
   solicitacoesExclusao: [] as SolicitacaoExclusao[],
+  blocosBriefing: [] as BlocoBriefing[],
 };
 
 describe("calcularIndicadores", () => {
@@ -72,6 +91,7 @@ describe("calcularIndicadores", () => {
       financeiro: { pendentes: 0, valorPendente: 0 },
       lgpd: { solicitacoesExclusaoPendentes: 0 },
       moderacao: { contasPendentes: 0 },
+      proximosPrazos: [],
     });
   });
 
@@ -130,5 +150,123 @@ describe("calcularIndicadores", () => {
     });
     expect(resultado.lgpd.solicitacoesExclusaoPendentes).toBe(2);
     expect(resultado.moderacao.contasPendentes).toBe(1);
+  });
+
+  it("preenche proximosPrazos a partir de Entregas e Blocos de Briefing recebidos", () => {
+    const resultado = calcularIndicadores({
+      ...semDados,
+      hoje: "2026-07-15",
+      parceiras: [parceira({ id: "p1", nome: "Parceira Um" })],
+      entregas: [entrega({ estado: "AGUARDANDO_MATERIAL", dataEntrega: "2026-07-17" })],
+      blocosBriefing: [],
+    });
+    expect(resultado.proximosPrazos).toEqual([
+      { tipo: "entrega", parceiraNome: "Parceira Um", formato: "Reel", data: "2026-07-17", diasRestantes: 2 },
+    ]);
+  });
+});
+
+describe("calcularProximosPrazos", () => {
+  const parceiras = [parceira({ id: "p1", nome: "Parceira Um" })];
+
+  it("sem entregas nem blocos de briefing, retorna lista vazia", () => {
+    expect(
+      calcularProximosPrazos({ entregas: [], blocosBriefing: [], parceiras, hoje: "2026-07-15" }),
+    ).toEqual([]);
+  });
+
+  it("inclui Entrega AGUARDANDO_MATERIAL com dataEntrega futura", () => {
+    const resultado = calcularProximosPrazos({
+      entregas: [entrega({ estado: "AGUARDANDO_MATERIAL", dataEntrega: "2026-07-17" })],
+      blocosBriefing: [],
+      parceiras,
+      hoje: "2026-07-15",
+    });
+    expect(resultado).toEqual([
+      { tipo: "entrega", parceiraNome: "Parceira Um", formato: "Reel", data: "2026-07-17", diasRestantes: 2 },
+    ]);
+  });
+
+  it("não inclui Entrega já atrasada (já coberta pelo Bloco 1 de atenção agora)", () => {
+    const resultado = calcularProximosPrazos({
+      entregas: [entrega({ estado: "AGUARDANDO_MATERIAL", dataEntrega: "2026-07-10" })],
+      blocosBriefing: [],
+      parceiras,
+      hoje: "2026-07-15",
+    });
+    expect(resultado).toEqual([]);
+  });
+
+  it("não inclui Entrega em outro estado (EM_REVISAO, APROVADO, PUBLICADO)", () => {
+    const resultado = calcularProximosPrazos({
+      entregas: [
+        entrega({ id: "a", estado: "EM_REVISAO", dataEntrega: "2026-07-17" }),
+        entrega({ id: "b", estado: "APROVADO", dataEntrega: "2026-07-18" }),
+        entrega({ id: "c", estado: "PUBLICADO", dataEntrega: "2026-07-19" }),
+      ],
+      blocosBriefing: [],
+      parceiras,
+      hoje: "2026-07-15",
+    });
+    expect(resultado).toEqual([]);
+  });
+
+  it("inclui Bloco de Briefing com dataPostagem futura e exclui dataPostagem passada", () => {
+    const resultado = calcularProximosPrazos({
+      entregas: [],
+      blocosBriefing: [
+        blocoBriefing({ id: "futuro", dataPostagem: "2026-07-20" }),
+        blocoBriefing({ id: "passado", dataPostagem: "2026-07-01" }),
+      ],
+      parceiras,
+      hoje: "2026-07-15",
+    });
+    expect(resultado).toEqual([
+      { tipo: "postagem", parceiraNome: "Parceira Um", formato: "Carrossel", data: "2026-07-20", diasRestantes: 5 },
+    ]);
+  });
+
+  it("ordena Entregas e Blocos de Briefing juntos por proximidade de data", () => {
+    const resultado = calcularProximosPrazos({
+      entregas: [entrega({ id: "e1", estado: "AGUARDANDO_MATERIAL", dataEntrega: "2026-07-25" })],
+      blocosBriefing: [blocoBriefing({ id: "b1", dataPostagem: "2026-07-16" })],
+      parceiras,
+      hoje: "2026-07-15",
+    });
+    expect(resultado.map((item) => item.data)).toEqual(["2026-07-16", "2026-07-25"]);
+  });
+
+  it("limita a 5 itens, mantendo os mais próximos", () => {
+    const entregas = Array.from({ length: 7 }, (_, indice) =>
+      entrega({
+        id: `e${indice}`,
+        estado: "AGUARDANDO_MATERIAL",
+        dataEntrega: `2026-07-${String(16 + indice).padStart(2, "0")}`,
+      }),
+    );
+    const resultado = calcularProximosPrazos({ entregas, blocosBriefing: [], parceiras, hoje: "2026-07-15" });
+    expect(resultado).toHaveLength(5);
+    expect(resultado[0].data).toBe("2026-07-16");
+    expect(resultado[4].data).toBe("2026-07-20");
+  });
+
+  it("resolve diasRestantes = 0 para prazo hoje", () => {
+    const resultado = calcularProximosPrazos({
+      entregas: [entrega({ estado: "AGUARDANDO_MATERIAL", dataEntrega: "2026-07-15" })],
+      blocosBriefing: [],
+      parceiras,
+      hoje: "2026-07-15",
+    });
+    expect(resultado[0].diasRestantes).toBe(0);
+  });
+
+  it("usa 'parceira' como nome de fallback quando parceiraId não é encontrado", () => {
+    const resultado = calcularProximosPrazos({
+      entregas: [entrega({ parceiraId: "inexistente", estado: "AGUARDANDO_MATERIAL", dataEntrega: "2026-07-17" })],
+      blocosBriefing: [],
+      parceiras,
+      hoje: "2026-07-15",
+    });
+    expect(resultado[0].parceiraNome).toBe("parceira");
   });
 });
