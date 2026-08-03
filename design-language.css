@@ -281,7 +281,57 @@ img {
 
    Antes de adicionar qualquer classe aqui, aplicar o teste de
    DESIGN_LANGUAGE.md: "isto pertence à linguagem, ou pertence ao
-   componente?" Nesta versão, nenhuma classe passou no teste — a seção
-   fica reservada e vazia até que uma necessidade real e genuinamente
-   transversal (não específica de um produto ou tela) apareça.
+   componente?"
    ========================================================================== */
+
+/* --- .dodo-mark ----------------------------------------------------------
+   O "Ô." como assinatura viva da interface — decisão fechada 2026-08-03.
+   Nunca o wordmark: o wordmark (principal.svg) permanece exclusivo de
+   Landing, documentos e materiais institucionais. Dentro de um produto de
+   uso contínuo (o Portal, hoje), o "Ô." é a assinatura recorrente.
+
+   Cherry aqui é cor de intenção, não estrutural: nunca ocupa área — só
+   sinaliza (glifo pequeno, opacidade controlada), nunca constrói layout. */
+.dodo-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-weight: var(--weight-heavy);
+  line-height: 1;
+  color: var(--accent-signal);
+  user-select: none;
+}
+
+/* Loading — o único momento de espera real da experiência assina a marca
+   em vez de um spinner genérico. */
+.dodo-mark--loading {
+  animation: dodo-mark-pulse 1.4s var(--ease-editorial) infinite;
+}
+
+@keyframes dodo-mark-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+}
+
+/* Marca d'água — estados vazios e telas de autenticação. Precedente real:
+   emblema já usado assim no login do Portal (DESIGN.md §08), opacidade
+   0.05. Aqui neutro (--ink-primary), não cherry — silêncio, não sinal. */
+.dodo-mark--watermark {
+  color: var(--ink-primary);
+  opacity: 0.05;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dodo-mark--loading {
+    animation: none;
+    opacity: 0.7;
+  }
+}

@@ -14,7 +14,9 @@ export function LoginPage() {
 					src={logoPrincipal}
 					alt="Criativo Dodô"
 				/>
-				<span className="portal-login-loader" aria-hidden="true" />
+				<span className="dodo-mark dodo-mark--loading" style={{ fontSize: 28 }} aria-hidden="true">
+					Ô
+				</span>
 				<p>verificando seu acesso…</p>
 			</main>
 		);

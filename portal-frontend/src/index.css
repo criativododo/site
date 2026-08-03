@@ -119,21 +119,21 @@ button {
 	gap: 10px;
 	height: 48px;
 	padding: 0 28px;
-	background: var(--color-cherry);
-	color: var(--color-cotton);
-	border: 1px solid var(--color-cherry);
-	border-radius: 24px;
+	background: var(--accent-signal);
+	color: var(--surface-card);
+	border: 1px solid var(--accent-signal);
+	border-radius: var(--radius-full);
 	font-size: 15px;
-	font-weight: 700;
+	font-weight: var(--weight-bold);
 	font-family: var(--font-display);
 	transition:
-		background 0.4s ease,
-		color 0.4s ease;
+		background var(--motion-base) ease,
+		color var(--motion-base) ease;
 }
 
 .btn-primary:hover {
 	background: transparent;
-	color: var(--color-cherry);
+	color: var(--accent-signal);
 }
 
 button:focus-visible,
@@ -141,7 +141,7 @@ a:focus-visible,
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
-	outline: 2px solid var(--color-cherry);
+	outline: 2px solid var(--accent-signal);
 	outline-offset: 3px;
 }
 
@@ -173,33 +173,33 @@ textarea:focus-visible {
 	justify-content: center;
 	height: 36px;
 	padding: 0 16px;
-	border-radius: 24px;
-	border: 1px solid rgba(27, 23, 23, 0.2);
+	border-radius: var(--radius-full);
+	border: 1px solid var(--ink-hairline);
 	background: none;
-	color: var(--color-noir);
+	color: var(--ink-primary);
 	font-family: var(--font-display);
 	font-size: 13px;
-	font-weight: 700;
+	font-weight: var(--weight-bold);
 	transition:
-		border-color 0.3s ease,
-		color 0.3s ease,
-		background 0.3s ease;
+		border-color var(--motion-fast) ease,
+		color var(--motion-fast) ease,
+		background var(--motion-fast) ease;
 }
 .btn-outline:hover:not(:disabled) {
-	border-color: var(--color-cherry);
-	color: var(--color-cherry);
+	border-color: var(--accent-signal);
+	color: var(--accent-signal);
 }
 .btn-outline:disabled {
 	opacity: 0.5;
 	cursor: not-allowed;
 }
 .btn-outline.is-cherry {
-	border-color: var(--color-cherry);
-	color: var(--color-cherry);
+	border-color: var(--accent-signal);
+	color: var(--accent-signal);
 }
 .btn-outline.is-cherry:hover:not(:disabled) {
-	background: var(--color-cherry);
-	color: var(--color-cotton);
+	background: var(--accent-signal);
+	color: var(--surface-card);
 }
 
 /* Botão "texto puro" — cancelar/fechar sem contorno, usado dentro de formulários inline. */
@@ -530,8 +530,8 @@ textarea:focus-visible {
 	min-height: 100vh;
 	display: grid;
 	grid-template-rows: auto 1fr auto;
-	background: var(--color-cotton);
-	color: var(--color-noir);
+	background: var(--surface-base);
+	color: var(--ink-primary);
 	overflow: hidden;
 }
 .portal-login-emblem {
@@ -550,10 +550,10 @@ textarea:focus-visible {
 	align-items: center;
 	justify-content: space-between;
 	padding: 36px clamp(24px, 6vw, 96px);
-	border-bottom: 1px solid rgba(27, 23, 23, 0.1);
-	color: var(--color-cherry);
+	border-bottom: 1px solid var(--ink-hairline);
+	color: var(--accent-signal);
 	font-size: 14px;
-	font-weight: 700;
+	font-weight: var(--weight-bold);
 }
 .portal-login-logo {
 	width: 115px;
@@ -565,27 +565,27 @@ textarea:focus-visible {
 	width: min(100% - 48px, 440px);
 	align-self: center;
 	justify-self: center;
-	padding: 64px 0;
+	padding: var(--space-6) 0;
 }
 /* Cadastro tem mais campos que o Login (só um botão OAuth) — precisa de mais largura. */
 .portal-login-content.is-wide {
 	width: min(100% - 48px, 480px);
 }
 .portal-login-overline {
-	margin-bottom: 12px;
-	color: var(--color-cherry);
-	font-size: 13.6px;
-	font-weight: 700;
+	margin-bottom: var(--space-2);
+	color: var(--accent-signal);
+	font-size: var(--text-meta);
+	font-weight: var(--weight-bold);
 	letter-spacing: 0.08em;
 	text-transform: uppercase;
 }
 .portal-login-title {
 	margin: 0;
-	color: var(--color-cherry);
+	color: var(--accent-signal);
 	font-family: var(--font-display);
-	font-size: 38.4px;
-	font-weight: 800;
-	line-height: 1.1;
+	font-size: var(--text-title);
+	font-weight: var(--weight-heavy);
+	line-height: var(--leading-tight);
 	letter-spacing: -0.01em;
 }
 .portal-login-title.is-compact {
@@ -593,9 +593,9 @@ textarea:focus-visible {
 }
 .portal-login-description {
 	margin-top: 20px;
-	color: var(--color-noir);
-	font-size: 16px;
-	line-height: 1.6;
+	color: var(--ink-primary);
+	font-size: var(--text-body-lg);
+	line-height: var(--leading-relaxed);
 }
 .portal-login-button {
 	width: 100%;
@@ -603,7 +603,7 @@ textarea:focus-visible {
 }
 .portal-login-retry {
 	width: 100%;
-	margin-top: 24px;
+	margin-top: var(--space-4);
 }
 .portal-login-button span {
 	font-size: 18px;
@@ -611,8 +611,8 @@ textarea:focus-visible {
 }
 .portal-login-security {
 	margin-top: 14px;
-	color: rgba(27, 23, 23, 0.7);
-	font-size: 13px;
+	color: var(--ink-secondary);
+	font-size: var(--text-meta);
 	line-height: 1.5;
 }
 .portal-login-footer {
@@ -622,13 +622,13 @@ textarea:focus-visible {
 	justify-content: space-between;
 	gap: 8px 24px;
 	padding: 28px clamp(24px, 6vw, 96px);
-	border-top: 1px solid rgba(27, 23, 23, 0.1);
-	color: rgba(27, 23, 23, 0.7);
-	font-size: 13px;
+	border-top: 1px solid var(--ink-hairline);
+	color: var(--ink-secondary);
+	font-size: var(--text-meta);
 }
 .portal-login-footer a {
-	color: var(--color-cherry);
-	font-weight: 600;
+	color: var(--accent-signal);
+	font-weight: var(--weight-medium);
 	white-space: nowrap;
 }
 .portal-login-footer a:hover {
@@ -641,16 +641,8 @@ textarea:focus-visible {
 	align-items: center;
 	justify-content: center;
 	gap: 20px;
-	color: var(--color-cherry);
+	color: var(--accent-signal);
 	font-size: 14px;
-}
-.portal-login-loader {
-	width: 28px;
-	height: 28px;
-	border: 2px solid rgba(129, 1, 0, 0.2);
-	border-top-color: var(--color-cherry);
-	border-radius: 50%;
-	animation: portal-spin 0.8s linear infinite;
 }
 
 /* Formulário do Cadastro — único formulário de texto do fluxo de Login/Cadastro. */
@@ -687,6 +679,48 @@ textarea:focus-visible {
 @keyframes portal-spin {
 	to {
 		transform: rotate(360deg);
+	}
+}
+
+/*
+ * .dodo-mark — o "Ô." como assinatura viva da interface (decisão fechada 2026-08-03,
+ * ver /design-language.css na raiz do repositório — fonte canônica deste padrão).
+ * Wordmark permanece exclusivo de Landing/documentos/institucional; dentro do Portal,
+ * o "Ô." assina loading e estados vazios. Cherry aqui é cor de intenção, nunca
+ * estrutural — nunca ocupa área, só sinaliza.
+ */
+.dodo-mark {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	font-family: var(--font-display);
+	font-weight: var(--weight-heavy);
+	line-height: 1;
+	color: var(--accent-signal);
+	user-select: none;
+}
+.dodo-mark--loading {
+	animation: dodo-mark-pulse 1.4s var(--ease-editorial) infinite;
+}
+@keyframes dodo-mark-pulse {
+	0%,
+	100% {
+		opacity: 0.35;
+		transform: scale(1);
+	}
+	50% {
+		opacity: 1;
+		transform: scale(1.08);
+	}
+}
+.dodo-mark--watermark {
+	color: var(--ink-primary);
+	opacity: 0.05;
+}
+@media (prefers-reduced-motion: reduce) {
+	.dodo-mark--loading {
+		animation: none;
+		opacity: 0.7;
 	}
 }
 
@@ -1365,13 +1399,13 @@ textarea:focus-visible {
 		padding-bottom: 80px;
 	}
 	.portal-login-header {
-		padding: 24px;
+		padding: var(--space-4);
 	}
 	.portal-login-content {
 		width: min(100% - 48px, 440px);
 	}
 	.portal-login-title {
-		font-size: 28.8px;
+		font-size: var(--text-title-mobile);
 	}
 	.portal-login-emblem {
 		opacity: 0.04;
@@ -1379,7 +1413,7 @@ textarea:focus-visible {
 		right: -30vw;
 	}
 	.portal-login-footer {
-		padding: 24px;
+		padding: var(--space-4);
 	}
 	.portal-page-title {
 		margin-bottom: 40px;

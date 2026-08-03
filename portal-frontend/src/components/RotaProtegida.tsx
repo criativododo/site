@@ -11,7 +11,22 @@ export function RotaProtegida({ children }: { children: ReactNode }) {
 	const { sessao, carregando } = useSession();
 
 	if (carregando) {
-		return null;
+		return (
+			<div
+				style={{
+					display: "flex",
+					minHeight: "100vh",
+					alignItems: "center",
+					justifyContent: "center",
+				}}
+				aria-live="polite"
+				aria-busy="true"
+			>
+				<span className="dodo-mark dodo-mark--loading" style={{ fontSize: 32 }} aria-hidden="true">
+					Ô
+				</span>
+			</div>
+		);
 	}
 
 	if (!sessao || sessao.estadoConta !== "ACTIVE") {
