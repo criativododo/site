@@ -645,6 +645,166 @@ textarea:focus-visible {
 	font-size: 14px;
 }
 
+/*
+ * Tela de entrada (Login, estado não autenticado) — composição própria, deliberadamente
+ * independente do shell .portal-login-* que Cadastro/Privacidade continuam usando.
+ * Direção de arte fechada em sessão de 2026-08-03: o Ô oficial (icon.svg, arquivo
+ * institucional, nunca redesenhado) funciona como arquitetura silenciosa — presença muito
+ * baixa, nunca compete com o conteúdo — e o título assina em cherry como o único ponto de
+ * ênfase de cor da tela. Google é o único método funcional (ADR-007); Apple é um
+ * placeholder visual de mesmo peso hierárquico, sem integração (decisão pendente de ADR
+ * própria); e-mail fica fora desta primeira versão.
+ */
+.portal-entrada {
+	position: relative;
+	width: 100%;
+	height: 100vh;
+	overflow: hidden;
+	background: radial-gradient(
+		120% 100% at 78% 25%,
+		color-mix(in srgb, var(--color-paper) 85%, white) 0%,
+		var(--color-paper) 55%,
+		var(--color-cotton) 100%
+	);
+	color: var(--ink-primary);
+}
+.portal-entrada-emblem {
+	position: absolute;
+	left: 7%;
+	top: 12%;
+	width: 34%;
+	height: auto;
+	opacity: 0.018;
+	pointer-events: none;
+	user-select: none;
+	z-index: 0;
+}
+.portal-entrada .portal-login-footer {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	z-index: 2;
+}
+.portal-entrada-content {
+	position: absolute;
+	left: 30%;
+	top: 9%;
+	width: 40%;
+	height: 82%;
+	z-index: 2;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: flex-start;
+	gap: 14px;
+}
+.portal-entrada-wordmark {
+	width: 89px;
+	height: auto;
+	margin-bottom: 6px;
+}
+.portal-entrada-eyebrow {
+	margin: 0;
+	font-family: var(--font-display);
+	font-weight: var(--weight-bold);
+	font-size: 10px;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--accent-signal);
+}
+.portal-entrada-title {
+	margin: 0;
+	font-family: var(--font-display);
+	/* 60px — escala deliberada de "tela-bandeira" (DESIGN_LANGUAGE.md §3), maior que
+	   --text-title (38.4px): este é o único momento de primeira impressão do Portal, não
+	   uma tela de trabalho recorrente. Gap declarado (ADR-003), não um token formal ainda. */
+	font-size: 60px;
+	font-weight: var(--weight-heavy);
+	line-height: 1;
+	letter-spacing: -0.02em;
+	color: var(--accent-signal);
+}
+.portal-entrada-description {
+	margin: 0;
+	font-family: var(--font-body);
+	font-size: 13px;
+	line-height: 1.55;
+	color: var(--ink-secondary);
+	max-width: 34ch;
+}
+.portal-entrada-auth {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 10px;
+	margin-top: 8px;
+}
+.portal-entrada-auth .portal-entrada-oauth {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	width: 220px;
+	height: 38px;
+	padding: 0 16px;
+	border-radius: 999px;
+	font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+	font-size: 12.5px;
+	font-weight: 500;
+	white-space: nowrap;
+}
+.portal-entrada-auth .portal-entrada-oauth.is-google {
+	background: #fff;
+	border: 1px solid #dadce0;
+	color: #3c4043;
+}
+.portal-entrada-auth .portal-entrada-oauth.is-google:hover {
+	background: #f8f9fa;
+}
+.portal-entrada-auth .portal-entrada-oauth.is-apple {
+	background: #fff;
+	border: none;
+	color: #000;
+}
+.portal-entrada-auth .portal-entrada-oauth.is-apple:hover {
+	background: #f5f5f5;
+}
+.portal-entrada-apple-note {
+	margin: 0;
+	font-size: 11px;
+	color: var(--ink-secondary);
+}
+
+@media (max-width: 768px) {
+	.portal-entrada-content {
+		left: 8%;
+		top: 10%;
+		width: 84%;
+		height: 80%;
+	}
+	.portal-entrada-emblem {
+		left: 2%;
+		top: 8%;
+		width: 70%;
+	}
+	.portal-entrada-wordmark {
+		width: 64px;
+	}
+	.portal-entrada-title {
+		font-size: 42px;
+	}
+	.portal-entrada-description {
+		max-width: none;
+	}
+	.portal-entrada-auth {
+		width: 100%;
+	}
+	.portal-entrada-auth .portal-entrada-oauth {
+		width: 100%;
+	}
+}
+
 /* Formulário do Cadastro — único formulário de texto do fluxo de Login/Cadastro. */
 .portal-login-form {
 	display: flex;
