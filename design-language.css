@@ -89,17 +89,20 @@
   --weight-bold: 700;
   --weight-heavy: 800;
 
-  /* --- font: escala ------------------------------------------------
+  /* --- font: escala, nomeada por papel, não por família ou tamanho ----
+     Decisão fechada nesta sessão: uma linguagem tipográfica só (Work
+     Sans + Elms Sans, papéis fixos, nunca uma terceira família), silêndo
+     controlada por peso — tipografia nunca é protagonista, o conteúdo é.
      Valores reais, hoje repetidos como literal por seletor em app/ e
      portal-frontend/ (DESIGN.md §10) — nomeados aqui pela primeira vez
      como token, sem alterar nenhum valor. Pares desktop/mobile trocados
      por media query a 768px (mecanismo já real, não substituído por
      clamp() nesta versão — mudar isso é decisão de implementação futura,
      não tomada aqui). */
-  --text-display-lg: 38.4px;        /* título editorial — desktop */
-  --text-display-lg-mobile: 28.8px; /* título editorial — ≤768px */
-  --text-display-md: 20.8px;        /* subtítulo, nome de item — desktop */
-  --text-display-md-mobile: 17.6px; /* subtítulo, nome de item — ≤768px */
+  --text-title: 38.4px;         /* título de página — desktop */
+  --text-title-mobile: 28.8px;  /* título de página — ≤768px */
+  --text-subtitle: 20.8px;      /* subtítulo, nome de item — desktop */
+  --text-subtitle-mobile: 17.6px; /* subtítulo, nome de item — ≤768px */
   --text-body-lg: 16px;             /* corpo/descrição, links de rodapé */
   --text-body: 15.3px;              /* corpo padrão, navegação — desktop */
   --text-body-mobile: 13.6px;       /* corpo padrão, navegação — ≤768px */
@@ -187,10 +190,17 @@ body {
   margin: 0;
   font-family: var(--font-body);
   font-weight: var(--weight-regular);
+  font-size: var(--text-body);
   line-height: var(--leading-relaxed);
   background: var(--surface-base);
   color: var(--ink-primary);
   -webkit-font-smoothing: antialiased;
+}
+
+@media (max-width: 768px) {
+  body {
+    font-size: var(--text-body-mobile);
+  }
 }
 
 h1,
@@ -204,6 +214,32 @@ h6 {
   font-weight: var(--weight-heavy);
   line-height: var(--leading-tight);
   color: var(--ink-primary);
+}
+
+h1 {
+  font-size: var(--text-title);
+}
+
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-size: var(--text-subtitle);
+  font-weight: var(--weight-medium);
+}
+
+@media (max-width: 768px) {
+  h1 {
+    font-size: var(--text-title-mobile);
+  }
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-size: var(--text-subtitle-mobile);
+  }
 }
 
 p {

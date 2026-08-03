@@ -133,6 +133,11 @@ Julgamento aplicável a qualquer tela nova, de qualquer produto — migrados por
 
 ## 5. Tipografia
 
+> **Decisão fechada, 2026-08-03.** Work Sans e Elms Sans permanecem como as únicas duas famílias
+> da linguagem — nenhuma terceira família entra sem motivo muito forte. Hierarquia é construída
+> por peso, escala, ritmo e espaçamento, nunca por decoração. A tipografia não é protagonista; o
+> conteúdo é. Assunto encerrado — não reabrir sem decisão nova do responsável do projeto.
+
 A tipografia é o primeiro material desta linguagem — a composição (§6) nasce dela, não o
 contrário. É também o princípio mais próximo de Massimo Vignelli e da tradição do grid suíço:
 hierarquia construída por peso e posição tipográficos, nunca por decoração — e o mais próximo
