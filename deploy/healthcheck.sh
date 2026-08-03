@@ -9,12 +9,17 @@ FAIL=0
 
 check() {
   local label="$1"; shift
-  if "$@" > /dev/null 2>&1; then
-    echo "OK    - $label"
-  else
-    echo "FALHA - $label"
-    FAIL=1
-  fi
+  local tentativas=5
+  local i
+  for ((i = 1; i <= tentativas; i++)); do
+    if "$@" > /dev/null 2>&1; then
+      echo "OK    - $label"
+      return
+    fi
+    [ "$i" -lt "$tentativas" ] && sleep 1
+  done
+  echo "FALHA - $label"
+  FAIL=1
 }
 
 echo "==> Healthcheck Portal DODÔ — $(date -Iseconds)"
