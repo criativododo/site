@@ -111,6 +111,17 @@ que recua para dar espaço à manchete, virada de tom no scroll entre o registro
 abertura e o registro funcional de trabalho. Essa PoC testou, pela primeira vez em produto
 real, romper a derivação estrita da Landing — e foi avaliada como o caminho certo.
 
+> **Decisão fechada, 2026-08-03.** A tela de Login (`portal-frontend/src/pages/Login.tsx`,
+> estado não autenticado — classes `.portal-entrada-*` em `portal-frontend/src/index.css`;
+> acabamento final no commit `8558b41`) é a **referência visual definitiva do Portal**:
+> composição assimétrica, Ô como arquitetura silenciosa, cherry só no título como único ponto
+> de ênfase de cor, densidade de tela-bandeira, ritmo editorial. Auditada linha a linha contra
+> este documento em sessão de refinamento — nenhuma violação encontrada. Toda tela nova do
+> Portal herda desta referência sua hierarquia, densidade, composição, ritmo e linguagem
+> editorial; a referência não herda de nenhuma tela nova. A tela de Login não deve ser alterada
+> por motivo estético — só por correção de bug. Reabrir a composição exige decisão nova do
+> responsável do projeto.
+
 ## 4. Princípios editoriais
 
 Julgamento aplicável a qualquer tela nova, de qualquer produto — migrados por completo de
