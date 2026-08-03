@@ -16,6 +16,7 @@ import { LoginPage } from "./pages/Login";
 import { PendenciasPage } from "./pages/Pendencias";
 import { PerfilPage } from "./pages/Perfil";
 import { PrivacidadePage } from "./pages/Privacidade";
+import { ExperimentoHojePage } from "./pages/experimentos/Hoje";
 
 /**
  * Espelha a regra de destino pós-login do backend (auth.routes.ts: callback do Google) para
@@ -45,6 +46,21 @@ function App() {
 			<Route path="/cadastro" element={<CadastroPage />} />
 			<Route path="/convite/:token" element={<ConvitePage />} />
 			<Route path="/privacidade" element={<PrivacidadePage />} />
+
+			{/*
+			 * Experimento isolado (Concept Book / Design Brief) — deliberadamente fora do
+			 * PortalLayout: a tela-bandeira testa um shell próprio, sem sidebar fixa. Rota
+			 * aditiva, não substitui /admin/dashboard; remover esta linha + a pasta
+			 * pages/experimentos descarta o experimento sem tocar em mais nada.
+			 */}
+			<Route
+				path="/admin/hoje"
+				element={
+					<RotaProtegida>
+						<ExperimentoHojePage />
+					</RotaProtegida>
+				}
+			/>
 
 			<Route
 				element={

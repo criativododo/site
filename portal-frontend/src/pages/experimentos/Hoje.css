@@ -1,0 +1,185 @@
+/*
+ * Tela-bandeira "hoje" (Concept Book + Design Brief aprovados) — experimento isolado, fora do
+ * PortalLayout. Só o que não tem equivalente em nenhum primitivo shadcn vive aqui: a manchete
+ * em escala dramática, o respiro de escala da imagem, e a virada de tom no scroll (ver "Mapa
+ * de Reaproveitamento" no relatório — tudo o mais é Tailwind + componentes ui/ reaproveitados).
+ */
+
+.hoje-tela {
+	min-height: 100vh;
+	background: var(--color-paper);
+	color: var(--color-noir);
+	font-family: var(--font-body);
+}
+
+.hoje-nav {
+	position: sticky;
+	top: 0;
+	z-index: 10;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 20px 32px;
+	background: color-mix(in srgb, var(--color-paper) 82%, transparent);
+	backdrop-filter: blur(6px);
+}
+
+.hoje-nav-marca {
+	font-family: var(--font-display);
+	font-weight: 700;
+	font-size: 14px;
+	color: var(--color-noir);
+	opacity: 0.72;
+}
+
+.hoje-nav-link {
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 600;
+	color: var(--color-grafite-70, var(--color-noir));
+	position: relative;
+	padding-bottom: 2px;
+}
+
+.hoje-nav-link::after {
+	content: "";
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	height: 1px;
+	background: var(--color-cherry);
+	transform: scaleX(0);
+	transform-origin: right;
+	transition: transform 0.4s var(--ease-editorial);
+}
+
+.hoje-nav-link:hover::after {
+	transform: scaleX(1);
+	transform-origin: left;
+}
+
+/* Abertura: assimétrica, ~2/3 imagem + 1/3 texto, nunca centralizada como cartão. */
+.hoje-abertura {
+	display: grid;
+	grid-template-columns: 1.7fr 1fr;
+	min-height: calc(100vh - 76px);
+	align-items: stretch;
+}
+
+@media (max-width: 900px) {
+	.hoje-abertura {
+		grid-template-columns: 1fr;
+	}
+}
+
+.hoje-imagem-wrap {
+	position: relative;
+	overflow: hidden;
+}
+
+/*
+ * Placeholder deliberado: `Entrega.materialEnviado` existe no domínio real (SPEC-012 §6.1),
+ * mas nenhum endpoint expõe hoje o arquivo em si para o frontend (armazenamento local em
+ * disco, sem rota de servir estático — ver relatório, "Lacuna declarada"). Em vez de simular
+ * uma foto de banco de imagens (o que o Design Brief proíbe — imagem sempre real, nunca
+ * stock), o placeholder é honestamente tipográfico sobre uma superfície de marca.
+ */
+.hoje-imagem-placeholder {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: flex-end;
+	padding: 32px;
+	background: linear-gradient(
+		165deg,
+		var(--color-cotton) 0%,
+		color-mix(in srgb, var(--color-cotton) 60%, var(--color-cherry)) 140%
+	);
+	animation: hoje-respiro 14s var(--ease-editorial) infinite alternate;
+}
+
+.hoje-imagem-placeholder-legenda {
+	font-family: var(--font-display);
+	font-size: 12.5px;
+	font-weight: 600;
+	color: color-mix(in srgb, var(--color-noir) 55%, transparent);
+	max-width: 32ch;
+}
+
+@keyframes hoje-respiro {
+	from {
+		transform: scale(1);
+	}
+	to {
+		transform: scale(1.04);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.hoje-imagem-placeholder {
+		animation: none;
+	}
+}
+
+.hoje-texto {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	gap: 40px;
+	padding: 64px 56px;
+}
+
+.hoje-eyebrow {
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 700;
+	letter-spacing: 0.04em;
+	text-transform: lowercase;
+	color: var(--color-cherry);
+}
+
+/* O evento de escala real do produto — salto deliberado, nunca 38px. */
+.hoje-manchete {
+	font-family: var(--font-display);
+	font-weight: 800;
+	font-size: clamp(2.6rem, 4vw + 1rem, 4.6rem);
+	line-height: 1.04;
+	letter-spacing: -0.01em;
+	color: var(--color-noir);
+	max-width: 14ch;
+}
+
+.hoje-acao {
+	margin-top: 8px;
+}
+
+/* Zona quieta: recuada, tom neutro, uma frase corrida — nunca outro bloco de peso igual. */
+.hoje-zona-quieta {
+	padding: 28px 56px 56px;
+	border-top: 1px solid var(--color-grafite-15, rgba(27, 23, 23, 0.1));
+}
+
+.hoje-zona-quieta-texto {
+	font-size: 14px;
+	color: color-mix(in srgb, var(--color-noir) 65%, transparent);
+	max-width: 62ch;
+}
+
+/*
+ * Capítulo operacional: só aparece com o scroll — a virada de tom (fundo levemente mais
+ * escuro, densidade maior) marca a transição narrativa, não é "mais do mesmo conteúdo".
+ */
+.hoje-capitulo {
+	padding: 48px 56px 80px;
+	background: color-mix(in srgb, var(--color-paper) 88%, var(--color-noir));
+}
+
+.hoje-capitulo-titulo {
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 700;
+	text-transform: lowercase;
+	color: color-mix(in srgb, var(--color-noir) 55%, transparent);
+	margin-bottom: 20px;
+}
