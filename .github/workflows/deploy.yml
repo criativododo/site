@@ -1,0 +1,44 @@
+name: Deploy Portal DODÔ
+
+# Dispara só depois que o workflow CI terminar com sucesso na main — nunca publica
+# um commit que não passou em lint/build/test. Único ponto de verdade da publicação:
+# deploy/deploy.sh na VPS (nenhuma lógica de deploy duplicada aqui).
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+    branches: [main]
+
+jobs:
+  deploy:
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy via SSH (deploy.sh + healthcheck.sh)
+        env:
+          SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "$VPS_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+
+          ssh -i ~/.ssh/deploy_key "$VPS_USER@$VPS_HOST" \
+            "sudo -u dodo -i bash -c 'cd /opt/dodo-portal && ./deploy/deploy.sh && ./deploy/healthcheck.sh portal.criativododo.com.br'"
+
+      - name: Confirmar commit publicado == HEAD da main
+        env:
+          SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+        run: |
+          PUBLISHED=$(ssh -i ~/.ssh/deploy_key "$VPS_USER@$VPS_HOST" "cd /opt/dodo-portal && git rev-parse HEAD")
+          echo "Commit publicado: $PUBLISHED"
+          echo "Commit esperado (HEAD main): ${{ github.event.workflow_run.head_sha }}"
+          if [ "$PUBLISHED" != "${{ github.event.workflow_run.head_sha }}" ]; then
+            echo "::error::Divergência entre produção ($PUBLISHED) e HEAD da main (${{ github.event.workflow_run.head_sha }})"
+            exit 1
+          fi
