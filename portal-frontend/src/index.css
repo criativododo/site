@@ -731,7 +731,7 @@ textarea:focus-visible {
 	font-size: 13px;
 	line-height: 1.55;
 	color: var(--ink-secondary);
-	max-width: 34ch;
+	max-width: 41ch;
 }
 .portal-entrada-auth {
 	display: flex;
@@ -779,9 +779,9 @@ textarea:focus-visible {
 @media (max-width: 768px) {
 	.portal-entrada-content {
 		left: 8%;
-		top: 10%;
+		top: 17%;
 		width: 84%;
-		height: 80%;
+		height: 76%;
 	}
 	.portal-entrada-emblem {
 		left: 2%;
