@@ -22,6 +22,7 @@ import { BriefingCampanhaPage } from "./pages/experimentos/BriefingCampanha";
 import { EnvioConteudoPage } from "./pages/experimentos/EnvioConteudo";
 import { AprovacaoPage } from "./pages/experimentos/Aprovacao";
 import { PublicacaoPage } from "./pages/experimentos/Publicacao";
+import { FinanceiroInfluenciadoraPage } from "./pages/experimentos/FinanceiroInfluenciadora";
 
 /**
  * Espelha a regra de destino pós-login do backend (auth.routes.ts: callback do Google) para
@@ -131,6 +132,22 @@ function App() {
 				element={
 					<RotaProtegida>
 						<PublicacaoPage />
+					</RotaProtegida>
+				}
+			/>
+
+			{/*
+			 * Proposta de Financeiro/"reconhecimento" (sessão de aprovação editorial) — sétima tela
+			 * da família, mesmo padrão aditivo das seis anteriores. Rota própria (`/reconhecimento`,
+			 * não `/financeiro`) porque `/financeiro` já é servida por pages/Financeiro.tsx dentro
+			 * do PortalLayout — reconciliação das duas fica para decisão futura, fora do escopo
+			 * desta tarefa. Rota some se a proposta não for aprovada.
+			 */}
+			<Route
+				path="/reconhecimento"
+				element={
+					<RotaProtegida>
+						<FinanceiroInfluenciadoraPage />
 					</RotaProtegida>
 				}
 			/>
