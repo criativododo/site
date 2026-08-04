@@ -6,6 +6,17 @@
 > Ele define **o que o produto é, o que cada tela significa, o que o usuário sente e quais estados existem**.
 > Em caso de conflito entre este documento e qualquer especificação anterior (SPEC/ADR), **este documento prevalece para a camada de experiência**.
 
+## NOTA DESTA REVISÃO
+
+Esta passagem revisou o documento na íntegra em busca de fluxos ausentes, estados não considerados, telas faltantes, jornadas incompletas, inconsistências terminológicas, semiautomações mal especificadas e cobertura de acessibilidade e mobile-first — sem alterar nenhuma decisão de negócio já tomada nas versões anteriores.
+
+O que mudou nesta revisão:
+- Dois capítulos novos: **19. Acessibilidade** e **20. Mobile-first e comportamento por dispositivo**, antes ausentes ou tratados como observação isolada.
+- Capítulos 19–21 da versão anterior renumerados para **21–23** (Lacunas, Perguntas, Roadmap).
+- Novas entradas no inventário de telas (cap. 4), no capítulo de notificações (13.6) e nos capítulos de Lacunas e Perguntas, listadas como tal — não como requisito decidido.
+- Nenhum item de `MELHORIAS_MANUS.md` foi incorporado a este documento. Onde uma lacuna encontrada aqui coincide com uma proposta daquele backlog, o texto abaixo faz referência cruzada explícita, mantendo o backlog como não aprovado (ver regra de governança no próprio `MELHORIAS_MANUS.md`).
+- Em nenhum ponto desta revisão foi presumido requisito funcional onde a especificação era omissa: toda lacuna nova está registrada no capítulo 21, toda pergunta nova no capítulo 22.
+
 ---
 
 ## ÍNDICE
@@ -28,9 +39,11 @@
 16. Componentes Necessários
 17. Iconografia
 18. Microinterações
-19. Lacunas Encontradas
-20. Perguntas para Product Design
-21. Roadmap (P0–P3)
+19. Acessibilidade
+20. Mobile-first e Comportamento por Dispositivo
+21. Lacunas Encontradas
+22. Perguntas para Product Design
+23. Roadmap (P0–P3)
 
 ---
 
@@ -217,7 +230,7 @@ Ação sem sair do contexto: aprovar, pedir ajuste, abrir material, copiar mensa
 
 **A7 — Publicação.** Registra que o conteúdo foi ao ar. Fecha o ciclo do material e o arquiva.
 
-**A8 — Financeiro.** A competência só libera pagamento quando **todas** as entregas estiverem aprovadas ou publicadas. Quando bloqueada, o Portal mostra exatamente **quais entregas** faltam e permite agir a partir dali. Existe caminho de exceção documentado (liberação antecipada com justificativa registrada) — ver capítulo 19.
+**A8 — Financeiro.** A competência só libera pagamento quando **todas** as entregas estiverem aprovadas ou publicadas. Quando bloqueada, o Portal mostra exatamente **quais entregas** faltam e permite agir a partir dali. Existe caminho de exceção documentado (liberação antecipada com justificativa registrada) — ver capítulo 21.
 
 **A9 — Encerramento.** Fecha a competência, gera resumo, arquiva materiais, abre a próxima.
 
@@ -280,6 +293,8 @@ Ação sem sair do contexto: aprovar, pedir ajuste, abrir material, copiar mensa
 44. perfil — visualização
 45. perfil — edição
 46. segurança da conta (senha, sessões)
+46a. meus dados — privacidade (solicitar exportação ou exclusão — LGPD) *(nova nesta revisão — ver cap. 21)*
+46b. preferências de notificação (canal, categorias, silêncio) *(nova nesta revisão — ver cap. 13.6)*
 47. ajuda / como funciona
 48. campanha encerrada — resumo do mês
 
@@ -704,6 +719,14 @@ Aparece como **feed da redação**, ligado à temperatura do dashboard: quente (
 - Marcar como lida nunca apaga o evento.
 - Estado vazio: *"nada precisa da sua atenção agora."*
 
+## 13.6 Preferências de notificação *(nova nesta revisão)*
+A especificação original define categorias e níveis (13.1–13.2) mas não onde nem como o usuário controla o que recebe. Proposta de estrutura mínima, sujeita a validação de produto:
+- Categorias **urgentes** (cap. 13.2) nunca são silenciáveis — são o motivo de existir do nível.
+- Categorias **informativas** e de **histórico/sistema** podem ser desativadas por canal, individualmente, na tela "preferências de notificação" (tela 46b, cap. 4.3).
+- Canal é uma escolha por categoria, não global: ex. "prazo interno" via WhatsApp + mural; "novidades da agência" só via mural.
+- Não existe "silêncio total": pelo menos um canal permanece ativo para a categoria urgente, sempre.
+- Cadência de lembretes automáticos (quantos, com que intervalo, antes de considerar escalonamento) não está definida nesta versão — ver cap. 22, Q relacionada.
+
 ---
 
 # 14. FINANCEIRO
@@ -845,16 +868,94 @@ Nunca usar cor sozinha para transmitir estado (acessibilidade).
 
 ---
 
-# 19. LACUNAS ENCONTRADAS
+# 19. ACESSIBILIDADE
 
-## 19.1 Vazios de decisão de produto
+## 19.1 Princípio
+O Portal é usado, em partes iguais, por uma criadora com pressa no celular e por uma operadora que revisa dezenas de materiais em sequência no desktop. Acessibilidade aqui não é conformidade formal isolada — é a mesma filosofia editorial ("nenhum estado implícito", "urgência sempre vence estética") aplicada a quem não enxerga bem, não ouve, não usa mouse, ou está sob luz solar direta gravando conteúdo na rua.
+
+**Meta de referência:** WCAG 2.1 nível AA como piso qualitativo para todas as telas de produção (P0–P1). Nível de conformidade formal e processo de auditoria ficam como pergunta aberta — ver capítulo 22.
+
+## 19.2 Cor e contraste
+- Contraste mínimo 4.5:1 para texto de corpo e 3:1 para texto grande/ícone informativo, em qualquer combinação de tema.
+- A cor de alerta da marca ("cherry", cap. 17.3) precisa de par verificado de contraste sobre os fundos editoriais reais do Portal, não apenas sobre branco — validar antes de virar padrão de uso escasso.
+- **Nenhum estado é comunicado só por cor** (regra já registrada no cap. 17.3): todo selo de estado carrega texto ou ícone rotulado junto da cor.
+- Modo escuro está fora de escopo nesta versão (cap. 22, Q24); ainda assim, o contraste deve ser validado no tema claro real do produto, não em mockup isolado.
+
+## 19.3 Navegação por teclado (foco: área administrativa)
+- Toda ação da barra de revisão (aprovar / ajustar / reprovar, cap. 16) é alcançável e executável só com teclado, com ordem de tabulação que segue a hierarquia editorial da tela, não a ordem do DOM.
+- Painel lateral de detalhe (cap. 16, "sem trocar de página") precisa de gerenciamento de foco explícito: foco move para dentro do painel ao abrir, e retorna ao elemento que o abriu ao fechar — sem isso, quem navega por teclado se perde na mesa de decisão (tela 49).
+- Modal de motivo obrigatório (ajuste/reprovação, cap. 11) prende o foco (focus trap) e é fechável por Esc, com confirmação se houver texto não salvo.
+- Atalhos de teclado para ações de alta frequência do operador (aprovar, próximo item da fila) ficam como oportunidade P2 — não é requisito desta versão, apenas registrado como possibilidade.
+
+## 19.4 Leitor de tela e conteúdo dinâmico
+- Estados assíncronos que hoje são só visuais — progresso de upload (cap. 9.3), "salvando"/"salvo" (cap. 6.1), contagem regressiva mudando de faixa (cap. 18) — precisam de uma região `aria-live` educada (polite) para progresso e "assertive" apenas para falha, para não interromper leitura em andamento.
+- Esqueleto editorial (loading, cap. 6.1) é anunciado como "carregando conteúdo", não lido como uma sequência de linhas vazias sem sentido.
+- Selo "de quem é a vez" (cap. 15.3) — a informação mais importante da tela de entrega — precisa ter equivalente textual explícito lido antes do restante do dossiê, não apenas destaque visual.
+- Toda imagem/vídeo enviado pela parceira ou pela agência (referência, material, comprovante) exige texto alternativo ou legenda mínima gerada pelo contexto (ex.: "material — reels, versão 2, enviado 3 ago"), nunca `alt` vazio em conteúdo que carrega decisão.
+
+## 19.5 Formulários e erros
+- Todo campo em formulário em blocos (perfil, cap. 8) associa rótulo, mensagem de erro e texto de ajuda ao input via atributos de acessibilidade — erro nunca aparece só como borda vermelha.
+- Erro de validação é anunciado no momento em que ocorre (ao sair do campo ou ao tentar salvar), não apenas em texto silencioso acima do formulário.
+- Campo mascarado para dado sensível (PIX, cap. 16) informa ao leitor de tela que o valor está mascarado e como revelar, quando revelar for permitido.
+
+## 19.6 Alvos de toque e gestos (mobile)
+- Alvo mínimo de toque 44×44px em qualquer ação da experiência da influenciadora — ela usa o Portal com uma mão, entre uma gravação e outra.
+- Nenhuma ação crítica (confirmar envio, aprovar leitura de briefing) depende de gesto complexo (swipe, long-press) sem alternativa por toque simples.
+- Dropzone de upload (cap. 16) tem alternativa explícita de seleção por toque/clique — nunca depende só de arrastar.
+
+## 19.7 Movimento e sensibilidade
+- Toda animação do capítulo 18 respeita `prefers-reduced-motion` do sistema operacional automaticamente.
+- Além do respeito automático, fica registrada como lacuna (cap. 21) a ausência de um controle explícito dentro do Portal para quem quer reduzir movimento sem mexer no sistema operacional inteiro.
+
+## 19.8 Idioma e leitura
+- Conteúdo autoral (briefing, comentários) mantém o idioma original de quem escreveu; rótulos de interface são sempre em português editorial (cap. 1.5, minúscula editorial).
+- Termos técnicos evitados na camada visível ao usuário (cap. 8.3 já dá o exemplo: prazo interno nunca aparece como "campo técnico") — esta prática se estende a toda mensagem de erro e todo texto de estado vazio.
+
+---
+
+# 20. MOBILE-FIRST E COMPORTAMENTO POR DISPOSITIVO
+
+## 20.1 Princípio
+A especificação já assume, sem declarar formalmente, que a influenciadora vive no celular (cap. 1.3: "usa o Portal no celular, entre gravações, quase sempre com pressa") e que a agência vive no desktop (cap. 1.3: "trabalha em desktop, em lote"). Este capítulo torna essa suposição explícita e detalha o que ela exige da experiência — sem propor telas novas, apenas comportamento.
+
+## 20.2 Prioridade por papel
+- **Influenciadora — mobile é a experiência primária**, não apenas responsiva. Toda tela do capítulo 5.3 é desenhada primeiro para a largura de um celular; a versão desktop é a adaptação, não o contrário.
+- **Agência — desktop é a experiência primária** para revisão em lote e mesa de decisão (cap. 3.2, A5), mas precisa de leitura básica funcional em tablet/celular para aprovações urgentes fora do escritório (cenário real: operadora aprova um ajuste pelo celular à noite).
+- Confirmar esta divisão como decisão de produto — hoje é suposição do documento, não resposta validada (ver cap. 22, Q23).
+
+## 20.3 Zona de alcance e uso com uma mão
+- Ações primárias da influenciadora (confirmar leitura, iniciar upload, "li e entendi") ficam na metade inferior da tela, alcançável pelo polegar em uso com uma mão — não no topo.
+- Navegação principal recolhível (cap. 16) em mobile vira barra inferior ou menu de acesso rápido, nunca menu hambúrguer escondendo a ação mais frequente da sessão.
+
+## 20.4 Upload a partir do celular
+- Seleção de arquivo (tela 29) oferece captura direta pela câmera do aparelho como caminho principal, não só seleção de galeria — a maior parte do material é gravado na hora.
+- Upload em andamento (tela 30) sobrevive a: app em segundo plano, tela bloqueada, troca de rede (Wi-Fi → dados móveis) e interrupção de chamada telefônica. O indicador persistente global (cap. 9.4) precisa continuar visível/retomável ao voltar ao app, não recomeçar do zero.
+- Consumo de dados móveis é comunicado antes de um envio grande fora de Wi-Fi (ex.: aviso leve "isso vai usar ~180MB de dados móveis"), sem bloquear a ação — apenas informar. Ver cap. 21 (lacuna) e cap. 22 (pergunta) sobre limite de tamanho de arquivo, do qual isso depende.
+
+## 20.5 Instalação, permissões e notificações
+- O Portal como PWA instalável no celular da influenciadora é a forma natural de reduzir a distância até o WhatsApp (cap. 1.5, princípio 9) — instalação sugerida no momento certo (ex.: após o primeiro upload concluído com sucesso), nunca no primeiro acesso, quando a atenção já está disputada pelo cadastro.
+- Pedido de permissão de notificação (necessário se o Portal adotar push — hoje fora do escopo aprovado, ver `MELHORIAS_MANUS.md` item 24, P1, não incorporado) segue a mesma regra: nunca no primeiro acesso, sempre no momento em que o valor da permissão é óbvio (ex.: logo após confirmar leitura de um briefing com prazo apertado).
+- Login biométrico (Face ID / impressão digital) como atalho de sessão no celular fica registrado como oportunidade P2, não requisito — reduz fricção de reabrir o Portal "entre uma gravação e outra" sem enfraquecer a autenticação Google OIDC (ADR-007) que continua sendo a fonte de verdade da sessão.
+
+## 20.6 Sessão e múltiplos dispositivos
+- A influenciadora pode trocar de celular no meio de uma campanha (bifurcação já prevista, cap. 2.3: "dispositivo trocado"); a tela "segurança da conta" (tela 46) precisa mostrar sessões ativas por dispositivo, não apenas por token — hoje a tela existe no inventário, mas o conteúdo funcional dela não está detalhado em nenhum capítulo. Registrado como lacuna, cap. 21.
+- Sessão aberta simultaneamente em celular e desktop (ex.: influenciadora confere financeiro no notebook e faz upload no celular) não é tratada em nenhum lugar da especificação — se é permitida, apenas coexiste; se não, precisa de aviso de conflito. Pergunta aberta, cap. 22.
+
+## 20.7 Offline e rede instável
+- Além do estado genérico "sem internet / modo offline" (tela 84), a influenciadora em campo (evento, viagem a trabalho) precisa que ações já iniciadas (upload, confirmação de leitura) fiquem em fila local e sincronizem sozinhas ao reconectar — a microinteração de "reconexão após offline" (cap. 18: "faixa que recolhe sozinha ao voltar") já assume esse comportamento na superfície, mas o mecanismo de fila não está descrito em nenhum capítulo funcional. Registrado como lacuna, cap. 21.
+
+---
+
+# 21. LACUNAS ENCONTRADAS
+
+## 21.1 Vazios de decisão de produto
 1. **Destino da reprovação** — reprovar volta a entrega para "aguardando material" ou cria estado próprio? *Proposta deste documento:* dois caminhos distintos (ajuste ≠ reprovação), com reprovação exigindo decisão explícita sobre nova solicitação.
 2. **Exceção do portão financeiro** — pagar parcialmente ou antecipar quando falta uma entrega menor não está previsto. Hoje o bloqueio é binário e cria atrito com a criadora.
 3. **Publicação** — quem registra: agência sempre, ou a parceira pode declarar? Falta definir a fonte de verdade.
 4. **Prazo após ajuste** — o novo prazo é automático (recalculado) ou definido manualmente pela agência?
 5. **Limite de ciclos de ajuste** — existe um número máximo de reenvios antes de escalar?
 
-## 19.2 Estados ausentes hoje
+## 21.2 Estados ausentes hoje
 - ajuste/reprovação (inexistente);
 - publicado na interface (existe no domínio, não na tela);
 - conta em análise (hoje vira erro ou tela vazia);
@@ -864,21 +965,36 @@ Nunca usar cor sozinha para transmitir estado (acessibilidade).
 - versões do material;
 - divergência de pagamento.
 
-## 19.3 Regras conflitantes
+## 21.3 Regras conflitantes
 - Prazo interno especificado, porém invisível e não calculado na experiência atual.
 - Cota comercial contratada sem contador visível para a parceira.
 - Feedback exigido "dentro do sistema" enquanto todo o fluxo real acontece fora.
 - Linguagem editorial versus urgência operacional: hoje a estética pode esconder a pendência.
 - Padrão de rótulos oscilando entre Title Case e minúscula editorial.
+- **Vocabulário financeiro inconsistente (novo nesta revisão):** o mesmo trecho do ciclo de pagamento aparece com três nomes diferentes em três capítulos — cap. 2.2 (E13) usa `bloqueado → liberado → aprovado → enviado → pago`; cap. 6.2 usa `sem lançamentos → bloqueado por entrega pendente → em aberto → aprovado → enviado → pago`; cap. 14.2 usa `criado → elegível (portão liberado) → aprovado → enviado → pago → encerrado`. "Liberado", "em aberto" e "elegível" parecem descrever o mesmo estado (portão desbloqueado, ainda não aprovado), mas não está declarado se são sinônimos ou estados distintos. Nenhum vocabulário é adotado como canônico aqui — ver pergunta em cap. 22.
 
-## 19.4 Riscos de experiência
+## 21.4 Riscos de experiência
 - Excesso de estados expostos pode confundir a criadora: é preciso **uma frase de estado** por tela, com detalhe sob demanda.
 - Pasta institucional invisível ao sistema pode gerar sensação de arquivo perdido — exige destino provisório nomeado.
 - Feed de atividades muito verboso vira ruído — exige agrupamento.
 
+## 21.5 Fluxos e telas ausentes (novo nesta revisão)
+1. **"No-show" da influenciadora** — o estado `prazo interno vencido` (cap. 6.2) existe, mas não há fluxo para quando o prazo de postagem também vence sem qualquer material enviado (silêncio total, não apenas atraso). Hoje a experiência trata atraso-com-atividade e ausência-completa da mesma forma. Falta decidir se isso dispara um estado/tela própria e um escalonamento diferente do lembrete comum.
+2. **Autoatendimento de privacidade (LGPD) pela influenciadora** — o capítulo 3.2 (A10) descreve a agência *recebendo e gerindo* solicitações de privacidade (tela 75), mas em nenhum lugar a influenciadora *inicia* um pedido de exportação ou exclusão dos próprios dados dentro do Portal. Adicionada como possível tela 46a (cap. 4.3) nesta revisão — natureza da tela (autosserviço completo vs. abertura de ticket para a agência) não está decidida.
+3. **Preferências de notificação** — categorias e níveis existem (cap. 13.1–13.2), mas nenhuma tela permite à influenciadora escolher canal ou silenciar categorias não urgentes. Proposta mínima registrada em cap. 13.6 e tela 46b (cap. 4.3).
+4. **Multi-dispositivo e sessão simultânea** — a tela "segurança da conta" (tela 46) está no inventário desde a versão anterior, mas nenhum capítulo descreve o que ela mostra ou faz. Detalhado como lacuna funcional em cap. 20.6.
+5. **Fila de sincronização offline** — a microinteração "reconexão após offline" (cap. 18) pressupõe que ações iniciadas sem rede ficam guardadas e sincronizam sozinhas, mas nenhum capítulo funcional descreve esse mecanismo (cap. 20.7).
+6. **Nota interna vs. comentário visível à parceira** — o princípio "a parceira nunca vê eventos internos que não a envolvam" (cap. 2.3, A10) pressupõe a existência de anotação interna da agência, mas nenhum componente do capítulo 16 distingue explicitamente "comentário visível à parceira" de "nota interna da agência" dentro do dossiê de entrega (cap. 15.2). Sem essa distinção modelada, o risco é a agência escrever uma nota interna no campo errado e ela vazar para a parceira.
+
+## 21.6 Referências cruzadas com o backlog (`MELHORIAS_MANUS.md`)
+As lacunas abaixo, encontradas nesta revisão, coincidem parcialmente com propostas já registradas naquele backlog estratégico. Nenhuma delas foi incorporada a este documento — permanecem como não aprovadas, listadas aqui apenas para evitar retrabalho de análise:
+- Notificações push (21.5.3 acima) ↔ `MELHORIAS_MANUS.md`, item 24 (P1).
+- Central de compliance/documentação legal, que naturalmente hospedaria o autoatendimento LGPD (21.5.2) ↔ `MELHORIAS_MANUS.md`, item 21 (P2).
+- Gestão de permissões e papéis internos, relevante para quem pode ver/resolver a lacuna de "nota interna" (21.5.6) ↔ `MELHORIAS_MANUS.md`, item 7 (P1) e pergunta 7 do capítulo 22.
+
 ---
 
-# 20. PERGUNTAS PARA PRODUCT DESIGN
+# 22. PERGUNTAS PARA PRODUCT DESIGN
 
 **Fluxo e regras**
 1. Reprovação e solicitação de ajuste são o mesmo ato ou dois atos distintos no produto final?
@@ -915,12 +1031,20 @@ Nunca usar cor sozinha para transmitir estado (acessibilidade).
 
 **Experiência**
 22. O dashboard da influenciadora deve priorizar prazo ou pendência quando os dois competem?
-23. Mobile é a experiência primária da criadora (assumido como sim neste documento) — confirmar.
+23. Mobile é a experiência primária da criadora (assumido como sim neste documento) — confirmar. A agência precisa de leitura/aprovação funcional em celular/tablet, ou desktop é o único alvo suportado (cap. 20.2)?
 24. Existe modo escuro no escopo? (Assumido: não nesta versão.)
+
+**Acessibilidade, privacidade e dispositivos (novo nesta revisão)**
+25. Qual vocabulário financeiro é canônico entre `liberado` (cap. 2.2), `em aberto` (cap. 6.2) e `elegível` (cap. 14.2) — são o mesmo estado com nomes divergentes ou estados distintos que a especificação ainda não separou (cap. 21.3)?
+26. Existe cadência padrão de lembretes automáticos antes de um item ser considerado escalonado, e quem recebe o escalonamento — só a agência, ou também um "no-show" gera algo visível para a própria influenciadora (cap. 21.5.1)?
+27. A solicitação de exportação/exclusão de dados (LGPD) pela influenciadora acontece dentro do Portal como autosserviço, ou continua sendo um processo manual mediado pela agência (cap. 21.5.2)?
+28. Login simultâneo em mais de um dispositivo é permitido sem aviso, ou deve gerar notificação/confirmação de novo dispositivo (cap. 20.6)?
+29. Existe meta formal de acessibilidade (ex.: WCAG 2.1 AA, cap. 19.1) com processo de auditoria antes do lançamento, ou a orientação deste documento permanece qualitativa e não verificada por ferramenta?
+30. Tamanho máximo de arquivo de upload — necessário para decidir o aviso de consumo de dados móveis do cap. 20.4 e para o próprio formulário de erro "arquivo inválido" (cap. 9.3), hoje sem limite numérico definido em lugar nenhum do documento.
 
 ---
 
-# 21. ROADMAP
+# 23. ROADMAP
 
 ## P0 — a relação precisa existir sem sair do Portal
 *Sem isto, o Portal não substitui o WhatsApp e não cumpre a promessa.*
@@ -940,9 +1064,12 @@ Parceiras (lista, ficha, cadastro, condição comercial, convite/ativação) · 
 **Por quê:** o gargalo deixa de ser a relação e passa a ser o volume. Aqui a agência para de digitar e volta a editar.
 
 ## P3 — refinamento e maturidade
-Segurança da conta e sessões · auditoria/linha do tempo do sistema · solicitações de privacidade · ajuda/como funciona · configurações da agência · divergência de pagamento · exportações e visão de campanha para marca · microinterações completas · manutenção programada · refinamento tipográfico e de iconografia.
+Segurança da conta e sessões · auditoria/linha do tempo do sistema · solicitações de privacidade · **meus dados — privacidade/LGPD (tela 46a)** · **preferências de notificação (tela 46b)** · ajuda/como funciona · configurações da agência · divergência de pagamento · exportações e visão de campanha para marca · microinterações completas · manutenção programada · refinamento tipográfico e de iconografia.
 
 **Por quê:** valor incremental sobre um produto já funcional; nada aqui bloqueia a operação diária.
+
+## Acessibilidade e mobile-first não são um "P" — são transversais
+Os capítulos 19 (Acessibilidade) e 20 (Mobile-first) não entram como item de uma fase porque não são funcionalidades: são qualidade mínima de toda tela construída em qualquer P. Uma tela de P0 sem estado de foco tratado ou sem alvo de toque adequado não está de fato pronta, mesmo que a funcionalidade esteja implementada — mesmo raciocínio já aplicado pelo item 1 do ANEXO a carregando/vazio/erro/offline.
 
 ---
 
