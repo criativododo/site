@@ -27,7 +27,11 @@ test('inicia, gera journal, valida e publica em um remoto Git local', () => {
       journalWindow: 5,
       checks: {},
     }));
-    const environment = { ...process.env, GIT_CONFIG_GLOBAL: writeGlobalGitConfig(fixture) };
+    const environment = {
+      ...process.env,
+      GIT_CONFIG_GLOBAL: writeGlobalGitConfig(fixture),
+      CRIATIVODODO_MEMORY_DIR: join(fixture, 'memory'),
+    };
     const initial = JSON.parse(runCli(app, ['inicio', '--session', 'fixture', '--objective', 'Validar fluxo'], environment));
     assert.equal(initial.executiveSummary.phase, 'Fase 4 — Armazenamento + Workspace Provisioning');
     const detailsFile = join(app, '.claude/session-memory/runtime/fixture.details.json');

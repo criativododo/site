@@ -4,7 +4,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve, relative } from 'node:path';
 import { fail, parseArgs, print, readJson, requireArg, nowIso, dateParts, atomicWrite, SessionMemoryError } from '../lib/core.mjs';
 import { loadConfig } from '../lib/config.mjs';
-import { ensureGitRepository, git, sourceSnapshot, changedFilesSince, commitsSince, remoteState, workingTreeState } from '../lib/git.mjs';
+import { ensureGitRepository, isGitRepository, git, gitOk, sourceSnapshot, changedFilesSince, commitsSince, workingTreeState } from '../lib/git.mjs';
 import { listJournals, nextJournalPath, updateIndex, validateMemory, withMarker, readMarker, journalSection } from '../lib/documents.mjs';
 import { createInitialMemory } from '../lib/scaffold.mjs';
 
@@ -46,44 +46,50 @@ function commitAndPushBootstrap(config) {
   const memory = config.memoryPath;
   git(['add', '-A'], memory);
   git(['commit', '-m', 'docs(memory): initialize session memory'], memory);
-  const push = git(['push', '-u', 'origin', 'HEAD'], memory, { allowFailure: true });
-  if (typeof push !== 'string') fail('Memória inicializada localmente, mas o push falhou. Corrija o remoto e execute `publish`.');
+  // Best-effort: se o push falhar (sem rede, remoto indisponível), o commit fica
+  // local e é publicado numa tentativa futura — nunca bloqueia a sessão atual.
+  git(['push', '-u', 'origin', 'HEAD'], memory, { allowFailure: true });
 }
 
+// available: false cobre qualquer motivo pelo qual a memória não pôde ser preparada
+// (sem rede para clonar, diretório existente que não é um repositório Git etc.) —
+// nunca lança erro; o chamador segue a sessão com contexto vazio.
 function ensureMemoryRepository(config) {
   if (!existsSync(config.memoryPath)) {
     mkdirSync(resolve(config.memoryPath, '..'), { recursive: true });
-    git(['clone', config.memoryRepositoryUrl, config.memoryPath], root);
+    const clone = git(['clone', config.memoryRepositoryUrl, config.memoryPath], root, { allowFailure: true });
+    if (!gitOk(clone)) return { initialized: false, available: false };
   }
-  ensureGitRepository(config.memoryPath, 'Repositório de memória');
-  const status = git(['status', '--porcelain=v1'], config.memoryPath);
-  if (status) fail('O repositório de memória possui alterações não commitadas. Faça commit, stash ou descarte-as antes de continuar.');
+  if (!isGitRepository(config.memoryPath)) return { initialized: false, available: false };
   if (!memoryHasHistory(config.memoryPath)) {
     createInitialMemory(config.memoryPath, sourceSnapshot(root));
     commitAndPushBootstrap(config);
-    return { initialized: true };
+    return { initialized: true, available: true };
   }
   const missingStatus = !existsSync(join(config.memoryPath, 'project/PROJECT_STATUS.md'));
   if (missingStatus) {
     createInitialMemory(config.memoryPath, sourceSnapshot(root));
     commitAndPushBootstrap(config);
-    return { initialized: true };
+    return { initialized: true, available: true };
   }
-  return { initialized: false };
+  return { initialized: false, available: true };
 }
 
-function syncMemory(config) {
-  const memory = config.memoryPath;
-  const dirty = git(['status', '--porcelain=v1'], memory);
-  if (dirty) fail('A memória está suja; o sync foi bloqueado para evitar sobrescrita.');
-  const fetch = git(['fetch', '--prune'], memory, { allowFailure: true });
-  if (typeof fetch !== 'string') fail('Não foi possível consultar o remoto da memória. O trabalho local foi preservado.');
-  const state = remoteState(memory);
-  if (state.ahead > 0) fail('A memória possui commits locais não publicados. Execute `publish` antes de iniciar nova sessão.');
-  if (state.behind > 0) git(['pull', '--ff-only'], memory);
-  if (state.ahead > 0 && state.behind > 0) fail('Histórico remoto divergente; resolva manualmente antes de continuar.');
-  return remoteState(memory);
+// Uma tentativa best-effort de atualizar a memória local com o remoto — nunca
+// bloqueia e nunca lança erro. Alterações locais não commitadas (de uma sessão
+// anterior que não conseguiu publicar) são preservadas: sem rede, sem remoto
+// disponível, ou hub com alterações locais, a sessão simplesmente segue com o que
+// já está em disco.
+function refreshMemoryBestEffort(memoryPath) {
+  const fetch = git(['fetch', '--prune'], memoryPath, { allowFailure: true });
+  if (!gitOk(fetch)) return;
+  git(['merge', '--ff-only', 'origin/main'], memoryPath, { allowFailure: true });
 }
+
+// Campo a campo, com fallback: memória ausente, ilegível ou com marcador inválido
+// nunca impede a sessão de continuar — apenas resulta em contexto vazio para essa
+// seção específica.
+const PROJECT_STATE_FALLBACK = { status: {}, next: {}, roadmap: { phases: [] }, adr: {} };
 
 function readProjectState(memoryPath) {
   const result = {};
@@ -94,7 +100,11 @@ function readProjectState(memoryPath) {
     adr: 'project/ADR_STATUS.md',
   })) {
     const filePath = join(memoryPath, relativePath);
-    result[key] = readMarker(readFileSync(filePath, 'utf8'), relativePath);
+    try {
+      result[key] = readMarker(readFileSync(filePath, 'utf8'), relativePath);
+    } catch {
+      result[key] = PROJECT_STATE_FALLBACK[key];
+    }
   }
   return result;
 }
@@ -171,17 +181,29 @@ function commandInicio(args) {
   const objective = requireArg(args, 'objective');
   const id = sessionId(args);
   ensureGitRepository(root, 'Repositório da aplicação');
-  const result = ensureMemoryRepository(config);
-  syncMemory(config);
   const previous = readJson(sessionPath(config, id));
   if (previous) fail(`Já existe baseline para a sessão ${id}. Execute /fim ou use outro ID.`);
+  // Preparar/atualizar a memória é sempre best-effort a partir daqui: nenhuma etapa
+  // abaixo pode impedir a sessão de começar. Sem rede, remoto indisponível ou
+  // qualquer outra falha de sincronização, a sessão segue com o que já está em
+  // disco (na pior hipótese, contexto vazio).
+  let memoryInitialized = false;
+  let memoryAvailable = true;
+  try {
+    const result = ensureMemoryRepository(config);
+    memoryInitialized = result.initialized;
+    memoryAvailable = result.available !== false;
+    if (memoryAvailable) refreshMemoryBestEffort(config.memoryPath);
+  } catch {
+    memoryAvailable = false;
+  }
   const session = { id, objective, startedAt: nowIso(), baseline: sourceSnapshot(root), checks: [] };
   saveSession(config, session);
   const state = readProjectState(config.memoryPath);
-  const validation = validateMemory(config.memoryPath);
   const journals = listJournals(config.memoryPath).slice(0, config.journalWindow);
   print({
-    initializedMemory: result.initialized,
+    initializedMemory: memoryInitialized,
+    memoriaDisponivel: memoryAvailable,
     session: { id, objective },
     executiveSummary: {
       phase: state.status.phase,
@@ -192,7 +214,6 @@ function commandInicio(args) {
       recommendedNextTask: state.status.nextTask,
       latestJournals: journals.map((journal) => ({ path: journal.relativePath, objective: journal.meta.objective, endedAt: journal.meta.endedAt })),
     },
-    consistency: validation.valid ? 'ok' : validation.errors,
   });
 }
 
@@ -278,6 +299,16 @@ function commandCheck(args) {
   if (results.some((result) => result.status === 'failed')) process.exitCode = 1;
 }
 
+// Além de existir e ser um repositório Git, a memória só é segura para escrever
+// (sobrescrever PROJECT_STATUS.md etc.) se não houver um merge/rebase de outra
+// sessão parado no meio, com conflito não resolvido — sobrescrever esses arquivos
+// nesse estado destruiria o trabalho de reconciliação em andamento de outra sessão.
+function memoryWritable(memoryPath) {
+  if (!existsSync(memoryPath) || !isGitRepository(memoryPath)) return false;
+  const unmerged = git(['diff', '--name-only', '--diff-filter=U'], memoryPath, { allowFailure: true });
+  return !(gitOk(unmerged) && unmerged);
+}
+
 function commandFinish(args) {
   const config = configFor(args);
   const id = sessionId(args);
@@ -285,62 +316,103 @@ function commandFinish(args) {
   const detailsPath = requireArg(args, 'details-file');
   const details = readJson(resolve(root, detailsPath));
   for (const field of ['phase', 'sprint', 'nextTask']) if (!details[field]) fail(`Campo obrigatório ausente no details-file: ${field}`);
-  ensureGitRepository(config.memoryPath, 'Repositório de memória');
-  const memoryDirty = git(['status', '--porcelain=v1'], config.memoryPath);
-  if (memoryDirty) fail('A memória possui alterações pendentes; finalize ou descarte-as antes de gerar o journal.');
   const changes = changedFilesSince(root, session.baseline);
   const commits = commitsSince(root, session.baseline.head);
   const endedAt = nowIso();
   const journal = makeJournal({ session, changes, commits, details, endedAt });
-  const journalPath = nextJournalPath(config.memoryPath, endedAt);
-  writeFileSync(journalPath, journal.content, 'utf8');
-  const state = readProjectState(config.memoryPath);
-  const relativeJournal = relative(config.memoryPath, journalPath).split('\\').join('/');
-  const status = {
-    ...state.status,
-    updatedAt: endedAt,
-    phase: details.phase,
-    sprint: details.sprint,
-    lastJournal: relativeJournal,
-    lastCommit: changes.current.head,
-    lastAdr: details.adrsAffected?.at(-1)?.match(/ADR-\d+/)?.[0] ?? state.status.lastAdr,
-    blockers: details.blockers ?? [],
-    nextTask: details.nextTask,
-    summary: details.statusSummary || details.summary || state.status.summary,
-  };
-  atomicWrite(join(config.memoryPath, 'project/PROJECT_STATUS.md'), renderStatus(status));
-  atomicWrite(join(config.memoryPath, 'project/START_HERE_NEXT_SESSION.md'), renderNext(status));
-  if (details.adrsAffected?.length) {
-    const adr = { ...state.adr, updatedAt: endedAt, lastAdr: status.lastAdr, affected: details.adrsAffected };
-    atomicWrite(join(config.memoryPath, 'project/ADR_STATUS.md'), renderAdrStatus(adr));
+
+  // Escrever o journal é sempre uma gravação local: nunca falha por causa externa
+  // (rede, remoto, outra sessão). Se a memória nem sequer estiver disponível nesta
+  // máquina, ou estiver com um conflito de merge de outra sessão em aberto, o
+  // journal é salvo localmente e marcado pendente — nada é perdido/sobrescrito, e a
+  // sessão termina normalmente de qualquer forma.
+  const memoryAvailable = memoryWritable(config.memoryPath);
+  let relativeJournal;
+  let pending = false;
+
+  if (memoryAvailable) {
+    const journalPath = nextJournalPath(config.memoryPath, endedAt);
+    writeFileSync(journalPath, journal.content, 'utf8');
+    relativeJournal = relative(config.memoryPath, journalPath).split('\\').join('/');
+    const state = readProjectState(config.memoryPath);
+    const status = {
+      ...state.status,
+      updatedAt: endedAt,
+      phase: details.phase,
+      sprint: details.sprint,
+      lastJournal: relativeJournal,
+      lastCommit: changes.current.head,
+      lastAdr: details.adrsAffected?.at(-1)?.match(/ADR-\d+/)?.[0] ?? state.status.lastAdr,
+      blockers: details.blockers ?? [],
+      nextTask: details.nextTask,
+      summary: details.statusSummary || details.summary || state.status.summary,
+    };
+    atomicWrite(join(config.memoryPath, 'project/PROJECT_STATUS.md'), renderStatus(status));
+    atomicWrite(join(config.memoryPath, 'project/START_HERE_NEXT_SESSION.md'), renderNext(status));
+    if (details.adrsAffected?.length) {
+      const adr = { ...state.adr, updatedAt: endedAt, lastAdr: status.lastAdr, affected: details.adrsAffected };
+      atomicWrite(join(config.memoryPath, 'project/ADR_STATUS.md'), renderAdrStatus(adr));
+    }
+    updateIndex(config.memoryPath);
+  } else {
+    pending = true;
+    const pendingPath = join(config.runtimePath, `${id}.pending-journal.md`);
+    writeFileSync(pendingPath, journal.content, 'utf8');
+    relativeJournal = pendingPath;
   }
-  updateIndex(config.memoryPath);
-  const validation = validateMemory(config.memoryPath);
-  if (!validation.valid) fail(`Journal gerado, mas a publicação foi bloqueada: ${validation.errors.join('; ')}`);
+
   session.finishedAt = endedAt;
   session.journal = relativeJournal;
+  session.journalPending = pending;
   saveSession(config, session);
-  print({ journal: relativeJournal, changes: { modified: changes.modified, created: changes.created, removed: changes.removed }, commits, next: 'Execute publish para criar o commit e enviar a memória.' });
+  print({
+    journal: relativeJournal,
+    pendente: pending,
+    changes: { modified: changes.modified, created: changes.created, removed: changes.removed },
+    commits,
+    next: pending
+      ? 'Memória local indisponível nesta sessão; journal salvo em runtime/. Uma sessão futura com memória disponível reconcilia automaticamente.'
+      : 'Execute publish para criar o commit e enviar a memória.',
+  });
 }
 
+// Publicação é sempre best-effort: uma tentativa de push e, se rejeitado (o remoto
+// avançou), uma única tentativa de reconciliação automática (pull --rebase, sem
+// conflito de conteúdo porque os artefatos já são o último estado local). Falha em
+// qualquer etapa nunca lança erro — devolve "pendente" e a próxima publicação
+// (desta ou de qualquer outra sessão) tenta de novo. Nunca faz force-push.
 function commandPublish(args) {
   const config = configFor(args);
   const memory = config.memoryPath;
-  ensureGitRepository(memory, 'Repositório de memória');
-  const validation = validateMemory(memory);
-  if (!validation.valid) fail(`Publicação bloqueada: ${validation.errors.join('; ')}`);
-  const changes = git(['status', '--porcelain=v1'], memory);
-  if (!changes) {
-    print({ published: false, reason: 'Nenhuma alteração para publicar.' });
+  if (!memoryWritable(memory)) {
+    print({ published: false, pendente: true, reason: 'Memória local indisponível ou com conflito de merge em aberto de outra sessão.' });
     return;
   }
-  git(['fetch', '--prune'], memory);
-  const state = remoteState(memory);
-  if (state.behind > 0 || (state.ahead > 0 && state.behind > 0)) fail('Remoto avançou durante a sessão. Nenhuma alteração foi sobrescrita; faça rebase/merge manualmente na memória.');
-  git(['add', '-A'], memory);
-  git(['commit', '-m', args.message || 'docs(memory): registra sessão'], memory);
-  git(['push'], memory);
-  print({ published: true, commit: git(['rev-parse', '--short', 'HEAD'], memory) });
+  const dirty = git(['status', '--porcelain=v1'], memory, { allowFailure: true });
+  if (gitOk(dirty) && dirty) {
+    git(['add', '-A'], memory, { allowFailure: true });
+    git(['commit', '-m', args.message || 'docs(memory): registra sessão'], memory, { allowFailure: true });
+  }
+  const ahead = git(['rev-list', '--count', '@{u}..HEAD'], memory, { allowFailure: true });
+  if (gitOk(ahead) && ahead === '0') {
+    print({ published: false, pendente: false, reason: 'Nenhuma alteração para publicar.' });
+    return;
+  }
+  git(['fetch', '--prune'], memory, { allowFailure: true });
+  let push = git(['push'], memory, { allowFailure: true });
+  if (!gitOk(push)) {
+    const rebase = git(['pull', '--rebase', 'origin', 'main'], memory, { allowFailure: true });
+    if (gitOk(rebase)) {
+      push = git(['push'], memory, { allowFailure: true });
+    } else {
+      git(['rebase', '--abort'], memory, { allowFailure: true });
+    }
+  }
+  if (gitOk(push)) {
+    print({ published: true, commit: git(['rev-parse', '--short', 'HEAD'], memory) });
+  } else {
+    print({ published: false, pendente: true, reason: 'Remoto indisponível ou conflito ao publicar; a próxima sessão tenta novamente.' });
+  }
 }
 
 function commandRelease(args) {

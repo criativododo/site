@@ -7,6 +7,11 @@ export function git(args, cwd, options) {
   return run('git', args, { cwd, ...options });
 }
 
+/** true se o retorno de `git(..., { allowFailure: true })` foi sucesso. */
+export function gitOk(result) {
+  return typeof result === 'string';
+}
+
 export function isGitRepository(directory) {
   const result = git(['rev-parse', '--is-inside-work-tree'], directory, { allowFailure: true });
   return result === 'true';
