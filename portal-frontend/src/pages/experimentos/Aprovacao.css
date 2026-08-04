@@ -135,6 +135,22 @@
 	gap: 56px;
 }
 
+/* Densidade elástica: "ajuste" é o único estado que pede decisão da parceira — os demais
+   (aguardando, revisão, aprovado) são leitura passiva e recolhem o espaço (DESIGN_LANGUAGE.md
+   §4/§6). A timeline não encolhe: continua sendo a espinha dorsal em qualquer estado. */
+.aprovacao-corpo.is-compacta {
+	gap: 36px;
+}
+
+.aprovacao-corpo.is-compacta .aprovacao-secao-titulo {
+	margin-bottom: 14px;
+}
+
+.aprovacao-corpo.is-compacta .aprovacao-material-thumb {
+	width: 64px;
+	height: 64px;
+}
+
 .aprovacao-secao-titulo {
 	font-family: var(--font-display);
 	font-size: 13.6px;
@@ -327,16 +343,9 @@
 	max-width: 54ch;
 }
 
-/* Comentários: estruturado só em "ajuste solicitado" (MELHORIAS_PRODUTO.md §11.3); vazio
-   editorial nos demais estados (DESIGN_LANGUAGE.md §6.1: frase + porquê + ausência de ação). */
-.aprovacao-comentario-vazio {
-	font-weight: 300;
-	font-size: var(--text-body-lg);
-	line-height: var(--leading-relaxed);
-	color: color-mix(in srgb, var(--color-noir) 60%, transparent);
-	max-width: 52ch;
-}
-
+/* Comentários: seção existe só em "ajuste solicitado" (MELHORIAS_PRODUTO.md §11.3) — nos demais
+   estados ela não é renderizada, porque a garantia de "nada a fazer" já vive na seção "de quem
+   é a vez" (§15.3); um vazio editorial permanente aqui seria a mesma frase dita duas vezes. */
 .aprovacao-comentario {
 	padding: 20px 24px;
 	border-left: 2px solid var(--color-cherry);

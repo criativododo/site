@@ -28,11 +28,25 @@ import "./Aprovacao.css";
  *
  * Mesma campanha e mesma imagem de `assets/mocks/` das quatro telas anteriores — o mesmo reel,
  * agora sendo revisado pela agência.
+ *
+ * Refinamento editorial do estado "revisão" (sessão seguinte, aprovação do responsável do
+ * projeto): "ajuste" é o único estado que pede uma decisão da parceira — os outros três
+ * (aguardando, revisão, aprovado) são leitura passiva e passam a compartilhar densidade
+ * compacta (`.is-compacta`), por §4/§6 de DESIGN_LANGUAGE.md ("densidade elástica"). O título
+ * do checklist muda de tom fora de "ajuste"/"aprovado": antes de a agência formar um veredito,
+ * ele reflete o que a própria parceira relatou (não uma certificação antecipada da agência) —
+ * a seção "comentários da agência" só existe quando há comentário real ("ajuste"), em vez de um
+ * vazio editorial permanente que já era redundante com "de quem é a vez" (MELHORIAS_PRODUTO.md
+ * §15.3, a informação mais importante da tela, e o único lugar que precisa dizer "nada a fazer").
  */
 
 type EstadoEntrega = "aguardando" | "revisao" | "ajuste" | "aprovado";
 
 const ESTADO_ATUAL: EstadoEntrega = "revisao";
+
+function precisaDecisao(estado: EstadoEntrega): boolean {
+	return estado === "ajuste";
+}
 
 const contexto = {
 	campanha: "colaboração de agosto · essência labial",
@@ -172,6 +186,11 @@ export function AprovacaoPage() {
 	const estado = ESTADO_ATUAL;
 	const conteudo = conteudoPorEstado[estado];
 	const timeline = construirTimeline(estado);
+	const decisaoPendente = precisaDecisao(estado);
+	const tituloChecklist =
+		decisaoPendente || estado === "aprovado"
+			? "diretrizes do briefing conferidas"
+			: "o que você disse ter seguido";
 
 	return (
 		<div className="aprovacao-tela">
@@ -193,7 +212,7 @@ export function AprovacaoPage() {
 				<p className="aprovacao-vez-prazo">{conteudo.prazo}</p>
 			</section>
 
-			<div className="aprovacao-corpo">
+			<div className={`aprovacao-corpo${decisaoPendente ? "" : " is-compacta"}`}>
 				<section className="aprovacao-secao" aria-labelledby="secao-material">
 					<p id="secao-material" className="aprovacao-secao-titulo">
 						o que você entregou
@@ -240,7 +259,7 @@ export function AprovacaoPage() {
 
 				<section className="aprovacao-secao" aria-labelledby="secao-checklist">
 					<p id="secao-checklist" className="aprovacao-secao-titulo">
-						diretrizes do briefing conferidas
+						{tituloChecklist}
 					</p>
 					<ItemGroup className="aprovacao-checklist">
 						{checklist.map((item) => (
@@ -254,11 +273,11 @@ export function AprovacaoPage() {
 					</ItemGroup>
 				</section>
 
-				<section className="aprovacao-secao" aria-labelledby="secao-comentarios">
-					<p id="secao-comentarios" className="aprovacao-secao-titulo">
-						comentários da agência
-					</p>
-					{estado === "ajuste" ? (
+				{decisaoPendente ? (
+					<section className="aprovacao-secao" aria-labelledby="secao-comentarios">
+						<p id="secao-comentarios" className="aprovacao-secao-titulo">
+							comentários da agência
+						</p>
 						<div className="aprovacao-comentario">
 							<p className="aprovacao-comentario-ajustar-titulo">o que ajustar</p>
 							<ul className="aprovacao-comentario-ajustar-lista">
@@ -270,13 +289,8 @@ export function AprovacaoPage() {
 							</p>
 							<p className="aprovacao-comentario-prazo">{conteudo.prazo}</p>
 						</div>
-					) : (
-						<p className="aprovacao-comentario-vazio">
-							nenhum comentário ainda — normal enquanto a revisão está em andamento. avisamos
-							assim que a agência disser algo.
-						</p>
-					)}
-				</section>
+					</section>
+				) : null}
 			</div>
 
 			<section className="aprovacao-rodape" aria-label="próximo passo">
