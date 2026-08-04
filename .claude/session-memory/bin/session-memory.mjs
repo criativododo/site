@@ -5,7 +5,7 @@ import { join, resolve, relative } from 'node:path';
 import { fail, parseArgs, print, readJson, requireArg, nowIso, dateParts, atomicWrite, SessionMemoryError } from '../lib/core.mjs';
 import { loadConfig } from '../lib/config.mjs';
 import { ensureGitRepository, git, sourceSnapshot, changedFilesSince, commitsSince, remoteState, workingTreeState } from '../lib/git.mjs';
-import { listJournals, nextJournalPath, updateIndex, validateMemory, withMarker, readMarker, journalSection } from '../lib/documents.mjs';
+import { listJournals, nextJournalPath, regenerateProjectDocs, validateMemory, withMarker, readMarker, journalSection } from '../lib/documents.mjs';
 import { createInitialMemory } from '../lib/scaffold.mjs';
 
 const root = process.cwd();
@@ -99,14 +99,6 @@ function readProjectState(memoryPath) {
   return result;
 }
 
-function renderStatus(status) {
-  return withMarker(`# Estado atual\n\n- **Projeto:** ${status.project}\n- **Fase:** ${status.phase}\n- **Sprint:** ${status.sprint}\n- **Último journal:** ${status.lastJournal ?? 'Nenhum'}\n- **Último commit relevante:** ${status.lastCommit?.slice(0, 7) ?? 'Não informado'}\n- **Última ADR:** ${status.lastAdr ?? 'Não informada'}\n\n## Resumo\n\n${status.summary || 'Não informado.'}\n\n## Bloqueios\n\n${(status.blockers?.length ? status.blockers : ['Nenhum bloqueio informado.']).map((item) => `- ${item}`).join('\n')}\n\n## Próxima tarefa\n\n${status.nextTask || 'Não informada.'}\n`, status);
-}
-
-function renderNext(status) {
-  return withMarker(`# Comece aqui\n\n1. Execute \`/inicio <objetivo>\` no repositório da aplicação.\n2. Leia o resumo executivo e valide os bloqueios.\n3. Ao encerrar, execute \`/fim\`.\n\n## Próxima tarefa\n\n${status.nextTask || 'Não informada.'}\n\n## Bloqueios\n\n${(status.blockers?.length ? status.blockers : ['Nenhum bloqueio informado.']).map((item) => `- ${item}`).join('\n')}\n`, status);
-}
-
 function renderAdrStatus(adr) {
   return withMarker(`# Estado das ADRs\n\n- **Última ADR:** ${adr.lastAdr ?? 'Não informada'}\n- **ADRs afetadas na última sessão:** ${(adr.affected?.length ? adr.affected : ['Nenhuma']).join(', ')}\n- **Atenção:** ${adr.attention || 'Nenhuma.'}\n\nEsta é uma lista de referências; ADRs completos continuam no repositório da aplicação.\n`, adr);
 }
@@ -132,6 +124,10 @@ function makeJournal({ session, changes, commits, details, endedAt }) {
     sprint: details.sprint,
     status: details.status || 'Parcial',
     confidence: details.confidence?.level || 'Não informada',
+    blockers: details.blockers ?? [],
+    nextTask: details.nextTask,
+    adrsAffected: details.adrsAffected ?? [],
+    summary: details.statusSummary || details.summary || null,
     source: {
       branch: changes.current.branch,
       baseline: session.baseline.head,
@@ -294,27 +290,16 @@ function commandFinish(args) {
   const journal = makeJournal({ session, changes, commits, details, endedAt });
   const journalPath = nextJournalPath(config.memoryPath, endedAt);
   writeFileSync(journalPath, journal.content, 'utf8');
-  const state = readProjectState(config.memoryPath);
   const relativeJournal = relative(config.memoryPath, journalPath).split('\\').join('/');
-  const status = {
-    ...state.status,
-    updatedAt: endedAt,
-    phase: details.phase,
-    sprint: details.sprint,
-    lastJournal: relativeJournal,
-    lastCommit: changes.current.head,
-    lastAdr: details.adrsAffected?.at(-1)?.match(/ADR-\d+/)?.[0] ?? state.status.lastAdr,
-    blockers: details.blockers ?? [],
-    nextTask: details.nextTask,
-    summary: details.statusSummary || details.summary || state.status.summary,
-  };
-  atomicWrite(join(config.memoryPath, 'project/PROJECT_STATUS.md'), renderStatus(status));
-  atomicWrite(join(config.memoryPath, 'project/START_HERE_NEXT_SESSION.md'), renderNext(status));
+  // journals/INDEX.md, PROJECT_STATUS.md e START_HERE_NEXT_SESSION.md são artefatos
+  // gerados (ADR-021, Fase 2): regenerados do zero a partir do conjunto completo de
+  // journals, nunca com patch incremental sobre o conteúdo anterior.
+  const derivedStatus = regenerateProjectDocs(config.memoryPath);
   if (details.adrsAffected?.length) {
-    const adr = { ...state.adr, updatedAt: endedAt, lastAdr: status.lastAdr, affected: details.adrsAffected };
+    const previousAdr = readMarker(readFileSync(join(config.memoryPath, 'project/ADR_STATUS.md'), 'utf8'), 'project/ADR_STATUS.md');
+    const adr = { ...previousAdr, updatedAt: endedAt, lastAdr: derivedStatus.lastAdr, affected: details.adrsAffected };
     atomicWrite(join(config.memoryPath, 'project/ADR_STATUS.md'), renderAdrStatus(adr));
   }
-  updateIndex(config.memoryPath);
   const validation = validateMemory(config.memoryPath);
   if (!validation.valid) fail(`Journal gerado, mas a publicação foi bloqueada: ${validation.errors.join('; ')}`);
   session.finishedAt = endedAt;

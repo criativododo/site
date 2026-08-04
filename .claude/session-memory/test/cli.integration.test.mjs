@@ -33,7 +33,9 @@ test('inicia, gera journal, valida e publica em um remoto Git local', () => {
       CRIATIVODODO_MEMORY_DIR: join(fixture, 'memory'),
     };
     const initial = JSON.parse(runCli(app, ['inicio', '--session', 'fixture', '--objective', 'Validar fluxo'], environment));
-    assert.equal(initial.executiveSummary.phase, 'Fase 4 — Armazenamento + Workspace Provisioning');
+    // Bootstrap com zero journals: PROJECT_STATUS.md é gerado (ADR-021, Fase 2), não
+    // mais escrito à mão — estado vazio determinístico, não um valor hardcoded.
+    assert.equal(initial.executiveSummary.phase, 'Nenhuma sessão registrada ainda.');
     const detailsFile = join(app, '.claude/session-memory/runtime/fixture.details.json');
     writeFileSync(detailsFile, JSON.stringify({
       phase: 'Fase 4 — Armazenamento + Workspace Provisioning',
@@ -42,10 +44,11 @@ test('inicia, gera journal, valida e publica em um remoto Git local', () => {
       context: 'Teste de integração.',
       workPerformed: ['Validou o fluxo.'],
       decisions: [],
-      adrsAffected: [],
+      adrsAffected: ['ADR-017 — OAuth dedicado do Google Drive'],
       problems: [],
-      blockers: [],
+      blockers: ['Bloqueio de teste.'],
       nextTask: 'Continuar o teste.',
+      statusSummary: 'Resumo de teste da integração.',
       observations: [],
       confidence: { level: 'Alta', reason: 'Fixture Git local.' },
     }));
@@ -56,6 +59,13 @@ test('inicia, gera journal, valida e publica em um remoto Git local', () => {
     const validation = JSON.parse(runCli(app, ['validate'], environment));
     assert.equal(validation.valid, true, validation.errors?.join('\n'));
     assert.equal(existsSync(join(fixture, 'memory', finished.journal)), true);
+    // Depois de /fim, PROJECT_STATUS.md foi regenerado inteiramente a partir do journal
+    // recém-criado (fonte única de verdade) — confirma o critério 3 da Fase 2.
+    const afterFinish = JSON.parse(runCli(app, ['status'], environment));
+    assert.equal(afterFinish.phase, 'Fase 4 — Armazenamento + Workspace Provisioning');
+    assert.equal(afterFinish.nextTask, 'Continuar o teste.');
+    assert.deepEqual(afterFinish.blockers, ['Bloqueio de teste.']);
+    assert.equal(afterFinish.lastAdr, 'ADR-017');
   } finally {
     rmSync(fixture, { recursive: true, force: true });
   }
