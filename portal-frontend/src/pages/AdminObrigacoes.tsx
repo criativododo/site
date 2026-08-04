@@ -161,7 +161,7 @@ function FormularioNovaObrigacao({
 			{parceirasDisponiveis.length === 0 ? (
 				<p className="portal-page-feedback is-error admin-form-error">
 					{tipo === "MENSAL"
-						? "nenhuma parceira ativa cadastrada — ative uma parceira antes de lançar obrigação mensal."
+						? "nenhuma parceira ativa cadastrada. ative uma parceira antes de lançar obrigação mensal."
 						: "nenhuma parceira cadastrada ainda."}
 				</p>
 			) : (
@@ -216,7 +216,7 @@ function FormularioNovaObrigacao({
 					disabled={salvando || parceirasDisponiveis.length === 0}
 					onClick={() => void salvar()}
 				>
-					{salvando ? "salvando..." : "salvar"}
+					{salvando ? "salvando" : "salvar"}
 				</button>
 				<button type="button" className="btn-plain" onClick={aoCancelar}>
 					cancelar
@@ -287,7 +287,7 @@ function FormularioEdicaoValor({
 				disabled={salvando}
 				onClick={() => void salvar()}
 			>
-				{salvando ? "salvando..." : "salvar"}
+				{salvando ? "salvando" : "salvar"}
 			</button>
 			<button type="button" className="btn-plain" onClick={aoCancelar}>
 				cancelar
@@ -325,7 +325,7 @@ function LinhaObrigacao({
 		obrigacao.estado === "EM_ABERTO" && obrigacao.elegivelParaLiberacao;
 	const motivoBloqueioLiberacao =
 		obrigacao.tipo === "MENSAL" && !obrigacao.elegivelParaLiberacao
-			? "há entregas da competência ainda não aprovadas/publicadas."
+			? "há entregas da competência ainda não aprovadas ou publicadas."
 			: undefined;
 
 	return (
@@ -358,8 +358,8 @@ function LinhaObrigacao({
 					: "entregas vinculadas"}
 				{" · "}
 				{obrigacao.elegivelParaLiberacao
-					? "elegível para liberação"
-					: "não elegível para liberação"}
+					? "pronta para liberar"
+					: "ainda não pode liberar"}
 			</p>
 
 			<div className="portal-list-row-actions">
@@ -417,8 +417,8 @@ function LinhaObrigacao({
 						<ul className="portal-list is-tight">
 							{obrigacao.entregasDaCompetencia.map((item) => (
 								<li key={item.id} className="portal-list-row-meta">
-									{LABEL_FORMATO[item.formato]} —{" "}
-									{LABEL_ESTADO_ENTREGA[item.estado]} — entrega{" "}
+									{LABEL_FORMATO[item.formato]} ·{" "}
+									{LABEL_ESTADO_ENTREGA[item.estado]} · entrega{" "}
 									{formatarData(item.dataEntrega)}
 								</li>
 							))}
@@ -601,7 +601,7 @@ export function AdminObrigacoesPage() {
 			</p>
 
 			{carregando && (
-				<p className="portal-page-feedback">carregando obrigações...</p>
+				<p className="portal-page-feedback">carregando obrigações</p>
 			)}
 			{!carregando && erro && (
 				<p className="portal-page-feedback is-error">{erro}</p>

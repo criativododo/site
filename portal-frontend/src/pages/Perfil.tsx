@@ -95,7 +95,7 @@ function EditarContato({
 					disabled={salvando || !formularioValido}
 					onClick={() => void salvar()}
 				>
-					{salvando ? "salvando..." : "salvar"}
+					{salvando ? "salvando" : "salvar"}
 				</button>
 				<BotaoCancelar aoClicar={aoCancelar} />
 			</div>
@@ -145,7 +145,7 @@ function EditarEndereco({
 			aoSalvarComSucesso(resposta.perfil);
 			if (!resposta.cepResolvido) {
 				setAviso(
-					"cep não encontrado — número e complemento foram salvos mesmo assim.",
+					"cep não encontrado. número e complemento foram salvos mesmo assim.",
 				);
 			}
 		} catch (erroCapturado) {
@@ -172,7 +172,7 @@ function EditarEndereco({
 				/>
 			</label>
 			{!cepCompletoOuVazio(cep) && (
-				<p className="portal-page-feedback is-error">cep incompleto — precisa de 8 dígitos.</p>
+				<p className="portal-page-feedback is-error">cep incompleto: precisa de 8 dígitos.</p>
 			)}
 			<label className="admin-field">
 				número
@@ -200,7 +200,7 @@ function EditarEndereco({
 					disabled={salvando || !cepCompletoOuVazio(cep)}
 					onClick={() => void salvar()}
 				>
-					{salvando ? "salvando..." : "salvar endereço"}
+					{salvando ? "salvando" : "salvar endereço"}
 				</button>
 				<BotaoCancelar aoClicar={aoCancelar} />
 			</div>
@@ -290,7 +290,7 @@ function MeusDadosLgpd() {
  */
 function linhasDeEndereco(endereco: Endereco): string[] {
 	const ruaNumero = [endereco.rua, endereco.numero].filter(Boolean).join(", ");
-	const linha1 = [ruaNumero, endereco.complemento].filter(Boolean).join(" – ");
+	const linha1 = [ruaNumero, endereco.complemento].filter(Boolean).join(", ");
 	const cidadeUf = [endereco.cidade, endereco.uf].filter(Boolean).join("/");
 	return [linha1, endereco.bairro, cidadeUf, endereco.cep].filter(Boolean);
 }
@@ -365,7 +365,7 @@ export function PerfilPage() {
 			</p>
 
 			{carregando && (
-				<p className="portal-page-feedback">carregando perfil...</p>
+				<p className="portal-page-feedback">carregando perfil</p>
 			)}
 
 			{!carregando && erro && (

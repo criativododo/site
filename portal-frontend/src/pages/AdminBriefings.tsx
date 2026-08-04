@@ -176,7 +176,7 @@ function FormularioNovoBriefing({
 		<div className="admin-form-grid is-wide">
 			{entregasSemBriefing.length === 0 ? (
 				<p className="portal-page-feedback is-error admin-form-error">
-					todas as entregas já têm briefing — crie uma nova entrega antes de
+					todas as entregas já têm briefing. crie uma nova entrega antes de
 					criar outro briefing.
 				</p>
 			) : (
@@ -212,7 +212,7 @@ function FormularioNovoBriefing({
 					disabled={salvando || entregasSemBriefing.length === 0}
 					onClick={() => void salvar()}
 				>
-					{salvando ? "salvando..." : "salvar"}
+					{salvando ? "salvando" : "salvar"}
 				</button>
 				<button type="button" className="btn-plain" onClick={aoCancelar}>
 					cancelar
@@ -284,7 +284,7 @@ function FormularioEdicaoBriefing({
 					disabled={salvando}
 					onClick={() => void salvar()}
 				>
-					{salvando ? "salvando..." : "salvar"}
+					{salvando ? "salvando" : "salvar"}
 				</button>
 				<button type="button" className="btn-plain" onClick={aoCancelar}>
 					cancelar
@@ -352,10 +352,10 @@ function LinhaBriefing({
 					title={
 						podeRemover
 							? undefined
-							: "a entrega vinculada já saiu de 'aguardando material' — remover perderia o rastro do que a orientou."
+							: 'a entrega vinculada já saiu de "aguardando material", e remover perderia o rastro do que a orientou.'
 					}
 				>
-					{removendo ? "removendo..." : "remover"}
+					{removendo ? "removendo" : "remover"}
 				</button>
 			</div>
 
@@ -503,7 +503,7 @@ export function AdminBriefingsPage() {
 			</p>
 
 			{carregando && (
-				<p className="portal-page-feedback">carregando briefings...</p>
+				<p className="portal-page-feedback">carregando briefings</p>
 			)}
 			{!carregando && erro && (
 				<p className="portal-page-feedback is-error">{erro}</p>

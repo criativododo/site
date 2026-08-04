@@ -40,7 +40,7 @@ app.use("/api", limitadorApi, apiRoutes);
 
 /** Todo endpoint deste backend é JSON — inclusive o que não existe e o que falha. */
 app.use((_req, res) => {
-  res.status(404).json({ error: "Rota não encontrada." });
+  res.status(404).json({ error: "página não encontrada." });
 });
 
 app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {

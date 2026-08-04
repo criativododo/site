@@ -125,7 +125,7 @@ export function ExperimentoHojePage() {
 
 			{carregando && (
 				<p className="hoje-zona-quieta-texto" style={{ padding: 32 }}>
-					carregando...
+					carregando
 				</p>
 			)}
 			{!carregando && erro && (
@@ -140,7 +140,7 @@ export function ExperimentoHojePage() {
 						<div className="hoje-imagem-wrap">
 							<div className="hoje-imagem-placeholder">
 								<p className="hoje-imagem-placeholder-legenda">
-									material real da entrega — placeholder até existir endpoint de
+									material real da entrega: placeholder até existir endpoint de
 									exposição do arquivo enviado (ver relatório, lacuna declarada).
 								</p>
 							</div>
