@@ -23,6 +23,7 @@ import { EnvioConteudoPage } from "./pages/experimentos/EnvioConteudo";
 import { AprovacaoPage } from "./pages/experimentos/Aprovacao";
 import { PublicacaoPage } from "./pages/experimentos/Publicacao";
 import { FinanceiroInfluenciadoraPage } from "./pages/experimentos/FinanceiroInfluenciadora";
+import { PerfilInfluenciadoraPage } from "./pages/experimentos/PerfilInfluenciadora";
 
 /**
  * Espelha a regra de destino pós-login do backend (auth.routes.ts: callback do Google) para
@@ -148,6 +149,23 @@ function App() {
 				element={
 					<RotaProtegida>
 						<FinanceiroInfluenciadoraPage />
+					</RotaProtegida>
+				}
+			/>
+
+			{/*
+			 * Proposta de Perfil/"identidade" (sessão de aprovação editorial) — oitava tela da
+			 * família, mesmo padrão aditivo das sete anteriores. Rota própria (`/identidade`, não
+			 * `/perfil`) porque `/perfil` já é servida por pages/Perfil.tsx (formulário
+			 * operacional de PIX/endereço) — mesmo padrão de desambiguação já usado para
+			 * `/reconhecimento` vs. `/financeiro` legado. Rota some se a proposta não for
+			 * aprovada.
+			 */}
+			<Route
+				path="/identidade"
+				element={
+					<RotaProtegida>
+						<PerfilInfluenciadoraPage />
 					</RotaProtegida>
 				}
 			/>
