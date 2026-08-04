@@ -17,6 +17,13 @@ import { PendenciasPage } from "./pages/Pendencias";
 import { PerfilPage } from "./pages/Perfil";
 import { PrivacidadePage } from "./pages/Privacidade";
 import { ExperimentoHojePage } from "./pages/experimentos/Hoje";
+import { HojeInfluenciadoraPage } from "./pages/experimentos/HojeInfluenciadora";
+import { BriefingCampanhaPage } from "./pages/experimentos/BriefingCampanha";
+import { EnvioConteudoPage } from "./pages/experimentos/EnvioConteudo";
+import { AprovacaoPage } from "./pages/experimentos/Aprovacao";
+import { PublicacaoPage } from "./pages/experimentos/Publicacao";
+import { FinanceiroInfluenciadoraPage } from "./pages/experimentos/FinanceiroInfluenciadora";
+import { PerfilInfluenciadoraPage } from "./pages/experimentos/PerfilInfluenciadora";
 
 /**
  * Espelha a regra de destino pós-login do backend (auth.routes.ts: callback do Google) para
@@ -58,6 +65,107 @@ function App() {
 				element={
 					<RotaProtegida>
 						<ExperimentoHojePage />
+					</RotaProtegida>
+				}
+			/>
+
+			{/*
+			 * Proposta de Dashboard da Influenciadora (sessão de aprovação visual) — mesmo
+			 * padrão de tela-bandeira de /admin/hoje, aditiva, não substitui /pendencias como
+			 * destino pós-login. Rota some se a proposta não for aprovada.
+			 */}
+			<Route
+				path="/hoje"
+				element={
+					<RotaProtegida>
+						<HojeInfluenciadoraPage />
+					</RotaProtegida>
+				}
+			/>
+
+			{/*
+			 * Proposta de Briefing da Campanha (sessão de aprovação visual) — terceira tela da
+			 * família, mesmo padrão aditivo das duas anteriores. Rota some se a proposta não
+			 * for aprovada.
+			 */}
+			<Route
+				path="/campanha"
+				element={
+					<RotaProtegida>
+						<BriefingCampanhaPage />
+					</RotaProtegida>
+				}
+			/>
+
+			{/*
+			 * Proposta de Envio de Conteúdo (sessão de aprovação visual) — quarta tela da
+			 * família, mesmo padrão aditivo das três anteriores. Rota some se a proposta não
+			 * for aprovada.
+			 */}
+			<Route
+				path="/envio"
+				element={
+					<RotaProtegida>
+						<EnvioConteudoPage />
+					</RotaProtegida>
+				}
+			/>
+
+			{/*
+			 * Proposta de Aprovação (sessão de aprovação visual) — quinta tela da família, mesmo
+			 * padrão aditivo das quatro anteriores. Rota some se a proposta não for aprovada.
+			 */}
+			<Route
+				path="/aprovacao"
+				element={
+					<RotaProtegida>
+						<AprovacaoPage />
+					</RotaProtegida>
+				}
+			/>
+
+			{/*
+			 * Proposta de Publicação (sessão de aprovação visual) — sexta tela da família, mesmo
+			 * padrão aditivo das cinco anteriores. Rota some se a proposta não for aprovada.
+			 */}
+			<Route
+				path="/publicacao"
+				element={
+					<RotaProtegida>
+						<PublicacaoPage />
+					</RotaProtegida>
+				}
+			/>
+
+			{/*
+			 * Proposta de Financeiro/"reconhecimento" (sessão de aprovação editorial) — sétima tela
+			 * da família, mesmo padrão aditivo das seis anteriores. Rota própria (`/reconhecimento`,
+			 * não `/financeiro`) porque `/financeiro` já é servida por pages/Financeiro.tsx dentro
+			 * do PortalLayout — reconciliação das duas fica para decisão futura, fora do escopo
+			 * desta tarefa. Rota some se a proposta não for aprovada.
+			 */}
+			<Route
+				path="/reconhecimento"
+				element={
+					<RotaProtegida>
+						<FinanceiroInfluenciadoraPage />
+					</RotaProtegida>
+				}
+			/>
+
+			{/*
+			 * Proposta de Perfil/"identidade" (sessão de aprovação editorial) — oitava tela da
+			 * família, mesmo padrão aditivo das sete anteriores. Rota própria (`/identidade`, não
+			 * `/perfil`) porque `/perfil` já é servida por pages/Perfil.tsx (formulário
+			 * operacional de PIX/endereço) — mesmo padrão de desambiguação já usado para
+			 * `/reconhecimento` vs. `/financeiro` legado. Rota some se a proposta não for
+			 * aprovada.
+			 */}
+			<Route
+				path="/identidade"
+				element={
+					<RotaProtegida>
+						<PerfilInfluenciadoraPage />
 					</RotaProtegida>
 				}
 			/>

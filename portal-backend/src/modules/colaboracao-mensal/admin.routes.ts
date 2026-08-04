@@ -31,7 +31,7 @@ colaboracaoMensalAdminRoutes.post("/compilar", async (req, res) => {
   const resultado = await compilarCompetencia(mesReferencia as string, req.sessao!.subProvider);
 
   if (!resultado.ok) {
-    res.status(400).json({ error: "mesReferencia deve estar no formato AAAA-MM." });
+    res.status(400).json({ error: "a competência deve estar no formato aaaa-mm." });
     return;
   }
 
@@ -42,7 +42,8 @@ colaboracaoMensalAdminRoutes.post("/compilar", async (req, res) => {
 colaboracaoMensalAdminRoutes.get("/", async (req, res) => {
   const parceiraId = typeof req.query.parceiraId === "string" ? req.query.parceiraId : undefined;
   if (!parceiraId) {
-    res.status(400).json({ error: "Parâmetro obrigatório: parceiraId." });
+    console.error("GET /colaboracoes-mensais: parâmetro obrigatório ausente (parceiraId)");
+    res.status(400).json({ error: "não foi possível carregar o histórico da parceira." });
     return;
   }
 
@@ -54,7 +55,7 @@ colaboracaoMensalAdminRoutes.get("/:parceiraId/:mesReferencia", async (req, res)
   const colaboracao = await buscarColaboracaoMensal(req.params.parceiraId, req.params.mesReferencia);
 
   if (!colaboracao) {
-    res.status(404).json({ error: "Colaboração Mensal não encontrada." });
+    res.status(404).json({ error: "colaboração mensal não encontrada." });
     return;
   }
 

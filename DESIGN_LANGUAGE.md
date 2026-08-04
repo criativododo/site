@@ -122,6 +122,20 @@ real, romper a derivação estrita da Landing — e foi avaliada como o caminho 
 > por motivo estético — só por correção de bug. Reabrir a composição exige decisão nova do
 > responsável do projeto.
 
+> **Decisão fechada, 2026-08-03.** A Dashboard da Influenciadora
+> (`portal-frontend/src/pages/experimentos/HojeInfluenciadora.tsx`, rota `/hoje`, papel
+> INFLUENCIADORA) está aprovada e passa a integrar a linguagem visual oficial do Portal, como
+> segunda tela da família. Ela **não copia a composição da Login** — traduz os mesmos
+> princípios (calma, espaço, ritmo, hierarquia por peso, frase antes do número, cor sinaliza
+> não organiza, sublinhar não emoldurar) para a função própria de "mesa de trabalho": masthead
+> fotográfico com a campanha como protagonista, faixa de trabalho densa, histórico de leitura
+> rápida. É a primeira aplicação real do padrão de placeholder editorial de campanha (§8) e da
+> regra de função narrativa por tela (ver nota abaixo). Não deve ser alterada por motivo
+> estético — só por correção de bug. Cada tela nova do Portal nasce da própria função
+> (Login = porta, Dashboard = mesa de trabalho, Perfil = identidade, Financeiro = extrato,
+> Campanha = narrativa) — nunca copiando o layout de outra tela, só a qualidade e a família
+> visual.
+
 ## 4. Princípios editoriais
 
 Julgamento aplicável a qualquer tela nova, de qualquer produto — migrados por completo de
@@ -242,16 +256,52 @@ branco frio ou cinza-azulado, em nenhum contexto, em nenhum produto.
 
 ## 8. Imagem
 
-Fotografia e artefato visual só entram numa tela do Dodô quando representam algo real do
-negócio — nunca como preenchimento. A prova de conceito da tela-bandeira `/admin/hoje` declarou
-essa regra com uma lacuna honesta, não uma licença criativa: o endpoint que exporia o material
-real enviado por uma parceira ainda não existe hoje (`Entrega.materialEnviado`, especificado no
-domínio, sem rota de arquivo estática) — e a resposta, diante dessa lacuna, foi um **placeholder
-tipográfico honesto, nunca uma foto de banco de imagens.**
+> **Decisão fechada, 2026-08-03.** Todo espaço reservado a imagem em qualquer tela do Portal usa
+> um placeholder que simula uma fotografia editorial de campanha de moda real — nunca bloco
+> vazio, gradiente liso ou forma abstrata sem tentativa editorial. Padrão de referência: direção
+> de arte contemporânea, luz natural ou de estúdio sofisticado, foco em roupa/textura/produto,
+> composição digna de campanha — nunca linguagem de banco de imagens genérico. Durante o
+> desenvolvimento, usar só imagem própria, gerada, ou com licença compatível com prototipagem —
+> nunca material "editorial use only" nem foto sem licença compatível com o uso do produto. O
+> placeholder é peça da direção de arte da tela, nunca preenchimento: existe para ocupar, com a
+> mesma qualidade de composição da tela final, o espaço onde entrará o material real enviado
+> pela marca/parceira — e precisa ser trocável sem retrabalho de layout quando esse material
+> existir. Substitui, para espaços de imagem, a orientação anterior de placeholder puramente
+> tipográfico abaixo — assunto encerrado, não reabrir sem decisão nova do responsável do
+> projeto.
 
-Essa é a regra permanente, não uma solução temporária de uma tela: quando não há artefato real
-para mostrar, a linguagem se apoia em tipografia e composição — nunca em imagem genérica
-emprestando a aparência de conteúdo que não existe.
+Fotografia e artefato visual só entram numa tela do Dodô quando representam algo real do
+negócio ou, na ausência de material real, um placeholder editorial fiel ao padrão acima — nunca
+como preenchimento genérico. A prova de conceito da tela-bandeira `/admin/hoje` declarou a regra
+anterior (placeholder tipográfico) com uma lacuna honesta, não uma licença criativa: o endpoint
+que exporia o material real enviado por uma parceira ainda não existe hoje
+(`Entrega.materialEnviado`, especificado no domínio, sem rota de arquivo estática) —
+`/admin/hoje` permanece como registro histórico dessa fase; a Dashboard da Influenciadora
+(`/hoje`, papel INFLUENCIADORA) é a primeira tela a aplicar o padrão revisado.
+
+A regra de fundo permanece, só a forma do placeholder muda: nunca emprestar de forma enganosa a
+aparência de conteúdo real que não existe — o placeholder editorial é reconhecidamente um
+placeholder (documentado como mock no código da tela), só que com a qualidade visual de uma
+campanha de verdade, nunca a ausência de uma.
+
+> **Decisão fechada, 2026-08-03.** Um placeholder de imagem é escolhido pela sua **função
+> narrativa**, nunca só pela estética. A fotografia precisa ajudar a contar a campanha
+> daquela tela específica — o que a marca vende, o clima da colaboração, o produto em questão
+> — não apenas "parecer bonita" ou "parecer premium" em abstrato. Ela é parte da interface, no
+> mesmo nível de uma frase de estado ou de um número: comunica algo, não decora. Critérios
+> obrigatórios para qualquer placeholder de imagem, em qualquer tela do Portal:
+>
+> - representa campanha de moda, beleza ou lifestyle compatível com o universo das marcas do
+>   Portal — nunca genérica ou fora de contexto;
+> - licença compatível com uso em prototipagem (nunca "editorial use only", nunca sem licença
+>   compatível com o uso real);
+> - origem documentada — fotógrafo, fonte, licença (ver `assets/mocks/README.md` em cada
+>   frontend que usar este padrão);
+> - facilmente substituível por material real quando a campanha de verdade existir, sem
+>   retrabalho de layout.
+>
+> Escolher uma foto só porque "ficou bonita" e não porque ela conta a história daquela tela é
+> uma violação desta regra, mesmo que a foto em si cumpra os quatro critérios acima.
 
 ## 9. Chrome
 
@@ -310,6 +360,9 @@ de `ART_DIRECTION_GUIDE.md` §2, expandido com os erros de engenharia já diagno
 - Animações decorativas sem relação com uma mudança real de estado.
 - Telas que só fazem sentido comparadas a um dashboard de mercado — o DODÔ não é um painel de
   métricas, é um produto de relação entre marca e parceira.
+- Espaço de imagem preenchido só com gradiente liso, bloco vazio ou forma abstrata sem
+  tentativa editorial — todo espaço de imagem segue o padrão de placeholder editorial de
+  campanha (§8), nunca um preenchimento genérico.
 
 **De implementação** (herdado de `DESIGN.md` §06 — a lição de três gerações de Design System
 abandonadas, uma a uma, por não checar contra o código real):

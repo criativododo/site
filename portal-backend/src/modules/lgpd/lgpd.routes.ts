@@ -31,9 +31,10 @@ lgpdAdminRoutes.patch("/exclusao/:id/decidir", async (req, res) => {
   const { aprovada, fundamentoJuridico, responsavelAnalise } = req.body ?? {};
 
   if (typeof aprovada !== "boolean" || !fundamentoJuridico || !responsavelAnalise) {
-    res.status(400).json({
-      error: "Campos obrigatórios: aprovada (boolean), fundamentoJuridico, responsavelAnalise.",
-    });
+    console.error(
+      "PATCH /lgpd/exclusao/:id/decidir: campos obrigatórios ausentes (aprovada, fundamentoJuridico, responsavelAnalise)",
+    );
+    res.status(400).json({ error: "não foi possível registrar a decisão sobre a exclusão." });
     return;
   }
 
@@ -41,10 +42,10 @@ lgpdAdminRoutes.patch("/exclusao/:id/decidir", async (req, res) => {
 
   if (!resultado.ok) {
     if (resultado.motivo === "NAO_ENCONTRADA") {
-      res.status(404).json({ error: "Solicitação não encontrada." });
+      res.status(404).json({ error: "solicitação não encontrada." });
       return;
     }
-    res.status(409).json({ error: "Solicitação já foi decidida." });
+    res.status(409).json({ error: "esta solicitação já foi decidida." });
     return;
   }
 

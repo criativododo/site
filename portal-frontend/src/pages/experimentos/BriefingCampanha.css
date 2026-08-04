@@ -1,0 +1,313 @@
+/*
+ * Briefing da Campanha — composição própria ("narrativa"), distinta da mesa de trabalho
+ * (`HojeInfluenciadora.css`) e da porta de entrada (Login). Nasce de uma pergunta diferente:
+ * a Dashboard responde "o que fazer agora"; o Briefing responde "por que esta campanha existe
+ * e o que ela pede de mim" — por isso lê como reportagem, não como painel: coluna de leitura
+ * centralizada, capítulos em sequência fixa, uma imagem de abertura sem legenda sobreposta
+ * (a foto é referência de produto, não manchete). O único elemento que rompe a margem lateral
+ * é a foto de abertura — mesmo risco estético deliberado e único da Dashboard, nunca dois
+ * elementos competindo pela mesma ousadia (frontend-design: "spend your boldness in one place").
+ */
+
+.narrativa-tela {
+	min-height: 100vh;
+	background: var(--color-paper);
+	color: var(--color-noir);
+	font-family: var(--font-body);
+}
+
+.narrativa-nav {
+	position: sticky;
+	top: 0;
+	z-index: 20;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 20px 32px;
+	background: color-mix(in srgb, var(--color-paper) 82%, transparent);
+	backdrop-filter: blur(6px);
+}
+
+.narrativa-nav-marca {
+	font-family: var(--font-display);
+	font-weight: 700;
+	font-size: 14px;
+	color: var(--color-noir);
+	opacity: 0.72;
+}
+
+.narrativa-nav-link {
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 600;
+	color: var(--color-grafite-70, var(--color-noir));
+	position: relative;
+	padding-bottom: 2px;
+}
+
+.narrativa-nav-link::after {
+	content: "";
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	height: 1px;
+	background: var(--color-cherry);
+	transform: scaleX(0);
+	transform-origin: right;
+	transition: transform 0.4s var(--ease-editorial);
+}
+
+.narrativa-nav-link:hover::after {
+	transform: scaleX(1);
+	transform-origin: left;
+}
+
+/* Como uma página começa (ART_DIRECTION_GUIDE §3): rótulo de contexto, título curto, frase de
+   estado — nessa ordem, antes de qualquer imagem ou lista. */
+.narrativa-contexto {
+	max-width: 720px;
+	margin: 0 auto;
+	padding: 56px 40px 0;
+}
+
+.narrativa-eyebrow {
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 700;
+	letter-spacing: 0.02em;
+	text-transform: lowercase;
+	color: var(--color-cherry);
+	margin-bottom: 16px;
+}
+
+.narrativa-titulo {
+	font-family: var(--font-display);
+	font-weight: 800;
+	font-size: clamp(2rem, 1.6vw + 1.5rem, 2.9rem);
+	line-height: 1.1;
+	letter-spacing: -0.005em;
+	color: var(--color-noir);
+	text-transform: lowercase;
+	margin-bottom: 20px;
+}
+
+.narrativa-abertura {
+	font-weight: 300;
+	font-size: var(--text-subtitle);
+	line-height: var(--leading-snug);
+	color: color-mix(in srgb, var(--color-noir) 78%, transparent);
+	max-width: 46ch;
+}
+
+/*
+ * Imagem de abertura: referência de produto/campanha, não manchete — por isso sem legenda
+ * sobreposta (diferente da Dashboard, cujo masthead é a manchete). Placeholder editorial de
+ * campanha (DESIGN_LANGUAGE.md §8), mesma imagem/licença documentada em assets/mocks/README.md.
+ */
+.narrativa-capa {
+	margin: 40px 0 0;
+}
+
+/* Moldura de altura fixa/overflow isolada da legenda — a legenda precisa fluir normalmente
+   abaixo da foto, nunca ser cortada pelo recorte da imagem. */
+.narrativa-capa-moldura {
+	position: relative;
+	height: 50vh;
+	min-height: 340px;
+	max-height: 560px;
+	overflow: hidden;
+}
+
+.narrativa-capa-imagem {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	object-position: center 30%;
+}
+
+.narrativa-capa-grade {
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(
+		155deg,
+		color-mix(in srgb, var(--color-cherry) 10%, transparent) 0%,
+		transparent 60%
+	);
+	mix-blend-mode: multiply;
+	pointer-events: none;
+}
+
+.narrativa-capa-legenda {
+	max-width: 720px;
+	margin: 12px auto 0;
+	padding: 0 40px;
+	font-size: var(--text-meta);
+	color: color-mix(in srgb, var(--color-noir) 50%, transparent);
+}
+
+/* Corpo: coluna de leitura única, capítulos separados por espaço generoso — nunca por caixa. */
+.narrativa-corpo {
+	max-width: 720px;
+	margin: 0 auto;
+	padding: 56px 40px 0;
+	display: flex;
+	flex-direction: column;
+	gap: 64px;
+}
+
+.narrativa-capitulo-titulo {
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 700;
+	text-transform: lowercase;
+	color: color-mix(in srgb, var(--color-noir) 55%, transparent);
+	margin-bottom: 20px;
+}
+
+.narrativa-paragrafo {
+	font-weight: 300;
+	font-size: var(--text-body-lg);
+	line-height: var(--leading-relaxed);
+	color: color-mix(in srgb, var(--color-noir) 88%, transparent);
+	max-width: 62ch;
+}
+
+.narrativa-paragrafo + .narrativa-paragrafo {
+	margin-top: 16px;
+}
+
+.narrativa-paragrafo-objetivo {
+	font-weight: 600;
+	color: var(--color-noir);
+}
+
+/* Listas de trabalho (produtos, entregáveis, cronograma): densas, uma linha por item, sem
+   decoração — mesma gramática da faixa de trabalho da Dashboard, sem copiar seu layout. */
+.narrativa-linha {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 24px;
+	padding: 16px 0;
+	border-top: 1px solid var(--color-grafite-15, rgba(27, 23, 23, 0.1));
+	border-radius: 0;
+	background: transparent;
+}
+
+.narrativa-linha:first-child {
+	border-top: none;
+	padding-top: 0;
+}
+
+.narrativa-linha-nota {
+	font-size: var(--text-meta);
+	color: color-mix(in srgb, var(--color-noir) 55%, transparent);
+	white-space: nowrap;
+}
+
+.narrativa-linha-status {
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 600;
+	text-transform: lowercase;
+	white-space: nowrap;
+	color: color-mix(in srgb, var(--color-noir) 65%, transparent);
+}
+
+/* Vermelho justificado (ART_DIRECTION_GUIDE §1): o cherry só aparece porque a frase ao lado
+   ("aguardando seu envio") já explica sua urgência. */
+.narrativa-linha.is-urgente .narrativa-linha-status {
+	color: var(--color-cherry);
+	text-decoration: underline;
+	text-decoration-color: var(--color-cherry);
+	text-decoration-thickness: 2px;
+	text-underline-offset: 4px;
+}
+
+.narrativa-linha.is-feito {
+	opacity: 0.6;
+}
+
+/* Citação editorial: a diretriz da marca ganha escala maior e espaço generoso, nunca uma
+   caixa ou aspas decorativas — a diferença de peso já assina a ênfase. */
+.narrativa-citacao {
+	font-weight: 300;
+	font-size: var(--text-subtitle);
+	line-height: var(--leading-snug);
+	color: var(--color-noir);
+	max-width: 56ch;
+	margin: 0;
+}
+
+.narrativa-citacao-atribuicao {
+	margin-top: 12px;
+	font-size: var(--text-meta);
+	color: color-mix(in srgb, var(--color-noir) 50%, transparent);
+}
+
+.narrativa-fechamento {
+	padding: 8px 0 96px;
+}
+
+.narrativa-fechamento-link {
+	display: inline-block;
+	margin-top: 20px;
+	font-family: var(--font-display);
+	font-size: 14px;
+	font-weight: 600;
+	color: var(--color-noir);
+	position: relative;
+	padding-bottom: 2px;
+}
+
+.narrativa-fechamento-link::after {
+	content: "";
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	height: 1px;
+	background: var(--color-cherry);
+	transform: scaleX(1);
+}
+
+@media (max-width: 900px) {
+	.narrativa-nav,
+	.narrativa-contexto,
+	.narrativa-capa-legenda,
+	.narrativa-corpo {
+		padding-left: 20px;
+		padding-right: 20px;
+	}
+
+	.narrativa-titulo {
+		font-size: clamp(1.7rem, 5vw + 1rem, 2.2rem);
+	}
+
+	.narrativa-abertura {
+		max-width: none;
+	}
+
+	.narrativa-capa-moldura {
+		height: 34vh;
+		min-height: 240px;
+	}
+
+	.narrativa-corpo {
+		gap: 48px;
+		padding-top: 40px;
+	}
+
+	.narrativa-linha {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 4px;
+	}
+
+	.narrativa-citacao {
+		font-size: var(--text-subtitle-mobile);
+	}
+}

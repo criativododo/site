@@ -47,7 +47,7 @@ function ResumoDoPeriodo({ mesReferencia }: { mesReferencia: string }) {
 	}, [mesReferencia]);
 
 	if (carregando) {
-		return <p className="portal-page-feedback">carregando este período...</p>;
+		return <p className="portal-page-feedback">carregando este período</p>;
 	}
 
 	if (erro) {
@@ -160,7 +160,7 @@ function HistoricoDoPeriodo({ mesReferencia }: { mesReferencia: string }) {
 	}, [mesReferencia]);
 
 	if (carregando) {
-		return <p className="portal-page-feedback">carregando histórico...</p>;
+		return <p className="portal-page-feedback">carregando histórico</p>;
 	}
 
 	if (erro) {
@@ -279,11 +279,11 @@ export function FinanceiroPage() {
 				financeiro e histórico
 			</h1>
 			<p className="portal-page-intro">
-				acompanhe o previsto, o já pago e o histórico por competência.
+				acompanhe o previsto, o já pago e o histórico por período.
 			</p>
 
 			{carregando && (
-				<p className="portal-page-feedback">carregando períodos...</p>
+				<p className="portal-page-feedback">carregando períodos</p>
 			)}
 
 			{!carregando && erro && (

@@ -104,7 +104,7 @@ function FormularioCompilacao({
 					disabled={compilando}
 					onClick={() => void compilar()}
 				>
-					{compilando ? "compilando..." : "compilar competência"}
+					{compilando ? "compilando" : "compilar competência"}
 				</button>
 			</div>
 			{erro && <p className="portal-page-feedback is-error">{erro}</p>}
@@ -151,13 +151,13 @@ function LinhaColaboracaoMensal({
 			{expandida && (
 				<div className="admin-row-expanded">
 					<dl>
-						<dt>valor mensal (snapshot)</dt>
+						<dt>valor mensal (congelado na compilação)</dt>
 						<dd>
 							{formatadorMoeda.format(
 								colaboracao.condicaoComercial.valorMensal,
 							)}
 						</dd>
-						<dt>entregáveis contratados (snapshot)</dt>
+						<dt>entregáveis contratados (congelado na compilação)</dt>
 						<dd>
 							{colaboracao.condicaoComercial.entregaveisReel} reel ·{" "}
 							{colaboracao.condicaoComercial.entregaveisCarrossel} carrossel ·{" "}
@@ -273,7 +273,7 @@ export function AdminColaboracoesMensaisPage() {
 			</p>
 
 			{carregandoParceiras && (
-				<p className="portal-page-feedback">carregando parceiras...</p>
+				<p className="portal-page-feedback">carregando parceiras</p>
 			)}
 			{!carregandoParceiras && erroParceiras && (
 				<p className="portal-page-feedback is-error">{erroParceiras}</p>
@@ -281,7 +281,7 @@ export function AdminColaboracoesMensaisPage() {
 
 			{!carregandoParceiras && parceiras && parceiras.length === 0 && (
 				<p className="portal-page-feedback">
-					nenhuma parceira cadastrada ainda — cadastre uma parceira antes de
+					nenhuma parceira cadastrada ainda. cadastre uma parceira antes de
 					compilar uma competência.
 				</p>
 			)}
@@ -323,7 +323,7 @@ export function AdminColaboracoesMensaisPage() {
 									{parceiras.map((parceira) => (
 										<option key={parceira.id} value={parceira.id}>
 											{parceira.nome} ({parceira.chave})
-											{parceira.status === "INATIVA" ? " — inativa" : ""}
+											{parceira.status === "INATIVA" ? " (inativa)" : ""}
 										</option>
 									))}
 								</select>
@@ -332,7 +332,7 @@ export function AdminColaboracoesMensaisPage() {
 
 						{carregandoHistorico && (
 							<p className="portal-page-feedback">
-								carregando histórico da parceira...
+								carregando histórico da parceira
 							</p>
 						)}
 						{!carregandoHistorico && erroHistorico && (

@@ -78,7 +78,7 @@ function GerarConvite() {
 				disabled={gerando}
 				onClick={() => void gerar()}
 			>
-				{gerando ? "gerando..." : "gerar novo link"}
+				{gerando ? "gerando" : "gerar novo link"}
 			</button>
 
 			{erro && <p className="portal-page-feedback is-error">{erro}</p>}
@@ -101,7 +101,7 @@ function GerarConvite() {
 									className="btn-outline"
 									onClick={() => void copiar(convite.url)}
 								>
-									{copiado === convite.url ? "copiado!" : "copiar"}
+									{copiado === convite.url ? "copiado" : "copiar"}
 								</button>
 							</div>
 						</li>
@@ -181,7 +181,7 @@ function FilaDeExclusao({
 			</p>
 
 			{carregando && (
-				<p className="portal-page-feedback">carregando...</p>
+				<p className="portal-page-feedback">carregando</p>
 			)}
 			{!carregando && erro && (
 				<p className="portal-page-feedback is-error">{erro}</p>
@@ -293,7 +293,7 @@ export function AdminPage() {
 
 			<GerarConvite />
 
-			{carregando && <p className="portal-page-feedback">carregando...</p>}
+			{carregando && <p className="portal-page-feedback">carregando</p>}
 			{!carregando && erro && (
 				<p className="portal-page-feedback is-error">{erro}</p>
 			)}

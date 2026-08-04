@@ -59,11 +59,15 @@ obrigacaoAdminRoutes.post("/", async (req, res) => {
   // valor usa `=== undefined` (não a checagem genérica de truthiness) porque 0 é um valor
   // presente-mas-inválido que deve cair no motivo VALOR_INVALIDO do service, não aqui.
   if (!parceiraId || !mesReferencia || valor === undefined || !tipo) {
-    res.status(400).json({ error: "Campos obrigatórios: parceiraId, mesReferencia, valor, tipo." });
+    console.error(
+      "POST /obrigacoes: campos obrigatórios ausentes (parceiraId, mesReferencia, valor, tipo)",
+    );
+    res.status(400).json({ error: "não foi possível lançar a obrigação." });
     return;
   }
   if (tipo !== "MENSAL" && tipo !== "AVULSO") {
-    res.status(400).json({ error: "tipo deve ser 'MENSAL' ou 'AVULSO'." });
+    console.error(`POST /obrigacoes: tipo inválido recebido (${String(tipo)})`);
+    res.status(400).json({ error: "não foi possível lançar a obrigação." });
     return;
   }
 
@@ -82,7 +86,7 @@ obrigacaoAdminRoutes.post("/", async (req, res) => {
 obrigacaoAdminRoutes.patch("/:id", async (req, res) => {
   const { valor } = req.body ?? {};
   if (valor === undefined) {
-    res.status(400).json({ error: "Campo obrigatório: valor." });
+    res.status(400).json({ error: "informe o valor." });
     return;
   }
 

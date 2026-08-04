@@ -176,7 +176,7 @@ export function CadastroPage() {
 						className="btn-primary portal-login-button"
 						disabled={enviando || !formularioValido}
 					>
-						{enviando ? "enviando..." : "enviar cadastro"} <span aria-hidden="true">→</span>
+						{enviando ? "enviando" : "enviar cadastro"} <span aria-hidden="true">→</span>
 					</button>
 				</form>
 			</section>

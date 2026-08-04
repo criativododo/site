@@ -1,0 +1,344 @@
+/*
+ * Financeiro/"reconhecimento" — mesma coluna de leitura das telas irmãs (Aprovacao.css,
+ * Publicacao.css), mas com o bloco de reconhecimento (frase + valor) como protagonista, não a
+ * fotografia: aqui ela é reduzida a uma lembrança pequena e discreta, nunca destaque editorial.
+ * Cherry reservado ao degrau atual da timeline (ART_DIRECTION_GUIDE.md, "vermelho justificado").
+ */
+
+.reconhecimento-tela {
+	min-height: 100vh;
+	background: var(--color-paper);
+	color: var(--color-noir);
+	font-family: var(--font-body);
+}
+
+.reconhecimento-nav {
+	position: sticky;
+	top: 0;
+	z-index: 20;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 20px 32px;
+	background: color-mix(in srgb, var(--color-paper) 82%, transparent);
+	backdrop-filter: blur(6px);
+}
+
+.reconhecimento-nav-marca {
+	font-family: var(--font-display);
+	font-weight: 700;
+	font-size: 14px;
+	color: var(--color-noir);
+	opacity: 0.72;
+}
+
+.reconhecimento-nav-link {
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 600;
+	color: var(--color-grafite-70, var(--color-noir));
+	position: relative;
+	padding-bottom: 2px;
+}
+
+.reconhecimento-nav-link::after {
+	content: "";
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	height: 1px;
+	background: var(--color-cherry);
+	transform: scaleX(0);
+	transform-origin: right;
+	transition: transform 0.4s var(--ease-editorial);
+}
+
+.reconhecimento-nav-link:hover::after {
+	transform: scaleX(1);
+	transform-origin: left;
+}
+
+/* Contexto: a lembrança fotográfica (pequena, decorativa) ao lado do eyebrow, depois a frase de
+   reconhecimento — a frase É o título desta tela, o mesmo princípio de leitura das telas
+   irmãs (ART_DIRECTION_GUIDE.md §3). */
+.reconhecimento-contexto {
+	max-width: 640px;
+	margin: 0 auto;
+	padding: 20px 32px 0;
+}
+
+.reconhecimento-memoria {
+	width: 32px;
+	height: 32px;
+	margin-bottom: 12px;
+	border-radius: var(--radius-circle);
+	overflow: hidden;
+	opacity: 0.85;
+}
+
+.reconhecimento-memoria img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.reconhecimento-eyebrow {
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 700;
+	letter-spacing: 0.02em;
+	text-transform: lowercase;
+	color: var(--color-cherry);
+	margin-bottom: 16px;
+}
+
+.reconhecimento-frase {
+	font-family: var(--font-display);
+	font-weight: 800;
+	font-size: clamp(1.8rem, 1.5vw + 1.25rem, 2.5rem);
+	line-height: 1.16;
+	letter-spacing: -0.005em;
+	color: var(--color-noir);
+	text-transform: lowercase;
+}
+
+.reconhecimento-corpo {
+	max-width: 640px;
+	margin: 0 auto;
+	padding: 40px 32px 0;
+}
+
+/*
+ * Bloco de reconhecimento: uma frase + um valor, nunca uma grade de KPIs (o padrão do
+ * Financeiro.tsx legado que esta tela substitui). "Número com precisão visível"
+ * (ART_DIRECTION_GUIDE.md §5): reais em peso maior, centavos discretos, mesma linha.
+ */
+.reconhecimento-valor {
+	padding: 32px 0;
+	border-bottom: 1px solid var(--color-grafite-15, rgba(27, 23, 23, 0.1));
+}
+
+.reconhecimento-valor-label {
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 700;
+	text-transform: lowercase;
+	color: color-mix(in srgb, var(--color-noir) 55%, transparent);
+	margin-bottom: 12px;
+}
+
+.reconhecimento-valor-numero {
+	font-family: var(--font-display);
+	font-weight: 800;
+	font-size: clamp(2.4rem, 3vw + 1.5rem, 3.4rem);
+	line-height: 1;
+	color: var(--color-noir);
+}
+
+.reconhecimento-valor-centavos {
+	font-size: 0.42em;
+	font-weight: 600;
+	vertical-align: super;
+	margin-left: 2px;
+	color: color-mix(in srgb, var(--color-noir) 65%, transparent);
+}
+
+.reconhecimento-valor-estado {
+	margin-top: 12px;
+	font-size: var(--text-body);
+	color: color-mix(in srgb, var(--color-noir) 55%, transparent);
+}
+
+.reconhecimento-secao {
+	padding: 40px 0 0;
+}
+
+.reconhecimento-secao-titulo {
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 700;
+	text-transform: lowercase;
+	color: color-mix(in srgb, var(--color-noir) 55%, transparent);
+	margin-bottom: 20px;
+}
+
+/*
+ * Timeline editorial: mesma espinha dorsal de Aprovacao.css/Publicacao.css, cobrindo só o
+ * ciclo do pagamento (MELHORIAS_PRODUTO.md §7, "mesmo motor, mesma linguagem, públicos
+ * diferentes"). Candidata natural à extração para componente compartilhado — terceira tela
+ * consumidora, decisão adiada para não bloquear esta entrega.
+ */
+.reconhecimento-timeline {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	position: relative;
+}
+
+.reconhecimento-timeline-passo {
+	position: relative;
+	display: flex;
+	gap: 16px;
+	padding-bottom: 24px;
+}
+
+.reconhecimento-timeline-passo::before {
+	content: "";
+	position: absolute;
+	left: 5px;
+	top: 16px;
+	bottom: -4px;
+	width: 1px;
+	background: var(--color-grafite-15, rgba(27, 23, 23, 0.15));
+}
+
+.reconhecimento-timeline-passo:last-child::before {
+	display: none;
+}
+
+.reconhecimento-timeline-marcador {
+	flex-shrink: 0;
+	width: 11px;
+	height: 11px;
+	margin-top: 4px;
+	border-radius: var(--radius-circle);
+	border: 1.5px solid var(--color-grafite-40, rgba(27, 23, 23, 0.4));
+	background: transparent;
+}
+
+.reconhecimento-timeline-passo.is-concluido .reconhecimento-timeline-marcador {
+	background: var(--color-grafite-70, var(--color-noir));
+	border-color: var(--color-grafite-70, var(--color-noir));
+}
+
+.reconhecimento-timeline-passo.is-atual .reconhecimento-timeline-marcador {
+	background: var(--color-cherry);
+	border-color: var(--color-cherry);
+}
+
+.reconhecimento-timeline-passo.is-futuro .reconhecimento-timeline-marcador {
+	border-color: var(--color-grafite-15, rgba(27, 23, 23, 0.2));
+}
+
+.reconhecimento-timeline-conteudo {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	padding-top: 1px;
+}
+
+.reconhecimento-timeline-titulo {
+	font-family: var(--font-display);
+	font-size: var(--text-body-lg);
+	font-weight: 600;
+	color: var(--color-noir);
+	text-transform: lowercase;
+}
+
+.reconhecimento-timeline-passo.is-atual .reconhecimento-timeline-titulo {
+	font-weight: 700;
+}
+
+.reconhecimento-timeline-passo.is-futuro .reconhecimento-timeline-titulo {
+	font-weight: 400;
+	color: color-mix(in srgb, var(--color-noir) 40%, transparent);
+}
+
+.reconhecimento-timeline-detalhe {
+	font-size: var(--text-meta);
+	color: color-mix(in srgb, var(--color-noir) 55%, transparent);
+}
+
+.reconhecimento-timeline-passo.is-futuro .reconhecimento-timeline-detalhe {
+	color: color-mix(in srgb, var(--color-noir) 35%, transparent);
+}
+
+/* Ação secundária (ver comprovante): link discreto, nunca botão primário — consulta, não parte
+   da mensagem de reconhecimento (decisão do responsável do projeto). */
+.reconhecimento-acao-secundaria {
+	display: inline-block;
+	margin-top: 20px;
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 600;
+	color: var(--color-cherry);
+	text-decoration: underline;
+	text-decoration-thickness: 1px;
+	text-underline-offset: 3px;
+	background: none;
+	border: none;
+	padding: 0;
+	cursor: pointer;
+}
+
+/* Rodapé: ponte narrativa para o próximo briefing, nunca funcional (mesma disciplina do rodapé
+   de Publicacao.css: a página termina porque a última pergunta que ela existe para responder
+   já foi respondida). */
+.reconhecimento-rodape {
+	max-width: 640px;
+	margin: 40px auto 0;
+	padding: 32px 32px 96px;
+	border-top: 1px solid var(--color-grafite-15, rgba(27, 23, 23, 0.1));
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
+.reconhecimento-rodape-nota {
+	font-weight: 300;
+	font-size: var(--text-body-lg);
+	line-height: var(--leading-relaxed);
+	color: color-mix(in srgb, var(--color-noir) 60%, transparent);
+	max-width: 48ch;
+}
+
+/* Divergência (§14.6): exceção documentada, baixa ênfase, nunca disputa espaço com o bloco de
+   reconhecimento. */
+.reconhecimento-divergencia {
+	align-self: flex-start;
+	font-family: var(--font-display);
+	font-size: var(--text-meta);
+	font-weight: 500;
+	color: color-mix(in srgb, var(--color-noir) 45%, transparent);
+	background: none;
+	border: none;
+	padding: 0;
+	cursor: pointer;
+	text-decoration: underline;
+	text-decoration-thickness: 1px;
+	text-underline-offset: 3px;
+	text-decoration-color: color-mix(in srgb, var(--color-noir) 25%, transparent);
+}
+
+@media (max-width: 900px) {
+	.reconhecimento-nav,
+	.reconhecimento-contexto,
+	.reconhecimento-corpo,
+	.reconhecimento-rodape {
+		padding-left: 20px;
+		padding-right: 20px;
+	}
+
+	.reconhecimento-frase {
+		font-size: clamp(1.5rem, 5vw + 1rem, 1.9rem);
+	}
+
+	.reconhecimento-memoria {
+		width: 28px;
+		height: 28px;
+	}
+
+	.reconhecimento-valor-numero {
+		font-size: clamp(2rem, 8vw + 1rem, 2.6rem);
+	}
+
+	.reconhecimento-corpo {
+		padding-top: 32px;
+	}
+
+	.reconhecimento-rodape {
+		padding-bottom: 64px;
+	}
+}

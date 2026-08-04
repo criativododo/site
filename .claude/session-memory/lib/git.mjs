@@ -97,3 +97,38 @@ export function remoteState(root) {
   const [ahead, behind] = counts.split(/\s+/).map(Number);
   return { upstream, ahead, behind };
 }
+
+/**
+ * Worktrees efêmeros por sessão (ADR-021, Fase 3): cada sessão opera em seu próprio
+ * `git worktree`, isolado do repositório "hub" e de qualquer outra sessão — nenhum
+ * processo compartilha um working tree mutável com outro.
+ */
+export function addSessionWorktree(hubPath, worktreePath, ref) {
+  git(['worktree', 'add', '--detach', worktreePath, ref], hubPath);
+}
+
+export function removeSessionWorktree(hubPath, worktreePath) {
+  const result = git(['worktree', 'remove', '--force', worktreePath], hubPath, { allowFailure: true });
+  if (typeof result === 'string') return;
+  // diretório já pode ter sido apagado manualmente; apenas limpa o registro administrativo.
+  git(['worktree', 'prune'], hubPath, { allowFailure: true });
+}
+
+export function listSessionWorktrees(hubPath) {
+  const output = git(['worktree', 'list', '--porcelain'], hubPath, { allowFailure: true });
+  if (typeof output !== 'string' || !output) return [];
+  const entries = [];
+  let current = null;
+  for (const line of output.split('\n')) {
+    if (line.startsWith('worktree ')) {
+      if (current) entries.push(current);
+      current = { path: line.slice('worktree '.length) };
+    } else if (current && line.startsWith('branch ')) {
+      current.branch = line.slice('branch '.length);
+    } else if (current && line === 'detached') {
+      current.detached = true;
+    }
+  }
+  if (current) entries.push(current);
+  return entries;
+}

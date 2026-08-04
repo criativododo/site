@@ -40,7 +40,7 @@ conteudoRoutes.get("/entregas/:entregaId/briefing", async (req, res) => {
   const resultado = await obterBriefingDaEntrega(parceiraId, req.params.entregaId);
 
   if (!resultado) {
-    res.status(404).json({ error: "Entrega não encontrada." });
+    res.status(404).json({ error: "entrega não encontrada." });
     return;
   }
 
@@ -65,10 +65,10 @@ conteudoRoutes.post("/entregas/:entregaId/material", upload.single("arquivo"), a
 
   if (!resultado.ok) {
     if (resultado.motivo === "NAO_ENCONTRADA") {
-      res.status(404).json({ error: "Entrega não encontrada." });
+      res.status(404).json({ error: "entrega não encontrada." });
       return;
     }
-    res.status(409).json({ error: "Esta Entrega não está aguardando material." });
+    res.status(409).json({ error: "esta entrega não está mais aguardando material." });
     return;
   }
 
@@ -79,10 +79,10 @@ conteudoRoutes.post("/entregas/:entregaId/material", upload.single("arquivo"), a
 conteudoRoutes.use((err: unknown, _req: Request, res: Response, next: NextFunction) => {
   if (err instanceof MulterError) {
     if (err.code === "LIMIT_UNEXPECTED_FILE") {
-      res.status(415).json({ error: "Tipo de arquivo não suportado — envie imagem ou vídeo." });
+      res.status(415).json({ error: "tipo de arquivo não suportado. envie uma imagem ou um vídeo." });
       return;
     }
-    res.status(413).json({ error: "Arquivo excede o tamanho máximo permitido (20MB)." });
+    res.status(413).json({ error: "arquivo grande demais. o limite é 20 MB." });
     return;
   }
   next(err);

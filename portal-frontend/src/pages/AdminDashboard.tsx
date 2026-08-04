@@ -151,7 +151,7 @@ export function AdminDashboardPage() {
 				onde você precisa agir agora, num só lugar.
 			</p>
 
-			{carregando && <p className="portal-page-feedback">carregando...</p>}
+			{carregando && <p className="portal-page-feedback">carregando</p>}
 			{!carregando && erro && (
 				<p className="portal-page-feedback is-error">{erro}</p>
 			)}

@@ -1,11 +1,15 @@
 #!/usr/bin/env node
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { join, resolve, relative } from 'node:path';
+import { basename, join, resolve, relative } from 'node:path';
 import { fail, parseArgs, print, readJson, requireArg, nowIso, dateParts, atomicWrite, SessionMemoryError } from '../lib/core.mjs';
 import { loadConfig } from '../lib/config.mjs';
-import { ensureGitRepository, git, sourceSnapshot, changedFilesSince, commitsSince, remoteState, workingTreeState } from '../lib/git.mjs';
-import { listJournals, nextJournalPath, updateIndex, validateMemory, withMarker, readMarker, journalSection } from '../lib/documents.mjs';
+import {
+  ensureGitRepository, git, sourceSnapshot, changedFilesSince, commitsSince, remoteState, workingTreeState,
+  addSessionWorktree, removeSessionWorktree, listSessionWorktrees,
+} from '../lib/git.mjs';
+import { listJournals, nextJournalPath, regenerateProjectDocs, validateMemory, withMarker, readMarker, journalSection } from '../lib/documents.mjs';
+import { publishSessionWorktree } from '../lib/publish.mjs';
 import { createInitialMemory } from '../lib/scaffold.mjs';
 
 const root = process.cwd();
@@ -37,6 +41,45 @@ function saveSession(config, state) {
   atomicWrite(sessionPath(config, state.id), `${JSON.stringify(state, null, 2)}\n`);
 }
 
+// --- Worktrees efêmeros por sessão (ADR-021, Fase 3) ------------------------------------
+//
+// O repositório em config.memoryPath ("hub") deixa de ser o lugar onde sessões trabalham.
+// Ele serve só de base de objetos/refs: /inicio cria um `git worktree` privado por sessão,
+// /fim escreve e publica só dentro desse worktree, e o worktree é removido depois da
+// publicação. Nenhuma sessão volta a compartilhar um diretório Git mutável com outra —
+// isso elimina estruturalmente a categoria de bug que motivou a ADR-021 inteira.
+
+function worktreesRoot(config) {
+  return join(config.runtimePath, 'memory-worktrees');
+}
+
+function sessionWorktreePath(config, id) {
+  return join(worktreesRoot(config), id);
+}
+
+/**
+ * Remove worktrees de sessão órfãos antes de criar um novo (chamado no início de
+ * /inicio). Regra deliberadamente conservadora — nunca remove um worktree cuja sessão
+ * ainda pode estar em andamento em outro processo:
+ *
+ * - worktree registrado sem `<id>.json` correspondente → a sessão travou entre criar o
+ *   worktree e salvar o estado de runtime (interrupção de sessão); seguro remover.
+ * - worktree registrado com `<id>.json` cujo `publishedAt` já está preenchido → a
+ *   publicação teve sucesso mas a remoção do worktree não chegou a rodar (processo
+ *   encerrado logo após o push); seguro remover.
+ * - worktree registrado com `<id>.json` sem `publishedAt` → sessão possivelmente ainda
+ *   ativa em outro processo; nunca removido automaticamente.
+ */
+function pruneOrphanSessionWorktrees(config) {
+  const prefix = `${worktreesRoot(config)}/`;
+  const entries = listSessionWorktrees(config.memoryPath).filter((entry) => entry.path.startsWith(prefix));
+  for (const entry of entries) {
+    const id = basename(entry.path);
+    const state = readJson(sessionPath(config, id));
+    if (!state || state.publishedAt) removeSessionWorktree(config.memoryPath, entry.path);
+  }
+}
+
 function memoryHasHistory(memoryPath) {
   const result = git(['rev-parse', '--verify', 'HEAD'], memoryPath, { allowFailure: true });
   return typeof result === 'string';
@@ -56,8 +99,11 @@ function ensureMemoryRepository(config) {
     git(['clone', config.memoryRepositoryUrl, config.memoryPath], root);
   }
   ensureGitRepository(config.memoryPath, 'Repositório de memória');
+  // O hub nunca deve estar sujo fora do bootstrap — sessões trabalham exclusivamente em
+  // seus próprios worktrees. Se isso disparar fora do bootstrap, é sinal de que algo
+  // voltou a escrever direto no hub; falhar alto em vez de prosseguir silenciosamente.
   const status = git(['status', '--porcelain=v1'], config.memoryPath);
-  if (status) fail('O repositório de memória possui alterações não commitadas. Faça commit, stash ou descarte-as antes de continuar.');
+  if (status) fail('O repositório de memória (hub) possui alterações não commitadas fora do fluxo esperado. Investigue antes de continuar.');
   if (!memoryHasHistory(config.memoryPath)) {
     createInitialMemory(config.memoryPath, sourceSnapshot(root));
     commitAndPushBootstrap(config);
@@ -72,17 +118,19 @@ function ensureMemoryRepository(config) {
   return { initialized: false };
 }
 
-function syncMemory(config) {
-  const memory = config.memoryPath;
-  const dirty = git(['status', '--porcelain=v1'], memory);
-  if (dirty) fail('A memória está suja; o sync foi bloqueado para evitar sobrescrita.');
-  const fetch = git(['fetch', '--prune'], memory, { allowFailure: true });
-  if (typeof fetch !== 'string') fail('Não foi possível consultar o remoto da memória. O trabalho local foi preservado.');
-  const state = remoteState(memory);
-  if (state.ahead > 0) fail('A memória possui commits locais não publicados. Execute `publish` antes de iniciar nova sessão.');
-  if (state.behind > 0) git(['pull', '--ff-only'], memory);
-  if (state.ahead > 0 && state.behind > 0) fail('Histórico remoto divergente; resolva manualmente antes de continuar.');
-  return remoteState(memory);
+/** Atualiza só os refs remotos do hub (`origin/*`) — nunca toca no working tree do hub. */
+function fetchHub(config) {
+  const fetch = git(['fetch', '--prune'], config.memoryPath, { allowFailure: true });
+  if (typeof fetch !== 'string') fail('Não foi possível consultar o remoto da memória.');
+}
+
+/** Usado só pelos comandos de leitura (status/journal/roadmap/validate) que ainda leem
+ * diretamente do hub — mantém o checkout do hub alinhado com origin/main, já que sessões
+ * não fazem mais isso como efeito colateral de /inicio. Read-only em efeito: nada aqui é
+ * publicado de volta. */
+function refreshHubForReading(config) {
+  fetchHub(config);
+  git(['reset', '--hard', 'origin/main'], config.memoryPath, { allowFailure: true });
 }
 
 function readProjectState(memoryPath) {
@@ -97,14 +145,6 @@ function readProjectState(memoryPath) {
     result[key] = readMarker(readFileSync(filePath, 'utf8'), relativePath);
   }
   return result;
-}
-
-function renderStatus(status) {
-  return withMarker(`# Estado atual\n\n- **Projeto:** ${status.project}\n- **Fase:** ${status.phase}\n- **Sprint:** ${status.sprint}\n- **Último journal:** ${status.lastJournal ?? 'Nenhum'}\n- **Último commit relevante:** ${status.lastCommit?.slice(0, 7) ?? 'Não informado'}\n- **Última ADR:** ${status.lastAdr ?? 'Não informada'}\n\n## Resumo\n\n${status.summary || 'Não informado.'}\n\n## Bloqueios\n\n${(status.blockers?.length ? status.blockers : ['Nenhum bloqueio informado.']).map((item) => `- ${item}`).join('\n')}\n\n## Próxima tarefa\n\n${status.nextTask || 'Não informada.'}\n`, status);
-}
-
-function renderNext(status) {
-  return withMarker(`# Comece aqui\n\n1. Execute \`/inicio <objetivo>\` no repositório da aplicação.\n2. Leia o resumo executivo e valide os bloqueios.\n3. Ao encerrar, execute \`/fim\`.\n\n## Próxima tarefa\n\n${status.nextTask || 'Não informada.'}\n\n## Bloqueios\n\n${(status.blockers?.length ? status.blockers : ['Nenhum bloqueio informado.']).map((item) => `- ${item}`).join('\n')}\n`, status);
 }
 
 function renderAdrStatus(adr) {
@@ -132,6 +172,10 @@ function makeJournal({ session, changes, commits, details, endedAt }) {
     sprint: details.sprint,
     status: details.status || 'Parcial',
     confidence: details.confidence?.level || 'Não informada',
+    blockers: details.blockers ?? [],
+    nextTask: details.nextTask,
+    adrsAffected: details.adrsAffected ?? [],
+    summary: details.statusSummary || details.summary || null,
     source: {
       branch: changes.current.branch,
       baseline: session.baseline.head,
@@ -172,14 +216,18 @@ function commandInicio(args) {
   const id = sessionId(args);
   ensureGitRepository(root, 'Repositório da aplicação');
   const result = ensureMemoryRepository(config);
-  syncMemory(config);
+  fetchHub(config);
+  pruneOrphanSessionWorktrees(config);
   const previous = readJson(sessionPath(config, id));
   if (previous) fail(`Já existe baseline para a sessão ${id}. Execute /fim ou use outro ID.`);
-  const session = { id, objective, startedAt: nowIso(), baseline: sourceSnapshot(root), checks: [] };
+  const worktreePath = sessionWorktreePath(config, id);
+  mkdirSync(worktreesRoot(config), { recursive: true });
+  addSessionWorktree(config.memoryPath, worktreePath, 'origin/main');
+  const session = { id, objective, startedAt: nowIso(), baseline: sourceSnapshot(root), checks: [], memoryWorktree: worktreePath };
   saveSession(config, session);
-  const state = readProjectState(config.memoryPath);
-  const validation = validateMemory(config.memoryPath);
-  const journals = listJournals(config.memoryPath).slice(0, config.journalWindow);
+  const state = readProjectState(worktreePath);
+  const validation = validateMemory(worktreePath);
+  const journals = listJournals(worktreePath).slice(0, config.journalWindow);
   print({
     initializedMemory: result.initialized,
     session: { id, objective },
@@ -199,6 +247,7 @@ function commandInicio(args) {
 function commandStatus(args) {
   const config = configFor(args);
   ensureGitRepository(config.memoryPath, 'Repositório de memória');
+  refreshHubForReading(config);
   const state = readProjectState(config.memoryPath);
   const latest = listJournals(config.memoryPath)[0];
   print({
@@ -215,6 +264,8 @@ function commandStatus(args) {
 
 function commandJournal(args) {
   const config = configFor(args);
+  ensureGitRepository(config.memoryPath, 'Repositório de memória');
+  refreshHubForReading(config);
   const journals = listJournals(config.memoryPath).filter((journal) => {
     const haystack = `${journal.relativePath}\n${journal.content}`.toLocaleLowerCase('pt-BR');
     return (!args.date || journal.relativePath.includes(args.date))
@@ -233,6 +284,8 @@ function commandJournal(args) {
 
 function commandRoadmap(args) {
   const config = configFor(args);
+  ensureGitRepository(config.memoryPath, 'Repositório de memória');
+  refreshHubForReading(config);
   const roadmap = readProjectState(config.memoryPath).roadmap;
   const completed = roadmap.phases.filter((phase) => phase.status === 'complete');
   const active = roadmap.phases.filter((phase) => phase.status === 'in_progress');
@@ -282,65 +335,91 @@ function commandFinish(args) {
   const config = configFor(args);
   const id = sessionId(args);
   const session = loadSession(config, id);
+  if (!session.memoryWorktree) fail('Sessão sem worktree de memória associado. Execute /inicio novamente.');
   const detailsPath = requireArg(args, 'details-file');
   const details = readJson(resolve(root, detailsPath));
   for (const field of ['phase', 'sprint', 'nextTask']) if (!details[field]) fail(`Campo obrigatório ausente no details-file: ${field}`);
-  ensureGitRepository(config.memoryPath, 'Repositório de memória');
-  const memoryDirty = git(['status', '--porcelain=v1'], config.memoryPath);
-  if (memoryDirty) fail('A memória possui alterações pendentes; finalize ou descarte-as antes de gerar o journal.');
+  ensureGitRepository(session.memoryWorktree, 'Worktree de memória da sessão');
+  // Sem verificação de "memória suja": este worktree é exclusivo desta sessão, nenhum
+  // outro processo pode tê-lo alterado entre /inicio e /fim.
   const changes = changedFilesSince(root, session.baseline);
   const commits = commitsSince(root, session.baseline.head);
   const endedAt = nowIso();
   const journal = makeJournal({ session, changes, commits, details, endedAt });
-  const journalPath = nextJournalPath(config.memoryPath, endedAt);
+  const journalPath = nextJournalPath(session.memoryWorktree, endedAt, id);
   writeFileSync(journalPath, journal.content, 'utf8');
-  const state = readProjectState(config.memoryPath);
-  const relativeJournal = relative(config.memoryPath, journalPath).split('\\').join('/');
-  const status = {
-    ...state.status,
-    updatedAt: endedAt,
-    phase: details.phase,
-    sprint: details.sprint,
-    lastJournal: relativeJournal,
-    lastCommit: changes.current.head,
-    lastAdr: details.adrsAffected?.at(-1)?.match(/ADR-\d+/)?.[0] ?? state.status.lastAdr,
-    blockers: details.blockers ?? [],
-    nextTask: details.nextTask,
-    summary: details.statusSummary || details.summary || state.status.summary,
-  };
-  atomicWrite(join(config.memoryPath, 'project/PROJECT_STATUS.md'), renderStatus(status));
-  atomicWrite(join(config.memoryPath, 'project/START_HERE_NEXT_SESSION.md'), renderNext(status));
+  const relativeJournal = relative(session.memoryWorktree, journalPath).split('\\').join('/');
+  const derivedStatus = regenerateProjectDocs(session.memoryWorktree);
   if (details.adrsAffected?.length) {
-    const adr = { ...state.adr, updatedAt: endedAt, lastAdr: status.lastAdr, affected: details.adrsAffected };
-    atomicWrite(join(config.memoryPath, 'project/ADR_STATUS.md'), renderAdrStatus(adr));
+    const previousAdr = readMarker(readFileSync(join(session.memoryWorktree, 'project/ADR_STATUS.md'), 'utf8'), 'project/ADR_STATUS.md');
+    const adr = { ...previousAdr, updatedAt: endedAt, lastAdr: derivedStatus.lastAdr, affected: details.adrsAffected };
+    atomicWrite(join(session.memoryWorktree, 'project/ADR_STATUS.md'), renderAdrStatus(adr));
   }
-  updateIndex(config.memoryPath);
-  const validation = validateMemory(config.memoryPath);
+  const validation = validateMemory(session.memoryWorktree);
   if (!validation.valid) fail(`Journal gerado, mas a publicação foi bloqueada: ${validation.errors.join('; ')}`);
   session.finishedAt = endedAt;
   session.journal = relativeJournal;
+  session.journalContent = journal.content;
+  session.details = details;
   saveSession(config, session);
   print({ journal: relativeJournal, changes: { modified: changes.modified, created: changes.created, removed: changes.removed }, commits, next: 'Execute publish para criar o commit e enviar a memória.' });
 }
 
 function commandPublish(args) {
   const config = configFor(args);
+  const id = sessionId(args);
+  const session = loadSession(config, id);
+  if (!session.memoryWorktree) fail('Sessão sem worktree de memória associado. Execute /inicio novamente.');
+  if (!session.journal || !session.journalContent) fail('Nenhum journal pendente. Execute finish antes de publish.');
+  ensureGitRepository(session.memoryWorktree, 'Worktree de memória da sessão');
+
+  const worktree = session.memoryWorktree;
+  const journalRelativePath = session.journal;
+  const details = session.details || {};
+
+  const result = publishSessionWorktree({
+    worktree,
+    message: args.message || 'docs(memory): registra sessão',
+    prepareCommit: (wt) => {
+      const journalPath = join(wt, journalRelativePath);
+      mkdirSync(join(journalPath, '..'), { recursive: true });
+      writeFileSync(journalPath, session.journalContent, 'utf8');
+      const derivedStatus = regenerateProjectDocs(wt);
+      if (details.adrsAffected?.length) {
+        const previousAdr = readMarker(readFileSync(join(wt, 'project/ADR_STATUS.md'), 'utf8'), 'project/ADR_STATUS.md');
+        const adr = { ...previousAdr, updatedAt: session.finishedAt, lastAdr: derivedStatus.lastAdr, affected: details.adrsAffected };
+        atomicWrite(join(wt, 'project/ADR_STATUS.md'), renderAdrStatus(adr));
+      }
+      const validation = validateMemory(wt);
+      if (!validation.valid) fail(`Publicação bloqueada: ${validation.errors.join('; ')}`);
+    },
+  });
+
+  if (!result.published) {
+    print(result);
+    return;
+  }
+
+  session.publishedAt = nowIso();
+  saveSession(config, session);
+  removeSessionWorktree(config.memoryPath, worktree);
+  print({ ...result, note: 'Worktree da sessão removido após publicação.' });
+}
+
+/** /release opera direto no hub (fora do escopo da Fase 3 — não é uma sessão comum). */
+function publishHubDirect(config, message) {
   const memory = config.memoryPath;
-  ensureGitRepository(memory, 'Repositório de memória');
   const validation = validateMemory(memory);
   if (!validation.valid) fail(`Publicação bloqueada: ${validation.errors.join('; ')}`);
   const changes = git(['status', '--porcelain=v1'], memory);
-  if (!changes) {
-    print({ published: false, reason: 'Nenhuma alteração para publicar.' });
-    return;
-  }
+  if (!changes) return { published: false, reason: 'Nenhuma alteração para publicar.' };
   git(['fetch', '--prune'], memory);
   const state = remoteState(memory);
-  if (state.behind > 0 || (state.ahead > 0 && state.behind > 0)) fail('Remoto avançou durante a sessão. Nenhuma alteração foi sobrescrita; faça rebase/merge manualmente na memória.');
+  if (state.behind > 0 || (state.ahead > 0 && state.behind > 0)) fail('Remoto avançou durante a operação. Nenhuma alteração foi sobrescrita; faça rebase/merge manualmente na memória.');
   git(['add', '-A'], memory);
-  git(['commit', '-m', args.message || 'docs(memory): registra sessão'], memory);
+  git(['commit', '-m', message], memory);
   git(['push'], memory);
-  print({ published: true, commit: git(['rev-parse', '--short', 'HEAD'], memory) });
+  return { published: true, commit: git(['rev-parse', '--short', 'HEAD'], memory) };
 }
 
 function commandRelease(args) {
@@ -348,6 +427,7 @@ function commandRelease(args) {
   const sprint = requireArg(args, 'sprint');
   const from = requireArg(args, 'from');
   ensureGitRepository(config.memoryPath, 'Repositório de memória');
+  refreshHubForReading(config);
   git(['rev-parse', '--verify', from], root);
   const commits = commitsSince(root, from);
   const state = readProjectState(config.memoryPath);
@@ -363,11 +443,13 @@ function commandRelease(args) {
   const indexPath = join(config.memoryPath, 'releases/INDEX.md');
   const current = existsSync(indexPath) ? readFileSync(indexPath, 'utf8') : '# Índice de releases\n\n';
   if (!current.includes(`SPRINT-${sprint}.md`)) writeFileSync(indexPath, `${current}- [${sprint}](${parts.year}/SPRINT-${sprint}.md)\n`, 'utf8');
-  commandPublish({ message: `docs(memory): prepara release ${sprint}` });
+  print(publishHubDirect(config, `docs(memory): prepara release ${sprint}`));
 }
 
 function commandValidate(args) {
   const config = configFor(args);
+  ensureGitRepository(config.memoryPath, 'Repositório de memória');
+  refreshHubForReading(config);
   const result = validateMemory(config.memoryPath);
   print(result);
   if (!result.valid) process.exitCode = 1;

@@ -60,7 +60,7 @@ authRoutes.get("/google/login", async (req, res) => {
 authRoutes.get("/google/callback", async (req, res) => {
   const cookieBruto = req.cookies?.[NOME_COOKIE_OIDC];
   if (!cookieBruto || typeof cookieBruto !== "string") {
-    res.status(400).json({ error: "Handshake OIDC ausente ou expirado — tente entrar novamente." });
+    res.status(400).json({ error: "não foi possível concluir o login. tente novamente." });
     return;
   }
 
@@ -68,7 +68,7 @@ authRoutes.get("/google/callback", async (req, res) => {
   try {
     handshake = JSON.parse(Buffer.from(cookieBruto, "base64url").toString("utf8"));
   } catch {
-    res.status(400).json({ error: "Handshake OIDC inválido." });
+    res.status(400).json({ error: "não foi possível concluir o login. tente novamente." });
     return;
   }
 
@@ -86,7 +86,7 @@ authRoutes.get("/google/callback", async (req, res) => {
     const claims = tokens.claims();
     if (!claims?.sub || typeof claims.email !== "string") {
       // Falha fail-closed (PORTAL_ARQUITETURA.md §4.3): nunca aceitar identidade parcial.
-      res.status(401).json({ error: "Token do Google não trouxe claims obrigatórias." });
+      res.status(401).json({ error: "não foi possível concluir o login com o Google. tente novamente." });
       return;
     }
 
@@ -119,7 +119,7 @@ authRoutes.get("/google/callback", async (req, res) => {
     res.redirect(`${env.frontendUrl}${destino}`);
   } catch {
     // Nunca vazar detalhe interno do erro OIDC para o cliente (aud/iss/exp inválidos, etc.).
-    res.status(401).json({ error: "Não foi possível concluir o login com o Google." });
+    res.status(401).json({ error: "não foi possível concluir o login com o Google." });
   }
 });
 
@@ -142,7 +142,10 @@ authRoutes.get("/dev-login", async (req, res) => {
     typeof papelAtor !== "string" ||
     typeof estadoConta !== "string"
   ) {
-    res.status(400).json({ error: "Parâmetros obrigatórios: email, nome, papelAtor, estadoConta." });
+    console.error(
+      "dev-login: parâmetros obrigatórios ausentes (email, nome, papelAtor, estadoConta)",
+    );
+    res.status(400).json({ error: "não foi possível concluir o cadastro." });
     return;
   }
 
@@ -225,10 +228,10 @@ authRoutes.post("/cadastro", requireAuth, async (req, res) => {
 
   if (!resultado.ok) {
     if (resultado.motivo === "NAO_ENCONTRADA") {
-      res.status(404).json({ error: "Conta não encontrada." });
+      res.status(404).json({ error: "conta não encontrada." });
       return;
     }
-    res.status(409).json({ error: "Cadastro já foi enviado para esta conta." });
+    res.status(409).json({ error: "este cadastro já foi enviado." });
     return;
   }
 
