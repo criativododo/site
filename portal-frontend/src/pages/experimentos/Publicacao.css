@@ -1,0 +1,283 @@
+/*
+ * Publicação — mesma coluna de leitura de Aprovacao.css, mas com a fotografia do material como
+ * protagonista visual (não mais um thumb utilitário de 84px) e sem o bloco "de quem é a vez":
+ * não sobra decisão pendente nesta tela, só confirmação. Cherry reservado ao degrau atual da
+ * timeline e ao link do post — nunca decoração de conclusão (ART_DIRECTION_GUIDE.md, "vermelho
+ * justificado").
+ */
+
+.publicacao-tela {
+	min-height: 100vh;
+	background: var(--color-paper);
+	color: var(--color-noir);
+	font-family: var(--font-body);
+}
+
+.publicacao-nav {
+	position: sticky;
+	top: 0;
+	z-index: 20;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 20px 32px;
+	background: color-mix(in srgb, var(--color-paper) 82%, transparent);
+	backdrop-filter: blur(6px);
+}
+
+.publicacao-nav-marca {
+	font-family: var(--font-display);
+	font-weight: 700;
+	font-size: 14px;
+	color: var(--color-noir);
+	opacity: 0.72;
+}
+
+.publicacao-nav-link {
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 600;
+	color: var(--color-grafite-70, var(--color-noir));
+	position: relative;
+	padding-bottom: 2px;
+}
+
+.publicacao-nav-link::after {
+	content: "";
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	height: 1px;
+	background: var(--color-cherry);
+	transform: scaleX(0);
+	transform-origin: right;
+	transition: transform 0.4s var(--ease-editorial);
+}
+
+.publicacao-nav-link:hover::after {
+	transform: scaleX(1);
+	transform-origin: left;
+}
+
+/* Contexto: eyebrow, depois a frase de estado — a frase É o título desta tela. Nenhum dado
+   aparece antes dela (ART_DIRECTION_GUIDE.md §3, "como uma página começa"). */
+.publicacao-contexto {
+	max-width: 640px;
+	margin: 0 auto;
+	padding: 20px 32px 0;
+}
+
+.publicacao-eyebrow {
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 700;
+	letter-spacing: 0.02em;
+	text-transform: lowercase;
+	color: var(--color-cherry);
+	margin-bottom: 16px;
+}
+
+.publicacao-frase {
+	font-family: var(--font-display);
+	font-weight: 800;
+	font-size: clamp(1.8rem, 1.5vw + 1.25rem, 2.5rem);
+	line-height: 1.16;
+	letter-spacing: -0.005em;
+	color: var(--color-noir);
+	text-transform: lowercase;
+}
+
+/* A fotografia é a protagonista desta tela — o conteúdo publicado, não o processo da agência
+   (decisão do responsável do projeto). Retrato 4:5, tamanho de destaque editorial, sem virar
+   masthead de tela-bandeira: a coluna de leitura e o chrome padrão continuam os mesmos das
+   telas irmãs. */
+.publicacao-foto {
+	max-width: 640px;
+	margin: 40px auto 0;
+	padding: 0 32px;
+}
+
+.publicacao-foto img {
+	display: block;
+	width: 100%;
+	max-width: 360px;
+	aspect-ratio: 4 / 5;
+	object-fit: cover;
+	border-radius: var(--radius-sm);
+	margin: 0 auto;
+}
+
+.publicacao-foto-legenda {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	max-width: 360px;
+	margin: 16px auto 0;
+	text-align: center;
+}
+
+.publicacao-foto-titulo {
+	font-family: var(--font-display);
+	font-weight: 600;
+	font-size: var(--text-body-lg);
+	color: var(--color-noir);
+}
+
+.publicacao-foto-meta {
+	font-size: var(--text-meta);
+	color: color-mix(in srgb, var(--color-noir) 55%, transparent);
+}
+
+.publicacao-foto-link {
+	margin-top: 6px;
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 600;
+	color: var(--color-cherry);
+	text-decoration: underline;
+	text-decoration-thickness: 1px;
+	text-underline-offset: 3px;
+}
+
+.publicacao-foto-pendente {
+	margin-top: 6px;
+	font-size: var(--text-meta);
+	color: color-mix(in srgb, var(--color-noir) 55%, transparent);
+}
+
+.publicacao-corpo {
+	max-width: 640px;
+	margin: 0 auto;
+	padding: 48px 32px 0;
+}
+
+.publicacao-secao-titulo {
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 700;
+	text-transform: lowercase;
+	color: color-mix(in srgb, var(--color-noir) 55%, transparent);
+	margin-bottom: 20px;
+}
+
+/*
+ * Timeline editorial: mesma espinha dorsal de Aprovacao.css, reutilizada. Aqui todos os degraus
+ * já estão preenchidos — nenhum "futuro" resta, a escada chegou ao fim (MELHORIAS_PRODUTO.md §7).
+ */
+.publicacao-timeline {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	position: relative;
+}
+
+.publicacao-timeline-passo {
+	position: relative;
+	display: flex;
+	gap: 16px;
+	padding-bottom: 24px;
+}
+
+.publicacao-timeline-passo::before {
+	content: "";
+	position: absolute;
+	left: 5px;
+	top: 16px;
+	bottom: -4px;
+	width: 1px;
+	background: var(--color-grafite-15, rgba(27, 23, 23, 0.15));
+}
+
+.publicacao-timeline-passo:last-child::before {
+	display: none;
+}
+
+.publicacao-timeline-marcador {
+	flex-shrink: 0;
+	width: 11px;
+	height: 11px;
+	margin-top: 4px;
+	border-radius: var(--radius-circle);
+	border: 1.5px solid var(--color-grafite-40, rgba(27, 23, 23, 0.4));
+	background: transparent;
+}
+
+.publicacao-timeline-passo.is-concluido .publicacao-timeline-marcador {
+	background: var(--color-grafite-70, var(--color-noir));
+	border-color: var(--color-grafite-70, var(--color-noir));
+}
+
+.publicacao-timeline-passo.is-atual .publicacao-timeline-marcador {
+	background: var(--color-cherry);
+	border-color: var(--color-cherry);
+}
+
+.publicacao-timeline-conteudo {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	padding-top: 1px;
+}
+
+.publicacao-timeline-titulo {
+	font-family: var(--font-display);
+	font-size: var(--text-body-lg);
+	font-weight: 600;
+	color: var(--color-noir);
+	text-transform: lowercase;
+}
+
+.publicacao-timeline-passo.is-atual .publicacao-timeline-titulo {
+	font-weight: 700;
+}
+
+.publicacao-timeline-detalhe {
+	font-size: var(--text-meta);
+	color: color-mix(in srgb, var(--color-noir) 55%, transparent);
+}
+
+/* Rodapé: ponte narrativa para a colaboração do mês — nunca funcional, nunca financeira (decisão
+   do responsável do projeto). Sem link, sem botão: a página termina porque a última pergunta que
+   ela existe para responder já foi respondida (DESIGN_LANGUAGE.md §6, "como uma página termina"). */
+.publicacao-rodape {
+	max-width: 640px;
+	margin: 40px auto 0;
+	padding: 32px 32px 96px;
+	border-top: 1px solid var(--color-grafite-15, rgba(27, 23, 23, 0.1));
+}
+
+.publicacao-rodape-nota {
+	font-weight: 300;
+	font-size: var(--text-body-lg);
+	line-height: var(--leading-relaxed);
+	color: color-mix(in srgb, var(--color-noir) 60%, transparent);
+	max-width: 48ch;
+}
+
+@media (max-width: 900px) {
+	.publicacao-nav,
+	.publicacao-contexto,
+	.publicacao-foto,
+	.publicacao-corpo,
+	.publicacao-rodape {
+		padding-left: 20px;
+		padding-right: 20px;
+	}
+
+	.publicacao-frase {
+		font-size: clamp(1.5rem, 5vw + 1rem, 1.9rem);
+	}
+
+	.publicacao-foto {
+		margin-top: 32px;
+	}
+
+	.publicacao-corpo {
+		padding-top: 36px;
+	}
+
+	.publicacao-rodape {
+		padding-bottom: 64px;
+	}
+}

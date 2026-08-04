@@ -21,6 +21,7 @@ import { HojeInfluenciadoraPage } from "./pages/experimentos/HojeInfluenciadora"
 import { BriefingCampanhaPage } from "./pages/experimentos/BriefingCampanha";
 import { EnvioConteudoPage } from "./pages/experimentos/EnvioConteudo";
 import { AprovacaoPage } from "./pages/experimentos/Aprovacao";
+import { PublicacaoPage } from "./pages/experimentos/Publicacao";
 
 /**
  * Espelha a regra de destino pós-login do backend (auth.routes.ts: callback do Google) para
@@ -117,6 +118,19 @@ function App() {
 				element={
 					<RotaProtegida>
 						<AprovacaoPage />
+					</RotaProtegida>
+				}
+			/>
+
+			{/*
+			 * Proposta de Publicação (sessão de aprovação visual) — sexta tela da família, mesmo
+			 * padrão aditivo das cinco anteriores. Rota some se a proposta não for aprovada.
+			 */}
+			<Route
+				path="/publicacao"
+				element={
+					<RotaProtegida>
+						<PublicacaoPage />
 					</RotaProtegida>
 				}
 			/>
