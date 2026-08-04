@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "memoryRepositoryUrl": "https://github.com/criativododo/criativododo-memory.git",
-  "memoryDirectory": "../criativododo-memory",
+  "memoryDirectory": "criativododo-memory",
   "journalWindow": 5,
   "checks": {
     "app": ["npm run lint", "npm run build"],

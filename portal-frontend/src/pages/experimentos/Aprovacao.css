@@ -1,0 +1,454 @@
+/*
+ * Aprovação — composição de "coluna de leitura com espinha dorsal" (como o Briefing), não uma
+ * lista de trabalho densa (como o Envio): esta tela é sobre acompanhar, não sobre agir. A
+ * timeline vertical é o elemento estrutural que nenhuma tela anterior da família precisou.
+ * Cherry reservado ao degrau atual da timeline e a ênfases pontuais — nunca decoração de
+ * conclusão (ART_DIRECTION_GUIDE.md, "vermelho justificado").
+ */
+
+.aprovacao-tela {
+	min-height: 100vh;
+	background: var(--color-paper);
+	color: var(--color-noir);
+	font-family: var(--font-body);
+}
+
+.aprovacao-nav {
+	position: sticky;
+	top: 0;
+	z-index: 20;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 20px 32px;
+	background: color-mix(in srgb, var(--color-paper) 82%, transparent);
+	backdrop-filter: blur(6px);
+}
+
+.aprovacao-nav-marca {
+	font-family: var(--font-display);
+	font-weight: 700;
+	font-size: 14px;
+	color: var(--color-noir);
+	opacity: 0.72;
+}
+
+.aprovacao-nav-link {
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 600;
+	color: var(--color-grafite-70, var(--color-noir));
+	position: relative;
+	padding-bottom: 2px;
+}
+
+.aprovacao-nav-link::after {
+	content: "";
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	height: 1px;
+	background: var(--color-cherry);
+	transform: scaleX(0);
+	transform-origin: right;
+	transition: transform 0.4s var(--ease-editorial);
+}
+
+.aprovacao-nav-link:hover::after {
+	transform: scaleX(1);
+	transform-origin: left;
+}
+
+/* Contexto: eyebrow, depois a frase de estado — a frase É o título desta tela (ART_DIRECTION_GUIDE.md
+   §3, "como uma página começa"; §5, "frase-abertura"). Nenhum número aparece antes dela. */
+.aprovacao-contexto {
+	max-width: 640px;
+	margin: 0 auto;
+	padding: 20px 32px 0;
+}
+
+.aprovacao-eyebrow {
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 700;
+	letter-spacing: 0.02em;
+	text-transform: lowercase;
+	color: var(--color-cherry);
+	margin-bottom: 16px;
+}
+
+.aprovacao-frase {
+	font-family: var(--font-display);
+	font-weight: 800;
+	font-size: clamp(1.8rem, 1.5vw + 1.25rem, 2.5rem);
+	line-height: 1.16;
+	letter-spacing: -0.005em;
+	color: var(--color-noir);
+	text-transform: lowercase;
+}
+
+/* "De quem é a vez": a informação mais importante da tela (MELHORIAS_PRODUTO.md §15.3), isolada,
+   antes de qualquer detalhe de material ou timeline. */
+.aprovacao-vez {
+	max-width: 640px;
+	margin: 32px auto 0;
+	padding: 24px 32px;
+}
+
+.aprovacao-vez-label {
+	display: inline-block;
+	font-family: var(--font-display);
+	font-size: var(--text-subtitle);
+	font-weight: 700;
+	text-transform: lowercase;
+	color: var(--color-noir);
+	text-decoration: underline;
+	text-decoration-color: var(--color-cherry);
+	text-decoration-thickness: 2px;
+	text-underline-offset: 5px;
+}
+
+.aprovacao-vez-detalhe {
+	margin-top: 12px;
+	font-weight: 300;
+	font-size: var(--text-body-lg);
+	line-height: var(--leading-relaxed);
+	color: color-mix(in srgb, var(--color-noir) 78%, transparent);
+	max-width: 52ch;
+}
+
+.aprovacao-vez-prazo {
+	margin-top: 10px;
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 600;
+	color: color-mix(in srgb, var(--color-noir) 60%, transparent);
+}
+
+.aprovacao-corpo {
+	max-width: 640px;
+	margin: 0 auto;
+	padding: 40px 32px 0;
+	display: flex;
+	flex-direction: column;
+	gap: 56px;
+}
+
+/* Densidade elástica: "ajuste" é o único estado que pede decisão da parceira — os demais
+   (aguardando, revisão, aprovado) são leitura passiva e recolhem o espaço (DESIGN_LANGUAGE.md
+   §4/§6). A timeline não encolhe: continua sendo a espinha dorsal em qualquer estado. */
+.aprovacao-corpo.is-compacta {
+	gap: 36px;
+}
+
+.aprovacao-corpo.is-compacta .aprovacao-secao-titulo {
+	margin-bottom: 14px;
+}
+
+.aprovacao-corpo.is-compacta .aprovacao-material-thumb {
+	width: 64px;
+	height: 64px;
+}
+
+.aprovacao-secao-titulo {
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 700;
+	text-transform: lowercase;
+	color: color-mix(in srgb, var(--color-noir) 55%, transparent);
+	margin-bottom: 20px;
+}
+
+/* Material entregue: mesma gramática de EnvioConteudo.tsx (miniatura protagonista, sem nome de
+   arquivo) — recap compacto, não a lista inteira. */
+.aprovacao-material-item {
+	border: none;
+	border-radius: 0;
+	padding: 0;
+	align-items: center;
+	gap: 16px;
+	background: transparent;
+}
+
+.aprovacao-material-thumb {
+	position: relative;
+	width: 84px;
+	height: 84px;
+	flex-shrink: 0;
+	overflow: hidden;
+	border-radius: var(--radius-sm);
+	margin: 0;
+}
+
+.aprovacao-material-thumb img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.aprovacao-material-play {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.aprovacao-material-play::before {
+	content: "";
+	width: 0;
+	height: 0;
+	border-style: solid;
+	border-width: 7px 0 7px 11px;
+	border-color: transparent transparent transparent var(--color-cotton);
+	filter: drop-shadow(0 1px 4px rgba(27, 23, 23, 0.5));
+}
+
+.aprovacao-material-nome {
+	font-family: var(--font-display);
+	font-weight: 600;
+	font-size: var(--text-body-lg);
+	color: var(--color-noir);
+}
+
+.aprovacao-material-meta {
+	display: block;
+	margin-top: 2px;
+	font-size: var(--text-meta);
+	color: color-mix(in srgb, var(--color-noir) 55%, transparent);
+}
+
+/*
+ * Timeline editorial: a espinha dorsal da tela (MELHORIAS_PRODUTO.md §7). Linha vertical
+ * contínua à esquerda, marcador por degrau — cherry só no degrau atual (o único que precisa de
+ * atenção real agora); concluído em grafite sólido; futuro em contorno, sem preenchimento.
+ */
+.aprovacao-timeline {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	position: relative;
+}
+
+.aprovacao-timeline-passo {
+	position: relative;
+	display: flex;
+	gap: 16px;
+	padding-bottom: 24px;
+}
+
+.aprovacao-timeline-passo::before {
+	content: "";
+	position: absolute;
+	left: 5px;
+	top: 16px;
+	bottom: -4px;
+	width: 1px;
+	background: var(--color-grafite-15, rgba(27, 23, 23, 0.15));
+}
+
+.aprovacao-timeline-passo:last-child::before {
+	display: none;
+}
+
+.aprovacao-timeline-marcador {
+	flex-shrink: 0;
+	width: 11px;
+	height: 11px;
+	margin-top: 4px;
+	border-radius: var(--radius-circle);
+	border: 1.5px solid var(--color-grafite-40, rgba(27, 23, 23, 0.4));
+	background: transparent;
+}
+
+.aprovacao-timeline-passo.is-concluido .aprovacao-timeline-marcador {
+	background: var(--color-grafite-70, var(--color-noir));
+	border-color: var(--color-grafite-70, var(--color-noir));
+}
+
+/* Sem anel de glow: essa é a assinatura mais reconhecível de stepper de SaaS (Stripe, Linear,
+   GitHub) e nenhuma tela da família usa esse tipo de destaque. O peso 700 do título e a cor do
+   marcador já bastam para sinalizar "você está aqui" — cor sinaliza, não decora. */
+.aprovacao-timeline-passo.is-atual .aprovacao-timeline-marcador {
+	background: var(--color-cherry);
+	border-color: var(--color-cherry);
+}
+
+.aprovacao-timeline-passo.is-futuro .aprovacao-timeline-marcador {
+	border-color: var(--color-grafite-15, rgba(27, 23, 23, 0.2));
+}
+
+.aprovacao-timeline-conteudo {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	padding-top: 1px;
+}
+
+.aprovacao-timeline-titulo {
+	font-family: var(--font-display);
+	font-size: var(--text-body-lg);
+	font-weight: 600;
+	color: var(--color-noir);
+	text-transform: lowercase;
+}
+
+.aprovacao-timeline-passo.is-atual .aprovacao-timeline-titulo {
+	font-weight: 700;
+}
+
+.aprovacao-timeline-passo.is-futuro .aprovacao-timeline-titulo {
+	font-weight: 400;
+	color: color-mix(in srgb, var(--color-noir) 40%, transparent);
+}
+
+.aprovacao-timeline-detalhe {
+	font-size: var(--text-meta);
+	color: color-mix(in srgb, var(--color-noir) 55%, transparent);
+}
+
+.aprovacao-timeline-passo.is-futuro .aprovacao-timeline-detalhe {
+	color: color-mix(in srgb, var(--color-noir) 35%, transparent);
+}
+
+/* Checklist: sublinhar não emoldurar — o "check" é um traço, nunca um ícone de selo
+   (ART_DIRECTION_GUIDE.md §2, "ausência de selos"). */
+.aprovacao-checklist {
+	gap: 14px;
+}
+
+.aprovacao-checklist-item {
+	border: none;
+	border-radius: 0;
+	padding: 0;
+	align-items: flex-start;
+	gap: 12px;
+	background: transparent;
+}
+
+.aprovacao-checklist-marca {
+	flex-shrink: 0;
+	width: 14px;
+	height: 1.5px;
+	margin-top: 11px;
+	background: var(--color-grafite-70, var(--color-noir));
+}
+
+.aprovacao-checklist-texto {
+	font-weight: 300;
+	font-size: var(--text-body-lg);
+	line-height: var(--leading-snug);
+	color: color-mix(in srgb, var(--color-noir) 82%, transparent);
+	max-width: 54ch;
+}
+
+/* Comentários: seção existe só em "ajuste solicitado" (MELHORIAS_PRODUTO.md §11.3) — nos demais
+   estados ela não é renderizada, porque a garantia de "nada a fazer" já vive na seção "de quem
+   é a vez" (§15.3); um vazio editorial permanente aqui seria a mesma frase dita duas vezes. */
+.aprovacao-comentario {
+	padding: 20px 24px;
+	border-left: 2px solid var(--color-cherry);
+}
+
+.aprovacao-comentario-ajustar-titulo {
+	font-family: var(--font-display);
+	font-size: 12.5px;
+	font-weight: 700;
+	text-transform: lowercase;
+	color: color-mix(in srgb, var(--color-noir) 55%, transparent);
+	margin-bottom: 8px;
+}
+
+.aprovacao-comentario-ajustar-lista {
+	margin: 0 0 16px;
+	padding-left: 18px;
+	font-weight: 400;
+	font-size: var(--text-body-lg);
+	line-height: var(--leading-snug);
+	color: var(--color-noir);
+}
+
+.aprovacao-comentario-texto {
+	font-weight: 300;
+	font-size: var(--text-body-lg);
+	line-height: var(--leading-relaxed);
+	color: color-mix(in srgb, var(--color-noir) 82%, transparent);
+	max-width: 54ch;
+}
+
+.aprovacao-comentario-prazo {
+	margin-top: 14px;
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 600;
+	color: var(--color-cherry);
+}
+
+/* Rodapé: ponto de decisão quando existe (ajuste), nota neutra quando não existe — nunca um botão
+   desabilitado sem função (ART_DIRECTION_GUIDE.md §3, "como decisões importantes aparecem"). */
+.aprovacao-rodape {
+	max-width: 640px;
+	margin: 8px auto 0;
+	padding: 32px 32px 96px;
+	border-top: 1px solid var(--color-grafite-15, rgba(27, 23, 23, 0.1));
+}
+
+.aprovacao-rodape-nota {
+	font-weight: 300;
+	font-size: var(--text-body-lg);
+	line-height: var(--leading-relaxed);
+	color: color-mix(in srgb, var(--color-noir) 60%, transparent);
+	max-width: 48ch;
+}
+
+.aprovacao-rodape-link {
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 600;
+	color: var(--color-grafite-70, var(--color-noir));
+	position: relative;
+	padding-bottom: 2px;
+}
+
+.aprovacao-rodape-link::after {
+	content: "";
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	height: 1px;
+	background: var(--color-cherry);
+	transform: scaleX(0);
+	transform-origin: right;
+	transition: transform 0.4s var(--ease-editorial);
+}
+
+.aprovacao-rodape-link:hover::after {
+	transform: scaleX(1);
+	transform-origin: left;
+}
+
+@media (max-width: 900px) {
+	.aprovacao-nav,
+	.aprovacao-contexto,
+	.aprovacao-vez,
+	.aprovacao-corpo,
+	.aprovacao-rodape {
+		padding-left: 20px;
+		padding-right: 20px;
+	}
+
+	.aprovacao-frase {
+		font-size: clamp(1.5rem, 5vw + 1rem, 1.9rem);
+	}
+
+	.aprovacao-corpo {
+		gap: 40px;
+		padding-top: 32px;
+	}
+
+	.aprovacao-rodape {
+		padding-bottom: 64px;
+	}
+}
