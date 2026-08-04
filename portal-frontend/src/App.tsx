@@ -17,6 +17,9 @@ import { PendenciasPage } from "./pages/Pendencias";
 import { PerfilPage } from "./pages/Perfil";
 import { PrivacidadePage } from "./pages/Privacidade";
 import { ExperimentoHojePage } from "./pages/experimentos/Hoje";
+import { HojeInfluenciadoraPage } from "./pages/experimentos/HojeInfluenciadora";
+import { BriefingCampanhaPage } from "./pages/experimentos/BriefingCampanha";
+import { EnvioConteudoPage } from "./pages/experimentos/EnvioConteudo";
 
 /**
  * Espelha a regra de destino pós-login do backend (auth.routes.ts: callback do Google) para
@@ -58,6 +61,48 @@ function App() {
 				element={
 					<RotaProtegida>
 						<ExperimentoHojePage />
+					</RotaProtegida>
+				}
+			/>
+
+			{/*
+			 * Proposta de Dashboard da Influenciadora (sessão de aprovação visual) — mesmo
+			 * padrão de tela-bandeira de /admin/hoje, aditiva, não substitui /pendencias como
+			 * destino pós-login. Rota some se a proposta não for aprovada.
+			 */}
+			<Route
+				path="/hoje"
+				element={
+					<RotaProtegida>
+						<HojeInfluenciadoraPage />
+					</RotaProtegida>
+				}
+			/>
+
+			{/*
+			 * Proposta de Briefing da Campanha (sessão de aprovação visual) — terceira tela da
+			 * família, mesmo padrão aditivo das duas anteriores. Rota some se a proposta não
+			 * for aprovada.
+			 */}
+			<Route
+				path="/campanha"
+				element={
+					<RotaProtegida>
+						<BriefingCampanhaPage />
+					</RotaProtegida>
+				}
+			/>
+
+			{/*
+			 * Proposta de Envio de Conteúdo (sessão de aprovação visual) — quarta tela da
+			 * família, mesmo padrão aditivo das três anteriores. Rota some se a proposta não
+			 * for aprovada.
+			 */}
+			<Route
+				path="/envio"
+				element={
+					<RotaProtegida>
+						<EnvioConteudoPage />
 					</RotaProtegida>
 				}
 			/>

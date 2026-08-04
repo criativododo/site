@@ -1,0 +1,581 @@
+/*
+ * Envio de Conteúdo — composição própria ("conferência antes de lacrar"), quarta tela da
+ * família. Diferente da Dashboard (masthead full-bleed) e do Briefing (coluna de leitura), esta
+ * tela é uma lista de trabalho densa até o momento de decidir — e só então abre espaço
+ * (densidade elástica, DESIGN_LANGUAGE.md §4). Mobile-first: a ação primária vira barra fixa no
+ * rodapé em telas pequenas, para permanecer ao alcance do polegar sem exigir rolagem.
+ */
+
+.envio-tela {
+	min-height: 100vh;
+	background: var(--color-paper);
+	color: var(--color-noir);
+	font-family: var(--font-body);
+}
+
+.envio-nav {
+	position: sticky;
+	top: 0;
+	z-index: 20;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 20px 32px;
+	background: color-mix(in srgb, var(--color-paper) 82%, transparent);
+	backdrop-filter: blur(6px);
+}
+
+.envio-nav-marca {
+	font-family: var(--font-display);
+	font-weight: 700;
+	font-size: 14px;
+	color: var(--color-noir);
+	opacity: 0.72;
+}
+
+.envio-nav-link {
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 600;
+	color: var(--color-grafite-70, var(--color-noir));
+	position: relative;
+	padding-bottom: 2px;
+}
+
+.envio-nav-link::after {
+	content: "";
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	height: 1px;
+	background: var(--color-cherry);
+	transform: scaleX(0);
+	transform-origin: right;
+	transition: transform 0.4s var(--ease-editorial);
+}
+
+.envio-nav-link:hover::after {
+	transform: scaleX(1);
+	transform-origin: left;
+}
+
+/* Indicador global persistente (MELHORIAS_PRODUTO.md §9.4): sair da tela não cancela o envio —
+   este rótulo substitui o link de navegação enquanto algo está em trânsito, nunca some sem
+   aviso. */
+.envio-nav-status {
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 600;
+	color: var(--color-cherry);
+}
+
+/* Contexto: rótulo, título, depois o recap do entregável — nessa ordem, antes de qualquer
+   dropzone ou botão (ART_DIRECTION_GUIDE.md §3, "como uma página começa"). */
+.envio-contexto {
+	max-width: 720px;
+	margin: 0 auto;
+	padding: 20px 32px 0;
+}
+
+.envio-eyebrow {
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 700;
+	letter-spacing: 0.02em;
+	text-transform: lowercase;
+	color: var(--color-cherry);
+	margin-bottom: 16px;
+}
+
+.envio-titulo {
+	font-family: var(--font-display);
+	font-weight: 800;
+	font-size: clamp(1.9rem, 1.6vw + 1.3rem, 2.7rem);
+	line-height: 1.12;
+	letter-spacing: -0.005em;
+	color: var(--color-noir);
+	text-transform: lowercase;
+}
+
+/*
+ * Recap do entregável: a pessoa precisa reconhecer o que está entregando antes de ver mídia,
+ * legenda ou botão. Peso e espaço fazem a hierarquia — nenhuma caixa ao redor.
+ */
+.envio-recap {
+	max-width: 720px;
+	margin: 0 auto;
+	padding: 32px 32px 0;
+}
+
+.envio-recap-titulo,
+.envio-recap-objetivo,
+.envio-recap-prazo {
+	max-width: 640px;
+}
+
+.envio-recap-titulo {
+	font-family: var(--font-display);
+	font-weight: 700;
+	font-size: var(--text-subtitle);
+	color: var(--color-noir);
+}
+
+.envio-recap-objetivo {
+	margin-top: 10px;
+	font-weight: 300;
+	font-size: var(--text-body-lg);
+	line-height: var(--leading-relaxed);
+	color: color-mix(in srgb, var(--color-noir) 78%, transparent);
+	max-width: 56ch;
+}
+
+.envio-recap-prazo {
+	margin-top: 10px;
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 600;
+	color: color-mix(in srgb, var(--color-noir) 60%, transparent);
+}
+
+.envio-corpo {
+	max-width: 720px;
+	margin: 0 auto;
+	padding: 48px 32px 0;
+	display: flex;
+	flex-direction: column;
+	gap: 56px;
+}
+
+.envio-secao-titulo {
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 700;
+	text-transform: lowercase;
+	color: color-mix(in srgb, var(--color-noir) 55%, transparent);
+	margin-bottom: 20px;
+}
+
+/* Lista de mídia: densa entre itens (espaço de leitura), generosa dentro de cada item
+   (espaço de decisão) — densidade elástica em prática. */
+.envio-midias-lista {
+	gap: 20px;
+}
+
+/*
+ * Cada mídia é uma peça editorial, não um arquivo: a miniatura é protagonista (tamanho de
+ * capa pequena, não ícone), sem nome de arquivo/extensão, sem ícone de pasta. Sublinhar, não
+ * emoldurar — nenhuma borda ao redor do item inteiro.
+ */
+.envio-midia-item {
+	border: none;
+	border-radius: 0;
+	padding: 0;
+	align-items: flex-start;
+	gap: 16px;
+	background: transparent;
+}
+
+.envio-midia-thumb {
+	position: relative;
+	width: 96px;
+	height: 96px;
+	flex-shrink: 0;
+	overflow: hidden;
+	border-radius: var(--radius-sm);
+	margin: 0;
+}
+
+.envio-midia-thumb img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.envio-midia-play {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.envio-midia-play::before {
+	content: "";
+	width: 0;
+	height: 0;
+	border-style: solid;
+	border-width: 8px 0 8px 13px;
+	border-color: transparent transparent transparent var(--color-cotton);
+	filter: drop-shadow(0 1px 4px rgba(27, 23, 23, 0.5));
+}
+
+.envio-midia-nome {
+	font-family: var(--font-display);
+	font-weight: 600;
+	font-size: var(--text-body-lg);
+	color: var(--color-noir);
+}
+
+.envio-midia-meta {
+	display: block;
+	margin-top: 2px;
+	font-size: var(--text-meta);
+	color: color-mix(in srgb, var(--color-noir) 55%, transparent);
+}
+
+/* Estado confirmado: nenhum selo, nenhum ícone de check — a confirmação é uma frase, peso 600,
+   nunca um emblema (ART_DIRECTION_GUIDE.md §2, "ausência de selos"). */
+.envio-midia-status {
+	display: block;
+	margin-top: 8px;
+	font-size: var(--text-meta);
+	font-weight: 600;
+}
+
+.envio-midia-status.is-confirmado {
+	color: color-mix(in srgb, var(--color-noir) 70%, transparent);
+}
+
+/* Vermelho justificado: cherry só aparece porque a frase ao lado explica a falha e oferece
+   caminho de volta — nunca um X ou ícone de alerta isolado. */
+.envio-midia-status.is-erro {
+	color: var(--color-cherry);
+}
+
+.envio-midia-retomar {
+	margin-left: 4px;
+	font-family: var(--font-display);
+	font-weight: 700;
+	color: var(--color-cherry);
+	text-decoration: underline;
+	text-decoration-thickness: 1.5px;
+	text-underline-offset: 3px;
+	background: none;
+	border: none;
+	padding: 0;
+	cursor: pointer;
+}
+
+/* Progresso: barra contínua com número real, nunca falso (MELHORIAS_PRODUTO.md §9.3/§9.4). */
+.envio-midia-progresso {
+	margin-top: 10px;
+	max-width: 220px;
+}
+
+.envio-midia-progresso-trilho {
+	height: 3px;
+	border-radius: var(--radius-full);
+	background: var(--color-grafite-15, rgba(27, 23, 23, 0.12));
+	overflow: hidden;
+}
+
+.envio-midia-progresso-barra {
+	height: 100%;
+	background: var(--color-cherry);
+	transition: width 0.5s var(--ease-editorial);
+}
+
+.envio-midia-progresso-texto {
+	display: block;
+	margin-top: 6px;
+	font-size: var(--text-meta);
+	color: color-mix(in srgb, var(--color-noir) 55%, transparent);
+}
+
+/*
+ * Adicionar mídia: <button> real (não div com role simulado) — foco e ativação por teclado
+ * nativos. Linguagem de toque primeiro ("fotografar ou escolher da galeria"); arrastar é
+ * mencionado como alternativa secundária, nunca o único caminho (MELHORIAS_PRODUTO.md §19.5).
+ */
+.envio-upload {
+	margin-top: 20px;
+	width: 100%;
+	display: block;
+	text-align: left;
+	padding: 20px;
+	border: 1px dashed var(--color-grafite-15, rgba(27, 23, 23, 0.18));
+	border-radius: var(--radius-sm);
+	background: transparent;
+	cursor: pointer;
+	transition: border-color 0.3s var(--ease-editorial);
+}
+
+.envio-upload:hover,
+.envio-upload:focus-visible {
+	border-color: var(--color-cherry);
+	outline: none;
+}
+
+.envio-upload-texto {
+	font-family: var(--font-display);
+	font-weight: 600;
+	font-size: var(--text-body-lg);
+	color: var(--color-noir);
+}
+
+.envio-upload-meta {
+	margin-top: 4px;
+	font-size: var(--text-meta);
+	color: color-mix(in srgb, var(--color-noir) 55%, transparent);
+}
+
+.envio-legenda-texto,
+.envio-observacoes-texto {
+	font-weight: 300;
+	font-size: var(--text-body-lg);
+	line-height: var(--leading-relaxed);
+	color: color-mix(in srgb, var(--color-noir) 88%, transparent);
+	max-width: 62ch;
+}
+
+/* Ponto de decisão: espaço generoso, nunca compete com a lista de trabalho acima
+   (ART_DIRECTION_GUIDE.md §3, "como decisões importantes aparecem"). */
+.envio-confirmacao {
+	max-width: 720px;
+	margin: 56px auto 0;
+	padding: 40px 32px 96px;
+	border-top: 1px solid var(--color-grafite-15, rgba(27, 23, 23, 0.1));
+}
+
+.envio-confirmacao-status {
+	font-size: var(--text-meta);
+	color: color-mix(in srgb, var(--color-noir) 50%, transparent);
+	margin-bottom: 16px;
+}
+
+.envio-confirmacao-aviso {
+	font-weight: 300;
+	font-size: var(--text-body);
+	line-height: var(--leading-snug);
+	color: color-mix(in srgb, var(--color-noir) 70%, transparent);
+	max-width: 52ch;
+	margin-bottom: 16px;
+}
+
+.envio-confirmacao-texto {
+	font-weight: 300;
+	font-size: var(--text-body-lg);
+	line-height: var(--leading-relaxed);
+	color: color-mix(in srgb, var(--color-noir) 78%, transparent);
+	max-width: 56ch;
+	margin-bottom: 28px;
+}
+
+.envio-confirmacao-acoes {
+	display: flex;
+	align-items: center;
+	gap: 24px;
+}
+
+.envio-confirmacao-acoes .btn-primary:disabled {
+	opacity: 0.4;
+	cursor: not-allowed;
+}
+
+.envio-confirmacao-revisar {
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 600;
+	color: var(--color-grafite-70, var(--color-noir));
+	position: relative;
+	padding-bottom: 2px;
+}
+
+.envio-confirmacao-revisar::after {
+	content: "";
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	height: 1px;
+	background: var(--color-cherry);
+	transform: scaleX(0);
+	transform-origin: right;
+	transition: transform 0.4s var(--ease-editorial);
+}
+
+.envio-confirmacao-revisar:hover::after {
+	transform: scaleX(1);
+	transform-origin: left;
+}
+
+/*
+ * Confirmação editorial: o momento mais importante da tela, tratado como manchete própria, não
+ * como toast. Fala a língua do próximo estado do domínio ("em revisão") sem implementar a tela
+ * de Aprovação — só prepara a narrativa (MELHORIAS_PRODUTO.md §11.1).
+ */
+.envio-confirmado {
+	max-width: 560px;
+	margin: 0 auto;
+	padding: 96px 32px 96px;
+	text-align: left;
+	animation: envio-confirmado-entrada 0.7s var(--ease-editorial) both;
+}
+
+@keyframes envio-confirmado-entrada {
+	from {
+		opacity: 0;
+		transform: translateY(10px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.envio-confirmado-eyebrow {
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 700;
+	letter-spacing: 0.02em;
+	text-transform: lowercase;
+	color: var(--color-cherry);
+	margin-bottom: 16px;
+}
+
+.envio-confirmado-titulo {
+	font-family: var(--font-display);
+	font-weight: 800;
+	font-size: clamp(2rem, 1.6vw + 1.5rem, 2.9rem);
+	line-height: 1.1;
+	letter-spacing: -0.005em;
+	color: var(--color-noir);
+	text-transform: lowercase;
+	margin-bottom: 28px;
+}
+
+.envio-confirmado-linha {
+	font-weight: 300;
+	font-size: var(--text-body-lg);
+	line-height: var(--leading-relaxed);
+	color: color-mix(in srgb, var(--color-noir) 82%, transparent);
+	max-width: 46ch;
+}
+
+.envio-confirmado-linha + .envio-confirmado-linha {
+	margin-top: 8px;
+}
+
+.envio-confirmado-linha strong {
+	font-weight: 600;
+	color: var(--color-noir);
+}
+
+/*
+ * Pill de estado: mesma gramática visual de narrativa-linha-status/mesa-strip-valor — o
+ * vocabulário que a tela de Aprovação herdará para o mesmo estado de domínio.
+ */
+.envio-confirmado-status {
+	display: flex;
+	align-items: baseline;
+	gap: 12px;
+	margin-top: 32px;
+	padding-top: 20px;
+	border-top: 1px solid var(--color-grafite-15, rgba(27, 23, 23, 0.1));
+}
+
+.envio-confirmado-status-label {
+	font-family: var(--font-display);
+	font-size: 12.5px;
+	font-weight: 700;
+	text-transform: lowercase;
+	color: color-mix(in srgb, var(--color-noir) 55%, transparent);
+}
+
+.envio-confirmado-status-valor {
+	font-family: var(--font-display);
+	font-size: var(--text-body-lg);
+	font-weight: 600;
+	text-transform: lowercase;
+	color: var(--color-noir);
+	text-decoration: underline;
+	text-decoration-color: var(--color-cherry);
+	text-decoration-thickness: 2px;
+	text-underline-offset: 4px;
+}
+
+.envio-confirmado-nota {
+	margin-top: 20px;
+	font-size: var(--text-meta);
+	color: color-mix(in srgb, var(--color-noir) 55%, transparent);
+	max-width: 46ch;
+}
+
+.envio-confirmado-cta {
+	margin-top: 40px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.envio-confirmado {
+		animation: none;
+	}
+}
+
+/*
+ * Mobile-first: uso de uma mão, câmera, galeria, conexão instável. A ação primária vira barra
+ * fixa no rodapé — ao alcance do polegar, sem depender de rolagem até o fim da tela.
+ */
+@media (max-width: 900px) {
+	.envio-nav,
+	.envio-contexto,
+	.envio-recap,
+	.envio-corpo {
+		padding-left: 20px;
+		padding-right: 20px;
+	}
+
+	.envio-titulo {
+		font-size: clamp(1.6rem, 5vw + 1rem, 2rem);
+	}
+
+	.envio-corpo {
+		gap: 40px;
+		padding-top: 36px;
+		padding-bottom: 12px;
+	}
+
+	.envio-midia-thumb {
+		width: 76px;
+		height: 76px;
+	}
+
+	.envio-confirmacao {
+		margin-top: 40px;
+		padding: 28px 20px 140px;
+		border-top: none;
+	}
+
+	.envio-confirmacao-aviso,
+	.envio-confirmacao-texto {
+		max-width: none;
+	}
+
+	.envio-confirmacao-acoes {
+		position: fixed;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		z-index: 20;
+		gap: 16px;
+		padding: 16px 20px calc(16px + env(safe-area-inset-bottom));
+		background: color-mix(in srgb, var(--color-paper) 92%, transparent);
+		backdrop-filter: blur(8px);
+		border-top: 1px solid var(--color-grafite-15, rgba(27, 23, 23, 0.12));
+	}
+
+	.envio-confirmacao-acoes .btn-primary {
+		flex: 1;
+		text-align: center;
+	}
+
+	.envio-confirmado {
+		padding: 64px 20px 64px;
+	}
+
+	.envio-confirmado-status {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 4px;
+	}
+}

@@ -1,0 +1,291 @@
+/*
+ * Dashboard da Influenciadora — composição própria ("mesa de trabalho"), não o grid de
+ * `/admin/hoje` nem da Login ("porta de entrada"). A campanha é protagonista: masthead de
+ * imagem full-bleed com legenda sobreposta, seguida de uma faixa de trabalho densa (o que
+ * precisa de atenção agora) e um histórico recente. O único bloco que rompe a margem lateral
+ * do resto da tela é a imagem da campanha — o risco estético desta composição é deliberado e
+ * único, o resto permanece contido e quieto (ver frontend-design: "spend your boldness in
+ * one place").
+ */
+
+.mesa-tela {
+	min-height: 100vh;
+	background: var(--color-paper);
+	color: var(--color-noir);
+	font-family: var(--font-body);
+}
+
+.mesa-nav {
+	position: sticky;
+	top: 0;
+	z-index: 20;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 20px 32px;
+	background: color-mix(in srgb, var(--color-paper) 82%, transparent);
+	backdrop-filter: blur(6px);
+}
+
+.mesa-nav-marca {
+	font-family: var(--font-display);
+	font-weight: 700;
+	font-size: 14px;
+	color: var(--color-noir);
+	opacity: 0.72;
+}
+
+.mesa-nav-link {
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 600;
+	color: var(--color-grafite-70, var(--color-noir));
+	position: relative;
+	padding-bottom: 2px;
+}
+
+.mesa-nav-link::after {
+	content: "";
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	height: 1px;
+	background: var(--color-cherry);
+	transform: scaleX(0);
+	transform-origin: right;
+	transition: transform 0.4s var(--ease-editorial);
+}
+
+.mesa-nav-link:hover::after {
+	transform: scaleX(1);
+	transform-origin: left;
+}
+
+/* Contexto: rótulo discreto antes de qualquer elemento visual grande (ART_DIRECTION_GUIDE §3). */
+.mesa-contexto {
+	padding: 20px 32px 0;
+}
+
+.mesa-eyebrow {
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 700;
+	letter-spacing: 0.02em;
+	text-transform: lowercase;
+	color: var(--color-cherry);
+}
+
+/*
+ * Masthead: única quebra de margem da tela inteira — a campanha "spilla" para fora do
+ * contêiner, o resto do conteúdo permanece contido. Altura generosa mas não a tela inteira
+ * (a Dashboard é mesa de trabalho, não a manchete de tela cheia da Login/Hoje).
+ */
+.mesa-capa {
+	position: relative;
+	margin-top: 20px;
+	height: 64vh;
+	min-height: 420px;
+	max-height: 720px;
+	overflow: hidden;
+}
+
+/*
+ * Placeholder editorial de campanha (DESIGN_LANGUAGE.md §8) — foto real, licenciada para
+ * prototipagem (ver assets/mocks/README.md), trocável sem retrabalho de layout quando existir
+ * material real da parceira.
+ */
+.mesa-capa-imagem {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	object-position: center 38%;
+	animation: mesa-respiro 18s var(--ease-editorial) infinite alternate;
+}
+
+/* Grade de cor sutil — aproxima qualquer foto de campanha da paleta do DODÔ, mesmo quando a
+   foto de origem não nasceu com esses tons exatos. */
+.mesa-capa-grade {
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(
+		155deg,
+		color-mix(in srgb, var(--color-cherry) 14%, transparent) 0%,
+		transparent 55%
+	);
+	mix-blend-mode: multiply;
+	pointer-events: none;
+}
+
+@keyframes mesa-respiro {
+	from {
+		transform: scale(1);
+	}
+	to {
+		transform: scale(1.035);
+	}
+}
+
+/* Scrim: só a faixa inferior escurece — o topo da imagem permanece limpo e vívido. */
+.mesa-capa-legenda {
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	padding: 96px 40px 40px;
+	background: linear-gradient(
+		to top,
+		rgba(27, 23, 23, 0.86) 0%,
+		rgba(27, 23, 23, 0.5) 42%,
+		transparent 100%
+	);
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 20px;
+	animation: mesa-legenda-entrada 0.7s var(--ease-editorial) both;
+	animation-delay: 0.1s;
+}
+
+@keyframes mesa-legenda-entrada {
+	from {
+		opacity: 0;
+		transform: translateY(14px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.mesa-manchete {
+	font-family: var(--font-display);
+	font-weight: 800;
+	font-size: clamp(1.9rem, 1.6vw + 1.3rem, 2.7rem);
+	line-height: 1.12;
+	letter-spacing: -0.005em;
+	color: var(--color-cotton);
+	max-width: 20ch;
+}
+
+.mesa-cta {
+	margin-top: 4px;
+}
+
+/* Faixa de trabalho: densa, três fatos que importam agora, sem cartão, sem cor organizando. */
+.mesa-strip {
+	display: flex;
+	border-bottom: 1px solid var(--color-grafite-15, rgba(27, 23, 23, 0.1));
+	padding: 0 40px;
+	animation: mesa-legenda-entrada 0.7s var(--ease-editorial) both;
+	animation-delay: 0.22s;
+}
+
+.mesa-strip-item {
+	flex: 1;
+	padding: 28px 32px;
+	border-left: 1px solid var(--color-grafite-15, rgba(27, 23, 23, 0.1));
+}
+
+.mesa-strip-item:first-child {
+	border-left: none;
+	padding-left: 0;
+}
+
+.mesa-strip-label {
+	font-family: var(--font-display);
+	font-size: 12.5px;
+	font-weight: 700;
+	text-transform: lowercase;
+	letter-spacing: 0.01em;
+	color: color-mix(in srgb, var(--color-noir) 55%, transparent);
+	margin-bottom: 8px;
+}
+
+.mesa-strip-valor {
+	font-size: 17px;
+	font-weight: var(--weight-medium);
+	color: var(--color-noir);
+}
+
+.mesa-strip-valor-centavos {
+	font-weight: 400;
+	font-size: 0.75em;
+}
+
+/* Sublinhar, não emoldurar (ART_DIRECTION_GUIDE §1): único ponto de cherry fora da imagem,
+   sempre com a frase "vence em 3 dias" ao lado justificando a presença. */
+.mesa-strip-item.is-urgente .mesa-strip-valor {
+	text-decoration: underline;
+	text-decoration-color: var(--color-cherry);
+	text-decoration-thickness: 2px;
+	text-underline-offset: 5px;
+}
+
+/* Capítulo: zona mais fria/densa, para leitura rápida do que já ficou para trás. */
+.mesa-capitulo {
+	padding: 40px 40px 72px;
+	background: color-mix(in srgb, var(--color-paper) 88%, var(--color-noir));
+}
+
+.mesa-capitulo-titulo {
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 700;
+	text-transform: lowercase;
+	color: color-mix(in srgb, var(--color-noir) 55%, transparent);
+	margin-bottom: 20px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.mesa-capa-imagem,
+	.mesa-capa-legenda,
+	.mesa-strip {
+		animation: none;
+	}
+}
+
+@media (max-width: 900px) {
+	.mesa-nav,
+	.mesa-contexto {
+		padding-left: 20px;
+		padding-right: 20px;
+	}
+
+	.mesa-capa {
+		height: 46vh;
+		min-height: 320px;
+	}
+
+	.mesa-capa-legenda {
+		padding: 64px 20px 28px;
+	}
+
+	.mesa-strip {
+		flex-direction: column;
+		padding: 0 20px;
+	}
+
+	.mesa-strip-item {
+		border-left: none;
+		border-top: 1px solid var(--color-grafite-15, rgba(27, 23, 23, 0.1));
+		padding: 20px 0;
+	}
+
+	.mesa-strip-item:first-child {
+		border-top: none;
+		padding-top: 24px;
+	}
+
+	.mesa-capitulo {
+		padding: 32px 20px 56px;
+	}
+
+	.passo-item {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 4px;
+	}
+}
