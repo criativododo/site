@@ -29,14 +29,14 @@ export function PrivacidadePage() {
 						entregas e briefings.
 					</p>
 					<p>
-						o acesso é feito por login com sua conta google — o portal nunca armazena
+						o acesso é feito por login com sua conta Google. o portal nunca armazena
 						senha própria. seus dados só são visíveis para você e para a equipe
 						administrativa do criativo dodô.
 					</p>
 					<p>
 						a qualquer momento, na tela de <Link to="/perfil">perfil</Link>, você pode
 						baixar uma cópia de todos os seus dados ou solicitar a exclusão da sua
-						conta — o pedido é avaliado pela equipe e você recebe uma resposta.
+						conta. o pedido é avaliado pela equipe e você recebe uma resposta.
 					</p>
 					<p>
 						dúvidas sobre o tratamento dos seus dados podem ser enviadas para a equipe

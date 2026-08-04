@@ -9,7 +9,7 @@ import { lerSessao, renovarSessao } from "./session.js";
 export function requireAuth(req: Request, res: Response, next: NextFunction) {
   const sessao = lerSessao(req);
   if (!sessao) {
-    res.status(401).json({ error: "Sessão ausente ou expirada." });
+    res.status(401).json({ error: "sua sessão expirou. faça login novamente." });
     return;
   }
 
@@ -27,7 +27,7 @@ export function requireAuth(req: Request, res: Response, next: NextFunction) {
  */
 export function requireContaAtiva(req: Request, res: Response, next: NextFunction) {
   if (req.sessao?.estadoConta !== "ACTIVE") {
-    res.status(403).json({ error: "Conta não está ativa." });
+    res.status(403).json({ error: "esta conta ainda não está ativa." });
     return;
   }
   next();
@@ -36,7 +36,7 @@ export function requireContaAtiva(req: Request, res: Response, next: NextFunctio
 /** RN-04/RN-05 (SPEC-035): moderação é privilégio exclusivo do papel Administrador. */
 export function requireAdmin(req: Request, res: Response, next: NextFunction) {
   if (req.sessao?.papelAtor !== "ADMINISTRADOR") {
-    res.status(403).json({ error: "Operação restrita a Administradores." });
+    res.status(403).json({ error: "área restrita a administradores." });
     return;
   }
   next();

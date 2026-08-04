@@ -51,7 +51,7 @@ export function LoginPage() {
 				<span className="dodo-mark dodo-mark--loading" style={{ fontSize: 28 }} aria-hidden="true">
 					Ô
 				</span>
-				<p>verificando seu acesso…</p>
+				<p>verificando seu acesso</p>
 			</main>
 		);
 	}
@@ -89,7 +89,7 @@ export function LoginPage() {
 						de volta.
 					</h1>
 					<p className="portal-entrada-description">
-						entre com a conta google cadastrada para acompanhar conteúdos,
+						entre com a conta Google cadastrada para acompanhar conteúdos,
 						pagamentos e seu perfil.
 					</p>
 					<div className="portal-entrada-auth">
@@ -113,7 +113,7 @@ export function LoginPage() {
 						</Button>
 						{appleEmBreve && (
 							<p className="portal-entrada-apple-note" role="status">
-								em breve.
+								em breve
 							</p>
 						)}
 					</div>
@@ -149,7 +149,7 @@ export function LoginPage() {
 						</h1>
 						<p className="portal-login-description">
 							assim que a equipe aprovar seu cadastro, você poderá entrar por
-							aqui com a mesma conta google.
+							aqui com a mesma conta Google.
 						</p>
 						<button
 							type="button"

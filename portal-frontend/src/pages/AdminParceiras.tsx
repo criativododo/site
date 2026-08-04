@@ -230,7 +230,7 @@ function FormularioParceira({
 					disabled={salvando}
 					onClick={() => void salvar()}
 				>
-					{salvando ? "salvando..." : "salvar"}
+					{salvando ? "salvando" : "salvar"}
 				</button>
 				<button type="button" className="btn-plain" onClick={aoCancelar}>
 					cancelar
@@ -313,9 +313,9 @@ function LinhaParceira({
 				<div className="admin-row-expanded">
 					<dl>
 						<dt>cnpj</dt>
-						<dd>{parceira.cnpj || "—"}</dd>
+						<dd>{parceira.cnpj || "não informado"}</dd>
 						<dt>pix</dt>
-						<dd>{parceira.pix || "—"}</dd>
+						<dd>{parceira.pix || "não informado"}</dd>
 						<dt>entregáveis contratados</dt>
 						<dd>
 							{parceira.condicaoComercial.entregaveisReel} reel ·{" "}
@@ -484,7 +484,7 @@ export function AdminParceirasPage() {
 			</p>
 
 			{carregando && (
-				<p className="portal-page-feedback">carregando parceiras...</p>
+				<p className="portal-page-feedback">carregando parceiras</p>
 			)}
 			{!carregando && erro && (
 				<p className="portal-page-feedback is-error">{erro}</p>

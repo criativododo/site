@@ -102,7 +102,7 @@ function FormularioEntrega({
 		<div className="admin-form-grid">
 			{parceirasAtivas.length === 0 ? (
 				<p className="portal-page-feedback is-error admin-form-error">
-					nenhuma parceira ativa cadastrada — ative uma parceira antes de criar
+					nenhuma parceira ativa cadastrada. ative uma parceira antes de criar
 					entregas.
 				</p>
 			) : (
@@ -173,7 +173,7 @@ function FormularioEntrega({
 					disabled={salvando || parceirasAtivas.length === 0}
 					onClick={() => void salvar()}
 				>
-					{salvando ? "salvando..." : "salvar"}
+					{salvando ? "salvando" : "salvar"}
 				</button>
 				<button type="button" className="btn-plain" onClick={aoCancelar}>
 					cancelar
@@ -319,7 +319,7 @@ export function AdminEntregasPage() {
 			setErro(
 				erroCapturado instanceof ApiError
 					? erroCapturado.message
-					: "não foi possível aprovar a Entrega.",
+					: "não foi possível aprovar a entrega.",
 			);
 		} finally {
 			setIdEmAcao(null);
@@ -343,7 +343,7 @@ export function AdminEntregasPage() {
 			setErro(
 				erroCapturado instanceof ApiError
 					? erroCapturado.message
-					: "não foi possível publicar a Entrega.",
+					: "não foi possível publicar a entrega.",
 			);
 		} finally {
 			setIdEmAcao(null);
@@ -385,7 +385,7 @@ export function AdminEntregasPage() {
 			</p>
 
 			{carregando && (
-				<p className="portal-page-feedback">carregando entregas...</p>
+				<p className="portal-page-feedback">carregando entregas</p>
 			)}
 			{!carregando && erro && (
 				<p className="portal-page-feedback is-error">{erro}</p>

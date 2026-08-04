@@ -10,7 +10,7 @@ perfilRoutes.get("/", async (req, res) => {
   const perfil = await obterPerfil(parceiraId);
 
   if (!perfil) {
-    res.status(404).json({ error: "Perfil não encontrado." });
+    res.status(404).json({ error: "perfil não encontrado." });
     return;
   }
 

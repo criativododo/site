@@ -46,10 +46,10 @@ adminRoutes.get("/identidades/pendentes", async (_req, res) => {
 function responderModeracao(resultado: ResultadoModeracao, res: Response) {
   if (!resultado.ok) {
     if (resultado.motivo === "NAO_ENCONTRADA") {
-      res.status(404).json({ error: "Conta não encontrada." });
+      res.status(404).json({ error: "conta não encontrada." });
       return;
     }
-    res.status(409).json({ error: "Conta não está com status Pendente." });
+    res.status(409).json({ error: "esta conta não está mais aguardando aprovação." });
     return;
   }
   res.json({ subProvider: resultado.identidade.subProvider, estadoConta: resultado.identidade.estadoConta });

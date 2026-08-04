@@ -186,7 +186,7 @@ function EnviarMaterial({
 		return (
 			<div className="pendencia-upload pendencia-upload-sucesso" aria-live="polite">
 				<p className="pendencia-feedback is-sucesso">
-					<span aria-hidden="true">✓</span> material enviado com sucesso.
+					<span aria-hidden="true">✓</span> material enviado
 				</p>
 			</div>
 		);
@@ -207,7 +207,7 @@ function EnviarMaterial({
 					onClick={() => void enviar()}
 				>
 					{estado === "enviando"
-						? "enviando..."
+						? "enviando"
 						: estado === "erro"
 							? "tentar novamente"
 							: "enviar material"}
@@ -227,7 +227,7 @@ function EnviarMaterial({
 					aria-live="polite"
 				>
 					<span className="pendencia-upload-spinner" aria-hidden="true" />
-					enviando {arquivo?.name}…
+					enviando {arquivo?.name}
 				</p>
 			)}
 
@@ -266,7 +266,7 @@ function BriefingDoItem({ entregaId }: { entregaId: string }) {
 	}, [entregaId]);
 
 	if (carregando) {
-		return <p className="pendencia-feedback">carregando briefing...</p>;
+		return <p className="pendencia-feedback">carregando briefing</p>;
 	}
 
 	if (erro) {
@@ -384,7 +384,7 @@ export function PendenciasPage() {
 				setErro(
 					erroCapturado instanceof ApiError
 						? erroCapturado.message
-						: "não foi possível carregar as pendências.",
+						: "não foi possível carregar suas entregas.",
 				);
 			} finally {
 				if (ativo) {
@@ -433,7 +433,7 @@ export function PendenciasPage() {
 			</p>
 
 			{carregando && (
-				<p className="portal-page-feedback">carregando suas entregas...</p>
+				<p className="portal-page-feedback">carregando suas entregas</p>
 			)}
 
 			{!carregando && erro && (

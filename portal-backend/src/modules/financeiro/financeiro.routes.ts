@@ -17,7 +17,7 @@ financeiroRoutes.get("/:mesReferencia/resumo", async (req, res) => {
   const resumo = await obterResumoFinanceiro(parceiraId, req.params.mesReferencia);
 
   if (!resumo) {
-    res.status(404).json({ error: "Período inexistente para esta Parceira." });
+    res.status(404).json({ error: "não há dados para este período." });
     return;
   }
 
@@ -30,7 +30,7 @@ financeiroRoutes.get("/:mesReferencia/historico", async (req, res) => {
   const historico = await obterHistorico(parceiraId, req.params.mesReferencia);
 
   if (!historico) {
-    res.status(404).json({ error: "Período inexistente para esta Parceira." });
+    res.status(404).json({ error: "não há dados para este período." });
     return;
   }
 

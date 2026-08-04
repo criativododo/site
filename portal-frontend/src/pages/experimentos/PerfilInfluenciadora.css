@@ -1,0 +1,314 @@
+/*
+ * Perfil/"identidade" — mesma coluna de leitura das telas irmãs (Publicacao.css,
+ * FinanceiroInfluenciadora.css), mas com o monograma + nome da parceira como protagonista, não a
+ * fotografia: aqui ela é reduzida a miniatura de arquivo dentro da jornada, nunca destaque
+ * editorial. Cherry reservado ao monograma e aos elementos de assinatura da marca.
+ */
+
+.identidade-tela {
+	min-height: 100vh;
+	background: var(--color-paper);
+	color: var(--color-noir);
+	font-family: var(--font-body);
+}
+
+.identidade-nav {
+	position: sticky;
+	top: 0;
+	z-index: 20;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 20px 32px;
+	background: color-mix(in srgb, var(--color-paper) 82%, transparent);
+	backdrop-filter: blur(6px);
+}
+
+.identidade-nav-marca {
+	font-family: var(--font-display);
+	font-weight: 700;
+	font-size: 14px;
+	color: var(--color-noir);
+	opacity: 0.72;
+}
+
+.identidade-nav-link {
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 600;
+	color: var(--color-grafite-70, var(--color-noir));
+	position: relative;
+	padding-bottom: 2px;
+}
+
+.identidade-nav-link::after {
+	content: "";
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	height: 1px;
+	background: var(--color-cherry);
+	transform: scaleX(0);
+	transform-origin: right;
+	transition: transform 0.4s var(--ease-editorial);
+}
+
+.identidade-nav-link:hover::after {
+	transform: scaleX(1);
+	transform-origin: left;
+}
+
+/* Bloco de identidade: o monograma abre, o nome é a manchete da tela (inversão deliberada do
+   padrão das telas irmãs, onde a manchete sempre fala do material). */
+.identidade-contexto {
+	max-width: 640px;
+	margin: 0 auto;
+	padding: 40px 32px 0;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+}
+
+.identidade-monograma {
+	width: 72px;
+	height: 72px;
+	margin-bottom: 24px;
+	border-radius: var(--radius-circle);
+	background: var(--color-cherry);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.identidade-monograma span {
+	font-family: var(--font-display);
+	font-weight: 800;
+	font-size: 24px;
+	letter-spacing: 0.02em;
+	color: var(--color-cotton);
+}
+
+.identidade-eyebrow {
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 700;
+	letter-spacing: 0.02em;
+	text-transform: lowercase;
+	color: var(--color-cherry);
+	margin-bottom: 12px;
+}
+
+.identidade-nome {
+	font-family: var(--font-display);
+	font-weight: 800;
+	font-size: clamp(1.8rem, 1.5vw + 1.25rem, 2.5rem);
+	line-height: 1.16;
+	letter-spacing: -0.005em;
+	color: var(--color-noir);
+}
+
+.identidade-assinatura {
+	margin-top: 12px;
+	font-size: var(--text-body-lg);
+	font-style: italic;
+	color: color-mix(in srgb, var(--color-noir) 65%, transparent);
+}
+
+.identidade-vinculo {
+	margin-top: 6px;
+	font-size: var(--text-body);
+	color: color-mix(in srgb, var(--color-noir) 55%, transparent);
+	text-transform: lowercase;
+}
+
+.identidade-corpo {
+	max-width: 640px;
+	margin: 0 auto;
+	padding: 48px 32px 0;
+}
+
+.identidade-secao {
+	padding: 32px 0 0;
+	border-top: 1px solid var(--color-grafite-15, rgba(27, 23, 23, 0.1));
+}
+
+.identidade-secao-titulo {
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 700;
+	text-transform: lowercase;
+	color: color-mix(in srgb, var(--color-noir) 55%, transparent);
+	margin-bottom: 12px;
+}
+
+.identidade-jornada-resumo {
+	font-weight: 300;
+	font-size: var(--text-body-lg);
+	line-height: var(--leading-relaxed);
+	color: var(--color-noir);
+	margin-bottom: 24px;
+}
+
+.identidade-jornada-lista {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.identidade-jornada-item {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	padding: 14px 0;
+	border-bottom: 1px solid var(--color-grafite-15, rgba(27, 23, 23, 0.08));
+}
+
+.identidade-jornada-item:last-child {
+	border-bottom: none;
+}
+
+.identidade-jornada-foto {
+	flex-shrink: 0;
+	width: 40px;
+	height: 40px;
+	border-radius: var(--radius-sm);
+	overflow: hidden;
+}
+
+.identidade-jornada-foto img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.identidade-jornada-conteudo {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.identidade-jornada-titulo {
+	font-family: var(--font-display);
+	font-size: var(--text-body-lg);
+	font-weight: 600;
+	color: var(--color-noir);
+	text-transform: lowercase;
+}
+
+.identidade-jornada-detalhe {
+	font-size: var(--text-meta);
+	color: color-mix(in srgb, var(--color-noir) 55%, transparent);
+}
+
+.identidade-acao-secundaria {
+	display: inline-block;
+	margin-top: 20px;
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 600;
+	color: var(--color-cherry);
+	text-decoration: underline;
+	text-decoration-thickness: 1px;
+	text-underline-offset: 3px;
+	background: none;
+	border: none;
+	padding: 0;
+	cursor: pointer;
+}
+
+/* Rodapé: fecha a jornada principal aberta no Login — mesma disciplina de rodapé-ponte das telas
+   irmãs, "sair" em baixa ênfase, nunca ação primária. */
+.identidade-rodape {
+	max-width: 640px;
+	margin: 40px auto 0;
+	padding: 32px 32px 96px;
+	border-top: 1px solid var(--color-grafite-15, rgba(27, 23, 23, 0.1));
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+}
+
+.identidade-rodape-nota {
+	font-weight: 300;
+	font-size: var(--text-body-lg);
+	line-height: var(--leading-relaxed);
+	color: color-mix(in srgb, var(--color-noir) 60%, transparent);
+	max-width: 48ch;
+}
+
+.identidade-rodape-acoes {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+}
+
+/* Divergência: exceção documentada, baixa ênfase, mesmo padrão de Publicacao/Reconhecimento. */
+.identidade-divergencia {
+	font-family: var(--font-display);
+	font-size: var(--text-meta);
+	font-weight: 500;
+	color: color-mix(in srgb, var(--color-noir) 45%, transparent);
+	background: none;
+	border: none;
+	padding: 0;
+	cursor: pointer;
+	text-decoration: underline;
+	text-decoration-thickness: 1px;
+	text-underline-offset: 3px;
+	text-decoration-color: color-mix(in srgb, var(--color-noir) 25%, transparent);
+}
+
+.identidade-sair {
+	flex-shrink: 0;
+	font-family: var(--font-display);
+	font-size: var(--text-meta);
+	font-weight: 600;
+	color: color-mix(in srgb, var(--color-noir) 55%, transparent);
+	background: none;
+	border: none;
+	padding: 0;
+	cursor: pointer;
+	text-decoration: underline;
+	text-decoration-thickness: 1px;
+	text-underline-offset: 3px;
+}
+
+@media (max-width: 900px) {
+	.identidade-nav,
+	.identidade-contexto,
+	.identidade-corpo,
+	.identidade-rodape {
+		padding-left: 20px;
+		padding-right: 20px;
+	}
+
+	.identidade-nome {
+		font-size: clamp(1.5rem, 5vw + 1rem, 1.9rem);
+	}
+
+	.identidade-monograma {
+		width: 60px;
+		height: 60px;
+	}
+
+	.identidade-monograma span {
+		font-size: 20px;
+	}
+
+	.identidade-corpo {
+		padding-top: 36px;
+	}
+
+	.identidade-rodape {
+		padding-bottom: 64px;
+	}
+
+	.identidade-rodape-acoes {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 12px;
+	}
+}

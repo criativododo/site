@@ -16,9 +16,10 @@ export function bloquearParceiraIdDeCliente(req: Request, res: Response, next: N
   );
 
   if (tentouEnviar) {
-    res.status(400).json({
-      error: "Parâmetro não permitido: o identificador da Parceira é sempre resolvido pela sessão.",
-    });
+    console.error(
+      "bloquearParceiraIdDeCliente: tentativa de enviar identificador de Parceira pelo cliente",
+    );
+    res.status(400).json({ error: "não foi possível concluir a operação." });
     return;
   }
 

@@ -45,7 +45,7 @@ parceiraRoutes.post("/", async (req, res) => {
 parceiraRoutes.patch("/:id", async (req, res) => {
   const resultado = await editarParceira(req.params.id, req.body ?? {});
   if (!resultado.ok) {
-    res.status(404).json({ error: "Parceira não encontrada." });
+    res.status(404).json({ error: "parceira não encontrada." });
     return;
   }
   res.json(resultado.parceira);
@@ -55,13 +55,14 @@ parceiraRoutes.patch("/:id", async (req, res) => {
 parceiraRoutes.patch("/:id/status", async (req, res) => {
   const { status } = req.body ?? {};
   if (status !== "ATIVA" && status !== "INATIVA") {
-    res.status(400).json({ error: "status deve ser 'ATIVA' ou 'INATIVA'." });
+    console.error(`PATCH /parceiras/:id/status: status inválido recebido (${String(status)})`);
+    res.status(400).json({ error: "não foi possível atualizar o status da parceira." });
     return;
   }
 
   const resultado = await alterarStatusParceira(req.params.id, status);
   if (!resultado.ok) {
-    res.status(404).json({ error: "Parceira não encontrada." });
+    res.status(404).json({ error: "parceira não encontrada." });
     return;
   }
   res.json(resultado.parceira);
