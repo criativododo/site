@@ -20,6 +20,7 @@ import { ExperimentoHojePage } from "./pages/experimentos/Hoje";
 import { HojeInfluenciadoraPage } from "./pages/experimentos/HojeInfluenciadora";
 import { BriefingCampanhaPage } from "./pages/experimentos/BriefingCampanha";
 import { EnvioConteudoPage } from "./pages/experimentos/EnvioConteudo";
+import { AprovacaoPage } from "./pages/experimentos/Aprovacao";
 
 /**
  * Espelha a regra de destino pós-login do backend (auth.routes.ts: callback do Google) para
@@ -103,6 +104,19 @@ function App() {
 				element={
 					<RotaProtegida>
 						<EnvioConteudoPage />
+					</RotaProtegida>
+				}
+			/>
+
+			{/*
+			 * Proposta de Aprovação (sessão de aprovação visual) — quinta tela da família, mesmo
+			 * padrão aditivo das quatro anteriores. Rota some se a proposta não for aprovada.
+			 */}
+			<Route
+				path="/aprovacao"
+				element={
+					<RotaProtegida>
+						<AprovacaoPage />
 					</RotaProtegida>
 				}
 			/>
