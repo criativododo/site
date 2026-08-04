@@ -23,11 +23,15 @@ test('inicia, gera journal, valida e publica em um remoto Git local', () => {
     writeFileSync(join(app, '.claude/session-memory/config.json'), JSON.stringify({
       schemaVersion: 1,
       memoryRepositoryUrl: remote,
-      memoryDirectory: '../memory',
+      memoryDirectory: 'memory',
       journalWindow: 5,
       checks: {},
     }));
-    const environment = { ...process.env, GIT_CONFIG_GLOBAL: writeGlobalGitConfig(fixture) };
+    const environment = {
+      ...process.env,
+      GIT_CONFIG_GLOBAL: writeGlobalGitConfig(fixture),
+      CRIATIVODODO_MEMORY_DIR: join(fixture, 'memory'),
+    };
     const initial = JSON.parse(runCli(app, ['inicio', '--session', 'fixture', '--objective', 'Validar fluxo'], environment));
     assert.equal(initial.executiveSummary.phase, 'Fase 4 — Armazenamento + Workspace Provisioning');
     const detailsFile = join(app, '.claude/session-memory/runtime/fixture.details.json');
@@ -52,6 +56,50 @@ test('inicia, gera journal, valida e publica em um remoto Git local', () => {
     const validation = JSON.parse(runCli(app, ['validate'], environment));
     assert.equal(validation.valid, true, validation.errors?.join('\n'));
     assert.equal(existsSync(join(fixture, 'memory', finished.journal)), true);
+  } finally {
+    rmSync(fixture, { recursive: true, force: true });
+  }
+});
+
+test('checkout principal e git worktree resolvem para o mesmo repositório de memória, sem CRIATIVODODO_MEMORY_DIR explícito (ADR-021, Fase 1)', () => {
+  const fixture = tempDirectory();
+  try {
+    const mainCheckout = join(fixture, 'checkout-principal', 'app');
+    const worktreeApp = join(fixture, 'algum-outro-caminho', 'worktrees', 'sessao-y', 'app');
+    const fakeHome = join(fixture, 'fake-home');
+    const remote = join(fixture, 'memory-remote.git');
+    mkdirSync(fakeHome, { recursive: true });
+    initGitRepository(mainCheckout);
+    initGitRepository(worktreeApp);
+    git(fixture, ['init', '--bare', 'memory-remote.git']);
+    const config = JSON.stringify({
+      schemaVersion: 1,
+      memoryRepositoryUrl: remote,
+      memoryDirectory: 'criativododo-memory-teste',
+      journalWindow: 5,
+      checks: {},
+    });
+    for (const app of [mainCheckout, worktreeApp]) {
+      mkdirSync(join(app, '.claude/session-memory'), { recursive: true });
+      writeFileSync(join(app, '.claude/session-memory/config.json'), config);
+    }
+    const environment = {
+      ...process.env,
+      GIT_CONFIG_GLOBAL: writeGlobalGitConfig(fixture),
+      HOME: fakeHome,
+    };
+    delete environment.CRIATIVODODO_MEMORY_DIR;
+
+    const fromMain = JSON.parse(runCli(mainCheckout, ['inicio', '--session', 'sessao-principal', '--objective', 'Sessão a partir do checkout principal'], environment));
+    assert.equal(fromMain.initializedMemory, true);
+    const expectedMemoryPath = join(fakeHome, 'criativododo-memory-teste');
+    assert.equal(existsSync(join(expectedMemoryPath, '.git')), true);
+    assert.equal(existsSync(join(mainCheckout, '..', 'criativododo-memory-teste')), false);
+
+    const fromWorktree = JSON.parse(runCli(worktreeApp, ['inicio', '--session', 'sessao-worktree', '--objective', 'Sessão a partir de um git worktree'], environment));
+    assert.equal(fromWorktree.initializedMemory, false);
+    assert.equal(existsSync(join(worktreeApp, '..', 'criativododo-memory-teste')), false);
+    assert.equal(fromWorktree.executiveSummary.phase, fromMain.executiveSummary.phase);
   } finally {
     rmSync(fixture, { recursive: true, force: true });
   }
