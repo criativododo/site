@@ -53,9 +53,13 @@ test('inicia, gera journal, valida e publica em um remoto Git local', () => {
       confidence: { level: 'Alta', reason: 'Fixture Git local.' },
     }));
     const finished = JSON.parse(runCli(app, ['finish', '--session', 'fixture', '--details-file', '.claude/session-memory/runtime/fixture.details.json'], environment));
-    assert.match(finished.journal, /^journals\/\d{4}\/\d{2}\/\d{4}-\d{2}-\d{2}_\d{4}\.md$/);
-    const published = JSON.parse(runCli(app, ['publish'], environment));
+    // Fase 3: nome do journal inclui um sufixo derivado do session id, garantindo
+    // unicidade entre worktrees concorrentes sem depender de checagem local de existência.
+    assert.match(finished.journal, /^journals\/\d{4}\/\d{2}\/\d{4}-\d{2}-\d{2}_\d{4}--\w+\.md$/);
+    const published = JSON.parse(runCli(app, ['publish', '--session', 'fixture'], environment));
     assert.equal(published.published, true);
+    // Fase 3: o worktree efêmero da sessão é removido depois da publicação bem-sucedida.
+    assert.equal(existsSync(join(app, '.claude/session-memory/runtime/memory-worktrees/fixture')), false);
     const validation = JSON.parse(runCli(app, ['validate'], environment));
     assert.equal(validation.valid, true, validation.errors?.join('\n'));
     assert.equal(existsSync(join(fixture, 'memory', finished.journal)), true);

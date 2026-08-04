@@ -58,11 +58,24 @@ export function listJournals(memoryPath) {
   return sortJournalsByRecency(journals);
 }
 
-export function nextJournalPath(memoryPath, endedAt) {
+/**
+ * Nome do journal inclui um sufixo curto derivado do session id (ADR-021, Fase 3): cada
+ * sessão trabalha em seu próprio worktree isolado, sem visibilidade sobre journals que
+ * outras sessões concorrentes ainda não publicaram — um `existsSync` local não basta para
+ * evitar colisão de nome entre duas sessões terminando no mesmo minuto. Incluir o session
+ * id torna o nome único por construção, sem depender de detectar a colisão.
+ */
+function sessionSuffix(sessionId) {
+  if (!sessionId) return '';
+  const safe = String(sessionId).replace(/[^a-zA-Z0-9]/g, '').slice(0, 8);
+  return safe ? `--${safe}` : '';
+}
+
+export function nextJournalPath(memoryPath, endedAt, sessionId) {
   const parts = dateParts(endedAt);
   const directory = join(memoryPath, 'journals', parts.year, parts.month);
   mkdirSync(directory, { recursive: true });
-  const base = `${parts.localDate}_${parts.hhmm}`;
+  const base = `${parts.localDate}_${parts.hhmm}${sessionSuffix(sessionId)}`;
   let attempt = 1;
   let candidate = join(directory, `${base}.md`);
   while (existsSync(candidate)) {

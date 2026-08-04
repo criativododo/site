@@ -28,7 +28,7 @@ Nunca inclua segredo, token, conteúdo de `.env` ou suposição. Use listas vazi
 
 ```bash
 node .claude/session-memory/bin/session-memory.mjs finish --session "${CLAUDE_SESSION_ID}" --details-file ".claude/session-memory/runtime/${CLAUDE_SESSION_ID}.details.json"
-node .claude/session-memory/bin/session-memory.mjs publish --message "docs(memory): registra sessão"
+node .claude/session-memory/bin/session-memory.mjs publish --session "${CLAUDE_SESSION_ID}" --message "docs(memory): registra sessão"
 ```
 
 Se qualquer etapa falhar, pare e apresente o erro. Não faça merge, force-push ou edição manual no repositório de memória para contornar validações.
