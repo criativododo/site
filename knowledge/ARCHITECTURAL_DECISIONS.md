@@ -1276,6 +1276,113 @@ produção — risco de material de teste se misturar com material real de Parce
 
 ---
 
+## ADR-021 — Arquitetura de memória multi-agente: localização canônica fixa, artefatos gerados, isolamento por worktree
+
+- **Status:** Aceito. Implementação em migração incremental por fases (ver `Decisão`, item 5).
+- **Data:** 2026-08-03.
+- **Relaciona-se com:** ADR-003 (não inventar requisito onde a documentação for omissa —
+  aplicado aqui ao tratar o diagnóstico já validado como fato, não à decisão de arquitetura
+  em si), ADR-018 (decisão original que introduziu o repositório `criativododo-memory`; esta
+  ADR refina sua implementação sem reverter seus princípios de segurança).
+
+### Contexto
+
+A ADR-018 estabeleceu `criativododo-memory` como clone irmão do repositório da aplicação,
+com sincronização estritamente fast-forward e bloqueio de qualquer estado sujo — desenhada
+para uma sessão por vez, sempre invocada a partir da raiz do checkout principal.
+
+Esse pressuposto deixou de valer. O ambiente passou a rodar múltiplas sessões em paralelo,
+cada uma isolada em um `git worktree` sob `.claude/worktrees/<nome>/`. O kit
+`.claude/session-memory/` resolve `memoryDirectory` (`../criativododo-memory`, em
+`config.json`) como caminho relativo a `process.cwd()`. Rodando a partir de um worktree,
+`..` sobe para `.claude/worktrees/`, não para a raiz do checkout — então
+`../criativododo-memory` passou a apontar para `.claude/worktrees/criativododo-memory`, um
+clone físico diferente do canônico (`/Users/danielperrut/criativododo-memory`), criado
+silenciosamente pela primeira sessão em worktree que rodou `/inicio` sem esse diretório
+existir ainda.
+
+Como todo worktree resolve para esse mesmo caminho acidental (o segmento específico do
+worktree se cancela na matemática do `..`), múltiplas sessões concorrentes passaram a
+compartilhar esse único diretório de trabalho Git sem nenhuma coordenação — sem lock, sem
+fila, sem retry — enquanto sessões rodando a partir do checkout principal continuavam
+usando o clone canônico. Isso produziu dois históricos divergentes do mesmo repositório
+remoto e, adicionalmente, um problema de modelo de dados independente do bug de path:
+`journals/INDEX.md`, `PROJECT_STATUS.md` e `START_HERE_NEXT_SESSION.md` são arquivos
+editados diretamente por cada sessão ao final (`/fim`); duas sessões terminando em janela
+próxima disputam as mesmas linhas de texto, o que gera conflito de merge real (não apenas
+mecânico) mesmo depois de corrigido o caminho.
+
+Diagnóstico e evidências completas (dois clones divergentes confirmados por hash de commit,
+ausência de qualquer lock/mutex/retry no código-fonte de `.claude/session-memory/lib/`,
+worktrees concorrentes ativos no momento da investigação) foram levantados e validados nesta
+sessão antes desta decisão; não repetidos aqui.
+
+### Decisão
+
+1. **Localização canônica deixa de ser derivada de `process.cwd()`.** Passa a ser resolvida
+   por uma variável de ambiente fixa (`CRIATIVODODO_MEMORY_DIR`), com fallback padrão seguro
+   e documentado, independente de checkout principal, worktree ou diretório de invocação.
+2. **`journals/INDEX.md`, `PROJECT_STATUS.md` e `START_HERE_NEXT_SESSION.md` deixam de ser
+   editados diretamente.** Passam a ser artefatos **gerados** por funções puras a partir do
+   conjunto de journals (fonte de verdade única, um arquivo por sessão, já
+   inerentemente sem conflito por ter nome único). Critério de regeneração:
+   `endedAt` mais recente define o estado vigente; desempate por `session-id` em caso de
+   colisão de timestamp. Isso elimina a possibilidade estrutural de conflito de merge nesses
+   três arquivos — duas sessões que regeneram concorrentemente produzem o mesmo resultado,
+   por ser função pura sobre os mesmos dados, não edição de texto.
+3. **Cada sessão passa a operar em um `git worktree` efêmero e isolado do repositório de
+   memória**, criado por `/inicio` a partir do clone canônico e removido por `/fim` —
+   nenhum processo volta a compartilhar working tree com outro. `/fim` grava o journal e os
+   artefatos regenerados nesse worktree isolado, commita, e integra com o remoto por um
+   laço curto de `fetch` → rebase → `push` → retry em caso de rejeição — seguro por
+   construção, já que o commit local de uma sessão nunca toca o journal de outra. O
+   princípio de segurança da ADR-018 (nunca merge automático de conteúdo divergente,
+   nunca force-push) é preservado: o que muda é que, com journals únicos por sessão e
+   artefatos regenerados, não sobra conteúdo divergente para mesclar — só um rebase
+   trivial e uma regeneração determinística.
+4. `/inicio`, `/check` e `/fim` mantêm a mesma interface externa (flags, resumo executivo
+   retornado). A mudança é inteiramente interna à implementação do kit.
+5. **Migração incremental, não big-bang**, com validação completa e aprovação explícita
+   entre cada fase antes de avançar:
+   - Fase 0 — higienização: reconciliar journals divergentes entre o clone canônico e o
+     clone acidental, descartar o acidental, confirmar repositório único.
+   - Fase 1 — path canônico fixo (`CRIATIVODODO_MEMORY_DIR` + fallback + testes).
+   - Fase 2 — artefatos gerados (funções puras de regeneração + testes), ainda operando no
+     repositório único, sem isolamento por worktree.
+   - Fase 3 — isolamento por sessão via `git worktree` efêmero + retry de
+     fetch/rebase/push + limpeza automática de worktrees órfãos.
+   - Fase 4 — validação final: sessão única, duas sessões paralelas, múltiplos worktrees,
+     início/fim simultâneos, recuperação após interrupção.
+
+### Consequências
+
+- O erro "alterações não commitadas" motivado por outra sessão deixa de poder ocorrer
+  depois da Fase 3: não existe mais working tree compartilhada para sujar.
+- Edição manual de `journals/INDEX.md`, `PROJECT_STATUS.md` ou `START_HERE_NEXT_SESSION.md`
+  fora do protocolo passa a ser sobrescrita na próxima regeneração (reforça a instrução já
+  presente no cabeçalho do `INDEX.md`, agora garantida tecnicamente, não só por convenção).
+- Sessões que travam sem rodar `/fim` deixam worktrees órfãos; a Fase 4 inclui limpeza
+  automática (`git worktree prune` + remoção de worktrees sem sessão de runtime
+  correspondente) como parte do critério de aceite, não como melhoria futura.
+- O histórico já divergente entre os dois clones hoje precisa de reconciliação manual única
+  na Fase 0 antes de a regeneração determinística ter uma fonte completa de journals — sem
+  essa etapa, journals legítimos de sessões passadas poderiam ficar ausentes do estado
+  regenerado.
+- Nenhuma mudança de infraestrutura remota: o repositório GitHub `criativododo-memory` e o
+  branch único `main` continuam sendo o destino final; muda apenas como os clones locais são
+  localizados, isolados e integrados a esse remoto.
+
+### Quadro-resumo
+
+| Decisão tomada | Alternativas descartadas | Justificativa | Impacto esperado na arquitetura |
+|---|---|---|---|
+| Caminho canônico fixo via variável de ambiente, independente de `cwd` | Calcular o caminho a partir da raiz real do repositório (`git rev-parse --git-common-dir`) | A alternativa ainda depende de introspecção de contexto de invocação; um caminho fixo por máquina elimina a categoria inteira de bug, incluindo layouts de worktree futuros e imprevistos | `config.mjs` resolve `CRIATIVODODO_MEMORY_DIR` uma única vez, sem matemática de path relativo |
+| `journals/INDEX.md`/`PROJECT_STATUS.md`/`START_HERE_NEXT_SESSION.md` como artefatos gerados por função pura | Lock/mutex protegendo edição concorrente dos mesmos arquivos; fila de acesso serializando sessões | Lock e fila resolvem a mecânica de escrita mas não o problema semântico: dois "next task" concorrentes continuam se sobrescrevendo, só que um de cada vez; regeneração determinística elimina o próprio conceito de edição concorrente desses arquivos | `documents.mjs` ganha `renderIndex`/`renderStatus`/`renderNextSession` puras, testáveis sem Git |
+| Worktree efêmero por sessão + retry de fetch/rebase/push | Clone completo por sessão (mais pesado, sem compartilhar objects/refs); um único diretório protegido por lock global (serializa todas as sessões, contradiz o requisito de paralelismo) | `git worktree` é a primitiva nativa do próprio Git para múltiplos working trees seguros sobre um único object store — já usada neste ambiente para isolar código por sessão; reaproveitar o mesmo padrão para a memória é consistente e não introduz mecanismo novo | `/inicio` cria e `/fim` remove um worktree do repositório de memória por sessão |
+| Migração em 5 fases, cada uma com testes e aprovação antes da próxima | Reescrita completa em uma única mudança | Reduz risco de regressão em um componente crítico (memória operacional de todas as sessões); cada fase é validável isoladamente com os testes já existentes em `.claude/session-memory/test/` | Nenhuma fase altera o comportamento externo de `/inicio`, `/check`, `/fim` antes da Fase 4 confirmar tudo |
+
+---
+
 ## Como usar este documento
 
 Toda decisão arquitetural nova e permanente deste projeto (que não seja um detalhe de
