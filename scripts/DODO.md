@@ -159,6 +159,101 @@ observam e registram. A decisão de modelo é sempre feita antes do processo
 
 ---
 
+# Fase 3 — Prompt Intelligence Router
+
+## Objetivo
+
+Analisar cada prompt do usuário antes de ele chegar ao Claude, classificá-lo
+e gerar recomendações via `additionalContext` — sem trocar o modelo em
+execução (isso continua sendo a Fase 2, adiada) e sem nenhum recurso não
+documentado.
+
+## Arquitetura
+
+```text
+scripts/prompt-router/classify.mjs   — Classification Engine: função pura,
+                                         recebe prompt_text, devolve o contrato
+                                         estruturado. Não conhece hooks, não
+                                         conhece additionalContext, sem I/O.
+scripts/prompt-router/policy.mjs     — Policy Engine: função pura, recebe o
+                                         contrato do Classification Engine,
+                                         devolve additionalContext +
+                                         recomendações. Não lê prompt_text.
+scripts/hooks/dodo-prompt-router.mjs — Hook UserPromptSubmit: só orquestra
+                                         (stdin → classify() → derivePolicy()
+                                         → stdout + log). Nenhuma regra de
+                                         negócio vive aqui.
+scripts/prompt-router/*.test.mjs     — testes (node --test), cobrindo os dois
+                                         motores isoladamente.
+```
+
+Validado contra `code.claude.com/docs/en/hooks.md`: `UserPromptSubmit`
+dispara uma vez por turno, aceita `hookSpecificOutput.additionalContext` como
+mecanismo de injeção de contexto, e **não** aceita nenhum campo capaz de
+reescrever o prompt ou trocar o modelo — por isso o hook só recomenda, nunca
+força.
+
+## Contrato do Classification Engine (versionado)
+
+```js
+{
+  version: "1.0.0",
+  complexity: "LOW" | "MID" | "HIGH",
+  taskType: "debug" | "feature" | "research" | "docs" | "other",
+  confidence: number,        // 0–0.95, proporção de sinais heurísticos encontrados
+  reasoning: string[],       // razões legíveis, para auditoria
+  suggestedModel: "haiku" | "sonnet" | "opus",
+  metadata: { source: "heuristic-v1", promptLength: number, matchedKeywords: string[] },
+}
+```
+
+`source` identifica a origem da classificação. A V1 usa apenas heurísticas
+locais e determinísticas (palavras-chave e tamanho do prompt) — nenhuma
+chamada de rede, nenhuma dependência externa.
+
+**Extensão futura sem quebrar a interface pública:** `classify(promptText,
+context)` mantém essa assinatura mesmo se novas fontes de sinal forem
+adicionadas (estado da sessão, tags de journal, estado do git). O
+Classification Engine não faz I/O — quem coletar esses sinais externos é o
+hook (que já faz I/O), passando-os pelo parâmetro `context`. Se a Anthropic
+documentar oficialmente um hook `type: "prompt"`, a V1 heurística pode ser
+substituída por uma implementação que delegue a esse hook — desde que
+devolva o mesmo contrato (mudando apenas `metadata.source`, ex.:
+`"prompt-hook-v1"`). `policy.mjs` e o orquestrador não mudam nesse cenário.
+
+## Saída do Policy Engine
+
+```js
+{
+  additionalContext: string,        // uma linha só, curta — o que o Claude vê
+  suggestedApproach: string | null,
+  suggestedTools: string[],
+  suggestedSubagents: string[],
+  suggestedReadStrategy: string | null,
+}
+```
+
+## Regras
+
+- `classify.mjs` e `policy.mjs` são funções puras: mesma entrada → mesma
+  saída, sem efeito colateral, sem I/O.
+- O hook nunca bloqueia o prompt por falha própria: qualquer erro de
+  classificação/política cai em silêncio, sem `additionalContext`, e sai
+  `exit 0` — igual à regra de observação da Fase 1.
+- `additionalContext` é sempre uma única linha, sem quebras de linha, para
+  minimizar consumo de contexto.
+- Nenhuma troca de modelo é executada por este hook — `suggestedModel` é
+  apenas texto que o Claude lê, nunca um comando de troca.
+
+## Limitação conhecida
+
+Hooks são carregados na inicialização da sessão (`SessionStart`). Registrar
+`UserPromptSubmit` em `.claude/settings.json` durante uma sessão em execução
+não altera o comportamento dessa sessão — só passa a valer a partir da
+próxima inicialização do Claude Code.
+
+---
+
 # Status de implementação (MODELOS.md)
 
 - **Fase 1 — MVP: concluída.** Launcher, Router (com log de auditoria
@@ -172,4 +267,8 @@ observam e registram. A decisão de modelo é sempre feita antes do processo
   decide de novo) ou o usuário digitar `/model` manualmente. Retomar apenas
   mediante aprovação explícita e/ou nova capacidade oficial documentada pela
   Anthropic.
-- **Fase 3 — Inteligência Adaptativa: não iniciada.**
+- **Fase 3 — Inteligência Adaptativa: implementada (V1, heurística local).**
+  Prompt Intelligence Router via `UserPromptSubmit` + `additionalContext`,
+  com Classification Engine e Policy Engine separados e testados. Ver seção
+  "Fase 3 — Prompt Intelligence Router" acima. Não altera Fase 1, não altera
+  `/inicio`/`/fim`, não altera `session-memory`, não troca modelo em runtime.
