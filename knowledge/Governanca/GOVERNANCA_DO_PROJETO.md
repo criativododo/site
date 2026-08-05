@@ -32,10 +32,15 @@ Toda informação importante deve permanecer na documentação, nunca apenas na 
 
 A documentação deve funcionar independentemente da IA utilizada (Claude, GPT, Gemini etc.).
 
+6. Estado técnico derivado
+
+O Git é a única fonte de verdade técnica da continuidade. Estado operacional não é
+persistido em runtime: é derivado de commits, journals e documentação versionada.
+
 ---
 
 # Comandos de sessão
 
-O protocolo de abertura/encerramento de sessão (`/comecar`, `/fim`) e a
+O protocolo de abertura/encerramento de sessão (`/inicio`, `/fim`) e a
 arquitetura de comandos do Claude Code que o implementa estão descritos em
 `CLAUDE.md` §"Comandos padrão" (fonte única — não duplicar aqui).

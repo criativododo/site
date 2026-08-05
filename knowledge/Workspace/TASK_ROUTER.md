@@ -1,5 +1,9 @@
 # TASK_ROUTER — TEAR V2
 
+> **Nota de operação (RFC-003).** A continuidade técnica é reconstruída pelo Git:
+> use `/inicio` sem parâmetros e encerre com `/fim`. Não use runtime JSON, Session IDs,
+> `finish` ou `publish`; journals são histórico e não controlam o estado.
+
 > **Função.** Fonte única e autorizada para localizar as **dependências mínimas**
 > de cada SPEC. Nenhuma dependência pode ser buscada fora deste documento.
 > Se uma dependência necessária não estiver aqui, **pare** e solicite a atualização
