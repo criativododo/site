@@ -11,4 +11,4 @@ Execute no diretório raiz:
 node .claude/session-memory/bin/session-memory.mjs status
 ```
 
-Apresente projeto, sprint, fase, último journal, último commit, última ADR, bloqueios e próxima tarefa exatamente como retornados. Se a memória não estiver configurada, explique como executar `/inicio <objetivo>` após a criação do repositório privado.
+Apresente projeto, sprint, fase, último journal, último commit, última ADR, bloqueios e próxima tarefa exatamente como retornados. Se a memória não estiver configurada, explique como executar `/inicio` após a criação do repositório privado.

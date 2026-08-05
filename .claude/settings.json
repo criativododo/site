@@ -1,5 +1,10 @@
 {
   "enabledPlugins": {
     "typescript-lsp@claude-plugins-official": true
+  },
+  "permissions": {
+    "allow": [
+      "Bash(node .claude/session-memory/bin/session-memory.mjs:*)"
+    ]
   }
 }

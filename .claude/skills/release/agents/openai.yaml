@@ -1,4 +1,0 @@
-interface:
-  display_name: "Preparar release"
-  short_description: "Gera o relatório de encerramento"
-  default_prompt: "Use $release para preparar o encerramento da sprint."
