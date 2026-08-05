@@ -651,9 +651,8 @@ textarea:focus-visible {
  * Direção de arte fechada em sessão de 2026-08-03: o Ô oficial (icon.svg, arquivo
  * institucional, nunca redesenhado) funciona como arquitetura silenciosa — presença muito
  * baixa, nunca compete com o conteúdo — e o título assina em cherry como o único ponto de
- * ênfase de cor da tela. Google é o único método funcional (ADR-007); Apple é um
- * placeholder visual de mesmo peso hierárquico, sem integração (decisão pendente de ADR
- * própria); e-mail fica fora desta primeira versão.
+ * ênfase de cor da tela. Google é o único método funcional (ADR-007); e-mail fica fora
+ * desta primeira versão.
  */
 .portal-entrada {
 	position: relative;
@@ -761,19 +760,6 @@ textarea:focus-visible {
 }
 .portal-entrada-auth .portal-entrada-oauth.is-google:hover {
 	background: #f8f9fa;
-}
-.portal-entrada-auth .portal-entrada-oauth.is-apple {
-	background: #fff;
-	border: none;
-	color: #000;
-}
-.portal-entrada-auth .portal-entrada-oauth.is-apple:hover {
-	background: #f5f5f5;
-}
-.portal-entrada-apple-note {
-	margin: 0;
-	font-size: 11px;
-	color: var(--ink-secondary);
 }
 
 @media (max-width: 768px) {
