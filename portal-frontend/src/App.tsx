@@ -28,6 +28,7 @@ import { AprovacaoPage } from "./pages/experimentos/Aprovacao";
 import { PublicacaoPage } from "./pages/experimentos/Publicacao";
 import { FinanceiroInfluenciadoraPage } from "./pages/experimentos/FinanceiroInfluenciadora";
 import { PerfilInfluenciadoraPage } from "./pages/experimentos/PerfilInfluenciadora";
+import { RelatorioCampanhaPage } from "./pages/experimentos/RelatorioCampanha";
 
 /**
  * Espelha a regra de destino pós-login do backend (auth.routes.ts: callback do Google) para
@@ -237,6 +238,22 @@ function App() {
 				element={
 					<RotaProtegida>
 						<AdminComunicacaoPage />
+					</RotaProtegida>
+				}
+			/>
+
+			{/*
+			 * Proposta de Relatório (DOC SPRINT #2, item 3) — nona tela da família, mesmo padrão
+			 * aditivo das oito anteriores. Rota própria (`/relatorio`, sem colisão com nenhuma rota
+			 * legada). Modelo real de acesso da Marca (link exclusivo, sem login) é decisão de
+			 * arquitetura/backend fora do escopo desta sessão de layout — ver comentário no topo de
+			 * `RelatorioCampanha.tsx`. Rota some se a proposta não for aprovada.
+			 */}
+			<Route
+				path="/relatorio"
+				element={
+					<RotaProtegida>
+						<RelatorioCampanhaPage />
 					</RotaProtegida>
 				}
 			/>

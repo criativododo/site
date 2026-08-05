@@ -1,0 +1,389 @@
+/*
+ * Relatório — mesma língua visual de MarcaDashboard.css/Publicacao.css/FinanceiroInfluenciadora.css
+ * (página autônoma, fora do shell de sidebar, coluna de leitura única, fotografia editorial no
+ * topo). Coluna 900px (mesma largura de `marca-*`): o assunto aqui é a campanha inteira, não
+ * uma entrega só. Indicadores em blocos tipográficos, nunca cartões com borda/sombra — "não é
+ * BI" é a régua desta tela.
+ */
+
+.relatorio-tela {
+	min-height: 100vh;
+	background: var(--color-paper);
+	color: var(--color-noir);
+	font-family: var(--font-body);
+}
+
+.relatorio-nav {
+	position: sticky;
+	top: 0;
+	z-index: 20;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 20px 32px;
+	background: color-mix(in srgb, var(--color-paper) 82%, transparent);
+	backdrop-filter: blur(6px);
+}
+
+.relatorio-nav-marca {
+	font-family: var(--font-display);
+	font-weight: 700;
+	font-size: 14px;
+	color: var(--color-noir);
+	opacity: 0.72;
+}
+
+.relatorio-nav-link {
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 600;
+	color: var(--color-grafite-70, var(--color-noir));
+	position: relative;
+	padding-bottom: 2px;
+}
+
+.relatorio-nav-link::after {
+	content: "";
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	height: 1px;
+	background: var(--color-cherry);
+	transform: scaleX(0);
+	transform-origin: right;
+	transition: transform 0.4s var(--ease-editorial);
+}
+
+.relatorio-nav-link:hover::after {
+	transform: scaleX(1);
+	transform-origin: left;
+}
+
+.relatorio-foto {
+	max-width: 900px;
+	margin: 32px auto 0;
+	padding: 0 32px;
+}
+
+.relatorio-foto img {
+	display: block;
+	width: 100%;
+	aspect-ratio: 4 / 3;
+	object-fit: cover;
+	border-radius: var(--radius-sm);
+}
+
+.relatorio-contexto {
+	max-width: 900px;
+	margin: 20px auto 0;
+	padding: 0 32px;
+}
+
+.relatorio-eyebrow {
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 700;
+	letter-spacing: 0.02em;
+	text-transform: lowercase;
+	color: var(--color-cherry);
+	margin-bottom: 4px;
+}
+
+.relatorio-periodo {
+	font-size: var(--text-meta);
+	color: color-mix(in srgb, var(--color-noir) 55%, transparent);
+	margin-bottom: 20px;
+}
+
+.relatorio-frase {
+	font-family: var(--font-display);
+	font-weight: 800;
+	font-size: clamp(1.7rem, 1.3vw + 1.2rem, 2.3rem);
+	line-height: 1.2;
+	letter-spacing: -0.005em;
+	color: var(--color-noir);
+	text-transform: lowercase;
+	margin-bottom: 12px;
+}
+
+.relatorio-narrativa {
+	font-weight: 300;
+	font-size: var(--text-body-lg);
+	line-height: var(--leading-relaxed);
+	color: color-mix(in srgb, var(--color-noir) 68%, transparent);
+	max-width: 62ch;
+}
+
+.relatorio-corpo {
+	max-width: 900px;
+	margin: 0 auto;
+	padding: 44px 32px 0;
+}
+
+.relatorio-secao {
+	padding-top: 40px;
+	border-top: 1px solid var(--color-grafite-15, rgba(27, 23, 23, 0.1));
+}
+
+.relatorio-secao:first-child {
+	border-top: none;
+	padding-top: 0;
+}
+
+.relatorio-secao-titulo {
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 700;
+	text-transform: lowercase;
+	color: color-mix(in srgb, var(--color-noir) 55%, transparent);
+	margin-bottom: 20px;
+}
+
+/* Receita: único número herói da tela, mesmo tratamento de `reconhecimento-valor-numero`. */
+.relatorio-receita {
+	padding-bottom: 28px;
+	margin-bottom: 28px;
+	border-bottom: 1px solid var(--color-grafite-15, rgba(27, 23, 23, 0.1));
+}
+
+.relatorio-receita-label {
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 700;
+	text-transform: lowercase;
+	color: color-mix(in srgb, var(--color-noir) 55%, transparent);
+	margin-bottom: 12px;
+}
+
+.relatorio-receita-numero {
+	font-family: var(--font-display);
+	font-weight: 800;
+	font-size: clamp(2.2rem, 2.6vw + 1.4rem, 3rem);
+	line-height: 1;
+	color: var(--color-noir);
+}
+
+.relatorio-receita-centavos {
+	font-size: 0.42em;
+	font-weight: 600;
+	vertical-align: super;
+	margin-left: 2px;
+	color: color-mix(in srgb, var(--color-noir) 65%, transparent);
+}
+
+/* Indicadores secundários: grade de blocos tipográficos — sem borda, sem sombra, sem fundo.
+   A grade organiza a leitura, não simula cartão. */
+.relatorio-indicadores-grade {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 28px 32px;
+}
+
+.relatorio-indicador-rotulo {
+	font-family: var(--font-display);
+	font-size: var(--text-meta);
+	font-weight: 700;
+	text-transform: lowercase;
+	color: color-mix(in srgb, var(--color-noir) 55%, transparent);
+	margin-bottom: 6px;
+}
+
+.relatorio-indicador-valor {
+	font-family: var(--font-display);
+	font-weight: 800;
+	font-size: clamp(1.5rem, 1.2vw + 1.1rem, 1.9rem);
+	line-height: 1.1;
+	color: var(--color-noir);
+	margin-bottom: 6px;
+}
+
+.relatorio-indicador-explicacao {
+	font-size: var(--text-meta);
+	line-height: 1.4;
+	color: color-mix(in srgb, var(--color-noir) 55%, transparent);
+	max-width: 34ch;
+}
+
+/* Evolução: prosa com marcador, mesma disciplina de `marca-atencao-lista` — nunca gráfico. */
+.relatorio-evolucao-lista {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+}
+
+.relatorio-evolucao-item {
+	display: flex;
+	align-items: baseline;
+	gap: 12px;
+}
+
+.relatorio-evolucao-marcador {
+	flex-shrink: 0;
+	width: 7px;
+	height: 7px;
+	margin-top: 7px;
+	border-radius: var(--radius-circle);
+	background: var(--color-grafite-40, rgba(27, 23, 23, 0.4));
+}
+
+.relatorio-evolucao-texto {
+	font-size: var(--text-body-lg);
+	line-height: 1.5;
+	color: var(--color-noir);
+}
+
+/* Funil: mesma espinha dorsal de `reconhecimento-timeline`/`marca-timeline`, reaproveitada —
+   cada passo mostra uma contagem em vez de uma data. */
+.relatorio-timeline {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	position: relative;
+}
+
+.relatorio-timeline-passo {
+	position: relative;
+	display: flex;
+	gap: 16px;
+	padding-bottom: 24px;
+}
+
+.relatorio-timeline-passo::before {
+	content: "";
+	position: absolute;
+	left: 5px;
+	top: 16px;
+	bottom: -4px;
+	width: 1px;
+	background: var(--color-grafite-15, rgba(27, 23, 23, 0.15));
+}
+
+.relatorio-timeline-passo:last-child::before {
+	display: none;
+}
+
+.relatorio-timeline-marcador {
+	flex-shrink: 0;
+	width: 11px;
+	height: 11px;
+	margin-top: 4px;
+	border-radius: var(--radius-circle);
+	border: 1.5px solid var(--color-grafite-40, rgba(27, 23, 23, 0.4));
+	background: var(--color-grafite-70, var(--color-noir));
+}
+
+.relatorio-timeline-passo.is-destaque .relatorio-timeline-marcador {
+	background: var(--color-cherry);
+	border-color: var(--color-cherry);
+}
+
+.relatorio-timeline-conteudo {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	padding-top: 1px;
+}
+
+.relatorio-timeline-titulo {
+	font-family: var(--font-display);
+	font-size: var(--text-body-lg);
+	font-weight: 600;
+	color: var(--color-noir);
+	text-transform: lowercase;
+}
+
+.relatorio-timeline-passo.is-destaque .relatorio-timeline-titulo {
+	font-weight: 700;
+}
+
+.relatorio-timeline-detalhe {
+	font-size: var(--text-meta);
+	color: color-mix(in srgb, var(--color-noir) 55%, transparent);
+}
+
+/* Origem dos resultados: linha canal + percentual, prosa numérica sem barra/gráfico. */
+.relatorio-origem-lista {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.relatorio-origem-item {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	max-width: 360px;
+	padding-bottom: 12px;
+	border-bottom: 1px solid var(--color-grafite-15, rgba(27, 23, 23, 0.08));
+}
+
+.relatorio-origem-item:last-child {
+	border-bottom: none;
+	padding-bottom: 0;
+}
+
+.relatorio-origem-canal {
+	font-size: var(--text-body-lg);
+	color: var(--color-noir);
+	text-transform: lowercase;
+}
+
+.relatorio-origem-percentual {
+	font-family: var(--font-display);
+	font-weight: 700;
+	color: color-mix(in srgb, var(--color-noir) 70%, transparent);
+}
+
+.relatorio-rodape {
+	max-width: 900px;
+	margin: 44px auto 0;
+	padding: 32px 32px 96px;
+	border-top: 1px solid var(--color-grafite-15, rgba(27, 23, 23, 0.1));
+}
+
+.relatorio-rodape-nota {
+	font-weight: 300;
+	font-size: var(--text-body-lg);
+	line-height: var(--leading-relaxed);
+	color: color-mix(in srgb, var(--color-noir) 60%, transparent);
+	max-width: 56ch;
+}
+
+@media (max-width: 960px) {
+	.relatorio-nav,
+	.relatorio-foto,
+	.relatorio-contexto,
+	.relatorio-corpo,
+	.relatorio-rodape {
+		padding-left: 20px;
+		padding-right: 20px;
+	}
+
+	.relatorio-frase {
+		font-size: clamp(1.5rem, 5vw + 1rem, 1.9rem);
+	}
+
+	.relatorio-corpo {
+		padding-top: 32px;
+	}
+
+	.relatorio-indicadores-grade {
+		grid-template-columns: 1fr;
+		gap: 24px;
+	}
+
+	.relatorio-origem-item {
+		max-width: none;
+	}
+
+	.relatorio-rodape {
+		padding-bottom: 64px;
+	}
+}
