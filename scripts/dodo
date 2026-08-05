@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# scripts/dodo — substituto do comando `claude` que escolhe automaticamente
+# o modelo mais econômico antes de iniciar a sessão. Ver scripts/DODO.md.
+set -euo pipefail
+
+SCRIPT_PATH="$(readlink "$0")"
+if [ -z "$SCRIPT_PATH" ]; then
+  SCRIPT_PATH="$0"
+fi
+ROOT_DIR="$(cd "$(dirname "$SCRIPT_PATH")/.." && pwd)"
+
+MODEL="$(node "$ROOT_DIR/scripts/dodo-model.mjs" "$ROOT_DIR")"
+
+exec claude --model "$MODEL" "$@"
