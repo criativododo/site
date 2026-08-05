@@ -38,18 +38,18 @@ documentação**, a Landing sempre prevalece. Ver `ARCHITECTURAL_DECISIONS.md` A
    SPEC citar o PRD como origem de uma regra ainda válida.
 
 **Importante:** nada em `knowledge/` descreve o estado físico atual deste repositório — ver
-§3 abaixo e `PORTAL_BRIEFING.md` §0.
+§3 abaixo e `docs/business/PORTAL_BRIEFING.md` §0.
 
 ## 3. Definição oficial do produto (Portal)
 
-**Fonte oficial: `PORTAL_BRIEFING.md`** (raiz do repositório) — visão geral, objetivo,
+**Fonte oficial: `docs/business/PORTAL_BRIEFING.md`** — visão geral, objetivo,
 problema resolvido, perfis de usuário, módulos, funcionalidades, regras de negócio,
 integrações, entidades, restrições, decisões já tomadas, riscos e pendências, tudo
 consolidado a partir de `knowledge/` e do estado real do repositório.
 
 ## 4. Arquitetura consolidada
 
-**Fonte oficial: `PORTAL_ARQUITETURA.md`** (raiz do repositório) — cada seção marcada
+**Fonte oficial: `docs/architecture/PORTAL_ARQUITETURA.md`** — cada seção marcada
 `[DOCUMENTADO]` (existe em alguma fonte de `knowledge/`) ou `[PROPOSTA]` (sugestão sem base
 documental, a validar). Não confundir com os ADRs do Sistema B em `knowledge/Arquitetura/` —
 aqueles descrevem uma implementação que não existe mais; este documento propõe a
@@ -57,7 +57,7 @@ arquitetura para o que será construído agora.
 
 ## 5. Ordem oficial de implementação
 
-**Fonte oficial: `PORTAL_BACKLOG.md`** (raiz do repositório) — épicos, features, histórias
+**Fonte oficial: `docs/business/PORTAL_BACKLOG.md`** — épicos, features, histórias
 de usuário e tarefas técnicas, já sequenciados (EPIC 0 → EPIC 5, concluídos), com critérios
 de aceite.
 
@@ -65,7 +65,7 @@ de aceite.
 persistência PostgreSQL, Colaboração Mensal e o que vier depois), a ordem oficial passa a ser
 `criativododo-interno/PLANO_MESTRE_IMPLEMENTACAO_PORTAL_DODO.md` (fora do repositório git,
 aprovado pelo responsável do projeto), executado uma fase por vez — ver
-`docs/handoff/PROJECT_STATUS.md` para a fase corrente. `PORTAL_BACKLOG.md` continua sendo a
+`docs/handoff/PROJECT_STATUS.md` para a fase corrente. `docs/business/PORTAL_BACKLOG.md` continua sendo a
 fonte histórica do que já foi construído (EPIC 0-5), não é reaberto nem reescrito.
 
 ## 6. Jornadas oficiais dos usuários
@@ -76,7 +76,7 @@ Marca, Assessoria) são declaradas como tal, não inventadas.
 
 ## 7. Linguagem ubíqua do domínio (glossário)
 
-**Fonte oficial: `PORTAL_GLOSSARIO.md`** (raiz do repositório) — glossário consolidado a
+**Fonte oficial: `docs/architecture/PORTAL_GLOSSARIO.md`** — glossário consolidado a
 partir do Contrato Soberano, das SPECs e dos ADRs, incluindo os termos banidos e a
 divergência de vocabulário com o Sistema B.
 
@@ -90,14 +90,26 @@ refeitos no futuro. Nunca usar como referência isolada, sem checar contra o có
 ## 9. Estado físico do repositório (o que existe de fato)
 
 **Estado operacional vigente:** repositório privado `criativododo-memory`, carregado por
-`/inicio <objetivo>` (ADR-018). **Estado físico e histórico local:** `PORTAL_BRIEFING.md`
-§0 e `START_HERE_NEXT_SESSION.md`; este último é snapshot legado desde 30/07/2026.
+`/inicio <objetivo>` (ADR-018). **Estado físico e histórico local:** `docs/business/PORTAL_BRIEFING.md`
+§0 e `docs/guides/START_HERE_NEXT_SESSION.md`; este último é snapshot legado desde 30/07/2026.
 
 ## 10. Decisões arquiteturais permanentes
 
 **Fonte oficial: `knowledge/ARCHITECTURAL_DECISIONS.md`** — ADRs de escopo deste projeto
 (distintos, e numerados numa série própria, dos ADRs em `knowledge/Arquitetura/`, que
 documentam decisões do Sistema B ausente).
+
+## 11. Diretório `.ai/`
+
+**Não é Fonte da Verdade.** Auditado em 2026-08-05 (Sessão S1): todos os arquivos de
+`.ai/` (`SYSTEM.md`, `ARCHITECTURE.md`, `BUSINESS_RULES.md`, `DESIGN_SYSTEM.md`,
+`CURRENT_STATUS.md`, `STACK.md`, `ROADMAP.md`, `GLOSSARY.md`, `INDEX.md`) estão vazios;
+apenas `.ai/README.md` tem conteúdo, e este apenas lista os arquivos vazios. O diretório
+nunca foi efetivamente populado, apesar de se apresentar como "documentação soberana
+consumida por agentes de IA". Nenhum documento listado nesta tabela deve ser substituído
+por `.ai/`. Enquanto os arquivos permanecerem vazios, ignorar `.ai/` ao consultar fontes de
+verdade; ele só volta a ser válido se for populado oficialmente (com ADR associada) ou
+removido do projeto.
 
 ---
 
@@ -107,12 +119,13 @@ documentam decisões do Sistema B ausente).
 |---|---|---|
 | 1 | Identidade visual | `app/` (Landing) |
 | 2 | Regras de negócio / documentação funcional | `knowledge/` (hierarquia interna acima) |
-| 3 | Definição oficial do produto | `PORTAL_BRIEFING.md` |
-| 4 | Arquitetura consolidada | `PORTAL_ARQUITETURA.md` |
-| 5 | Ordem oficial de implementação | `PORTAL_BACKLOG.md` |
+| 3 | Definição oficial do produto | `docs/business/PORTAL_BRIEFING.md` |
+| 4 | Arquitetura consolidada | `docs/architecture/PORTAL_ARQUITETURA.md` |
+| 5 | Ordem oficial de implementação | `docs/business/PORTAL_BACKLOG.md` |
 | 6 | Jornadas oficiais dos usuários | `USER_JOURNEYS.md` |
-| 7 | Linguagem ubíqua do domínio | `PORTAL_GLOSSARIO.md` |
+| 7 | Linguagem ubíqua do domínio | `docs/architecture/PORTAL_GLOSSARIO.md` |
 | 8 | Design System HTML | Auxiliar — nunca fonte primária |
 | 9 | Estado operacional vigente | `criativododo-memory`, carregado por `/inicio <objetivo>` |
-| 9a | Estado físico e histórico local | `PORTAL_BRIEFING.md` §0 / `START_HERE_NEXT_SESSION.md` (legado) |
+| 9a | Estado físico e histórico local | `docs/business/PORTAL_BRIEFING.md` §0 / `docs/guides/START_HERE_NEXT_SESSION.md` (legado) |
 | 10 | Decisões arquiteturais permanentes | `knowledge/ARCHITECTURAL_DECISIONS.md` |
+| 11 | `.ai/` | **Não é Fonte da Verdade** — vazio, não utilizar |

@@ -55,7 +55,7 @@ Sempre consulte os documentos na seguinte ordem lógica.
 
 Define **o que** construir e **por quê**.
 
-- MELHORIAS_PRODUTO.md
+- docs/research/MELHORIAS_PRODUTO.md
 
 Documento soberano do Produto.
 
@@ -67,11 +67,11 @@ Define funcionalidades oficiais, jornadas, comportamento esperado e prioridades.
 
 Define oportunidades futuras.
 
-- MELHORIAS_MANUS.md
+- docs/research/MELHORIAS_MANUS.md
 
 Este documento contém propostas de evolução.
 
-Nenhum item deste arquivo é obrigatório até ser incorporado ao MELHORIAS_PRODUTO.md.
+Nenhum item deste arquivo é obrigatório até ser incorporado ao docs/research/MELHORIAS_PRODUTO.md.
 
 ---
 
@@ -93,7 +93,7 @@ Nenhuma interface pode ser implementada sem referência de UX.
 
 Define como o Produto será implementado.
 
-- PORTAL_ARQUITETURA.md
+- docs/architecture/PORTAL_ARQUITETURA.md
 
 - knowledge/ARCHITECTURAL_DECISIONS.md
 
@@ -329,7 +329,7 @@ Antes de criar qualquer funcionalidade nova:
 
 1.
 
-Consultar MELHORIAS_PRODUTO.md.
+Consultar docs/research/MELHORIAS_PRODUTO.md.
 
 Verificar se ela já existe.
 
@@ -337,7 +337,7 @@ Verificar se ela já existe.
 
 2.
 
-Consultar MELHORIAS_MANUS.md.
+Consultar docs/research/MELHORIAS_MANUS.md.
 
 Verificar se existem sugestões aprovadas relacionadas.
 
