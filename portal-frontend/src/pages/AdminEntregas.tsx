@@ -4,13 +4,12 @@ import { OperationalRowHeader } from "../components/OperationalRowHeader";
 import { ApiError, apiFetch } from "../lib/api";
 import { formatarData, mesReferenciaCorrente } from "../lib/formatters";
 import { useSession } from "../lib/session";
-
-type FormatoEntrega = "Reel" | "Carrossel" | "Stories1" | "Stories2";
-type EstadoEntrega =
-	| "AGUARDANDO_MATERIAL"
-	| "EM_REVISAO"
-	| "APROVADO"
-	| "PUBLICADO";
+import {
+	ROTULOS_ESTADO_ENTREGA,
+	ROTULOS_FORMATO_ENTREGA,
+	type EstadoEntrega,
+	type FormatoEntrega,
+} from "../lib/statusLabels";
 
 interface Entrega {
 	id: string;
@@ -31,20 +30,6 @@ interface Parceira {
 	chave: string;
 	status: "ATIVA" | "INATIVA";
 }
-
-const LABEL_FORMATO: Record<FormatoEntrega, string> = {
-	Reel: "reel",
-	Carrossel: "carrossel",
-	Stories1: "stories 1",
-	Stories2: "stories 2",
-};
-
-const LABEL_ESTADO: Record<EstadoEntrega, string> = {
-	AGUARDANDO_MATERIAL: "aguardando material",
-	EM_REVISAO: "em revisão",
-	APROVADO: "aprovado",
-	PUBLICADO: "publicado",
-};
 
 /**
  * UC administrativo (Backoffice, preparação para SPEC-012 escrita completa): permite à equipe
@@ -141,7 +126,7 @@ function FormularioEntrega({
 								setFormato(evento.target.value as FormatoEntrega)
 							}
 						>
-							{Object.entries(LABEL_FORMATO).map(([valor, rotulo]) => (
+							{Object.entries(ROTULOS_FORMATO_ENTREGA).map(([valor, rotulo]) => (
 								<option key={valor} value={valor}>
 									{rotulo}
 								</option>
@@ -201,13 +186,13 @@ function LinhaEntrega({
 			<span
 				className={`portal-list-row-status status-pill${entrega.estado === "AGUARDANDO_MATERIAL" ? " is-alert" : ""}`}
 			>
-				{LABEL_ESTADO[entrega.estado]}
+				{ROTULOS_ESTADO_ENTREGA[entrega.estado]}
 			</span>
 
 			<div>
 				<strong className="portal-list-row-title">{nomeParceira}</strong>
 				<p className="portal-list-row-meta">
-					{LABEL_FORMATO[entrega.formato]} · competência {entrega.mesReferencia}
+					{ROTULOS_FORMATO_ENTREGA[entrega.formato]} · competência {entrega.mesReferencia}
 				</p>
 			</div>
 
@@ -415,7 +400,7 @@ export function AdminEntregasPage() {
 								}
 							>
 								<option value="TODOS">todos</option>
-								{Object.entries(LABEL_ESTADO).map(([valor, rotulo]) => (
+								{Object.entries(ROTULOS_ESTADO_ENTREGA).map(([valor, rotulo]) => (
 									<option key={valor} value={valor}>
 										{rotulo}
 									</option>

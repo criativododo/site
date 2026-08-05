@@ -2,18 +2,17 @@ import type { ChangeEvent } from "react";
 import { useEffect, useState } from "react";
 import { ApiError, apiFetch } from "../lib/api";
 import { useSession } from "../lib/session";
-
-type Formato = "Reel" | "Carrossel" | "Stories1" | "Stories2";
-type EstadoEntrega =
-	| "AGUARDANDO_MATERIAL"
-	| "EM_REVISAO"
-	| "APROVADO"
-	| "PUBLICADO";
+import {
+	ROTULOS_ESTADO_ENTREGA,
+	ROTULOS_FORMATO_ENTREGA,
+	type EstadoEntrega,
+	type FormatoEntrega,
+} from "../lib/statusLabels";
 
 interface ItemDePendencia {
 	id: string;
 	mesReferencia: string;
-	formato: Formato;
+	formato: FormatoEntrega;
 	estado: EstadoEntrega;
 	dataEntrega: string;
 }
@@ -34,20 +33,6 @@ interface RespostaBriefing {
 	entrega: ItemDePendencia;
 	briefing: BlocoBriefing | null;
 }
-
-const LABEL_FORMATO: Record<Formato, string> = {
-	Reel: "reel",
-	Carrossel: "carrossel",
-	Stories1: "stories 1",
-	Stories2: "stories 2",
-};
-
-const LABEL_ESTADO: Record<EstadoEntrega, string> = {
-	AGUARDANDO_MATERIAL: "aguardando material",
-	EM_REVISAO: "em revisão",
-	APROVADO: "aprovado",
-	PUBLICADO: "publicado",
-};
 
 function formatarData(dataEntrega: string): string {
 	const [ano, mes, dia] = dataEntrega.split("-");
@@ -323,7 +308,7 @@ function CardDeEntrega({
 			>
 				<div>
 					<strong className="pendencia-format">
-						{LABEL_FORMATO[item.formato]}
+						{ROTULOS_FORMATO_ENTREGA[item.formato]}
 					</strong>
 					<p className="pendencia-date">{textoPrazo(item)}</p>
 				</div>
@@ -338,7 +323,7 @@ function CardDeEntrega({
 										? "·"
 										: "✓"}
 						</span>
-						{LABEL_ESTADO[item.estado]}
+						{ROTULOS_ESTADO_ENTREGA[item.estado]}
 					</span>
 					{acao && <span className="pendencia-next-action">{acao}</span>}
 					<span className="pendencia-icon" aria-hidden="true">

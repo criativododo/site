@@ -4,13 +4,12 @@ import { OperationalRowHeader } from "../components/OperationalRowHeader";
 import { ApiError, apiFetch } from "../lib/api";
 import { formatarData } from "../lib/formatters";
 import { useSession } from "../lib/session";
-
-type FormatoEntrega = "Reel" | "Carrossel" | "Stories1" | "Stories2";
-type EstadoEntrega =
-	| "AGUARDANDO_MATERIAL"
-	| "EM_REVISAO"
-	| "APROVADO"
-	| "PUBLICADO";
+import {
+	rotuloEstadoEntrega,
+	rotuloFormatoEntrega,
+	type EstadoEntrega,
+	type FormatoEntrega,
+} from "../lib/statusLabels";
 
 interface Entrega {
 	id: string;
@@ -48,20 +47,6 @@ interface ConteudoBriefing {
 	dataPostagem: string;
 	orientacao: string;
 }
-
-const LABEL_FORMATO: Record<FormatoEntrega, string> = {
-	Reel: "reel",
-	Carrossel: "carrossel",
-	Stories1: "stories 1",
-	Stories2: "stories 2",
-};
-
-const LABEL_ESTADO: Record<EstadoEntrega, string> = {
-	AGUARDANDO_MATERIAL: "aguardando material",
-	EM_REVISAO: "em revisão",
-	APROVADO: "aprovado",
-	PUBLICADO: "publicado",
-};
 
 /** Remoção só é permitida sem Entrega vinculada, ou enquanto ela ainda está AGUARDANDO_MATERIAL (briefing.service.ts::removerBriefing). */
 function remocaoPermitida(
@@ -319,14 +304,14 @@ function LinhaBriefing({
 				className={`portal-list-row-status status-pill${briefing.entregaId ? "" : " is-alert"}`}
 			>
 				{briefing.estadoEntregaVinculada
-					? LABEL_ESTADO[briefing.estadoEntregaVinculada]
+					? rotuloEstadoEntrega(briefing.estadoEntregaVinculada)
 					: "sem entrega vinculada"}
 			</span>
 
 			<div>
 				<strong className="portal-list-row-title">{nomeParceira}</strong>
 				<p className="portal-list-row-meta">
-					{LABEL_FORMATO[briefing.formato]} · competência{" "}
+					{rotuloFormatoEntrega(briefing.formato)} · competência{" "}
 					{briefing.mesReferencia} · {briefing.look}
 				</p>
 			</div>
@@ -429,7 +414,7 @@ export function AdminBriefingsPage() {
 	function descreverEntrega(entrega: Entrega): string {
 		const nomeParceira =
 			nomePorParceiraId.get(entrega.parceiraId) ?? "parceira desconhecida";
-		return `${nomeParceira} · ${LABEL_FORMATO[entrega.formato]} · competência ${entrega.mesReferencia} · entrega ${formatarData(entrega.dataEntrega)}`;
+		return `${nomeParceira} · ${rotuloFormatoEntrega(entrega.formato)} · competência ${entrega.mesReferencia} · entrega ${formatarData(entrega.dataEntrega)}`;
 	}
 
 	const entregasSemBriefing = useMemo(() => {

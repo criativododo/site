@@ -8,15 +8,16 @@ import {
 	mesReferenciaCorrente,
 } from "../lib/formatters";
 import { useSession } from "../lib/session";
-
-type FormatoEntrega = "Reel" | "Carrossel" | "Stories1" | "Stories2";
-type EstadoEntrega =
-	| "AGUARDANDO_MATERIAL"
-	| "EM_REVISAO"
-	| "APROVADO"
-	| "PUBLICADO";
-type EstadoObrigacao = "EM_ABERTO" | "APROVADO" | "PAGO";
-type TipoObrigacao = "MENSAL" | "AVULSO";
+import {
+	ROTULOS_ESTADO_ENTREGA,
+	ROTULOS_ESTADO_OBRIGACAO,
+	ROTULOS_FORMATO_ENTREGA,
+	ROTULOS_TIPO_OBRIGACAO,
+	type EstadoEntrega,
+	type EstadoObrigacao,
+	type FormatoEntrega,
+	type TipoObrigacao,
+} from "../lib/statusLabels";
 
 interface ItemDePendencia {
 	id: string;
@@ -44,32 +45,6 @@ interface Parceira {
 	chave: string;
 	status: "ATIVA" | "INATIVA";
 }
-
-const LABEL_ESTADO: Record<EstadoObrigacao, string> = {
-	EM_ABERTO: "em aberto",
-	APROVADO: "aprovado",
-	PAGO: "pago",
-};
-
-const LABEL_TIPO: Record<TipoObrigacao, string> = {
-	MENSAL: "mensal",
-	AVULSO: "avulso",
-};
-
-const LABEL_FORMATO: Record<FormatoEntrega, string> = {
-	Reel: "reel",
-	Carrossel: "carrossel",
-	Stories1: "stories 1",
-	Stories2: "stories 2",
-};
-
-const LABEL_ESTADO_ENTREGA: Record<EstadoEntrega, string> = {
-	AGUARDANDO_MATERIAL: "aguardando material",
-	EM_REVISAO: "em revisão",
-	APROVADO: "aprovado",
-	PUBLICADO: "publicado",
-};
-
 
 /** UC-020.01 (Mensal) / UC-020.02 (Avulso) — Mensal só lista Parceiras ATIVA; Avulso, qualquer uma. */
 function FormularioNovaObrigacao({
@@ -333,7 +308,7 @@ function LinhaObrigacao({
 			<span
 				className={`portal-list-row-status status-pill${obrigacao.estado !== "PAGO" ? " is-alert" : ""}`}
 			>
-				{LABEL_ESTADO[obrigacao.estado]}
+				{ROTULOS_ESTADO_OBRIGACAO[obrigacao.estado]}
 			</span>
 
 			<button
@@ -343,7 +318,7 @@ function LinhaObrigacao({
 			>
 				<strong className="portal-list-row-title">{nomeParceira}</strong>
 				<p className="portal-list-row-meta">
-					{LABEL_TIPO[obrigacao.tipo]} · competência {obrigacao.mesReferencia}
+					{ROTULOS_TIPO_OBRIGACAO[obrigacao.tipo]} · competência {obrigacao.mesReferencia}
 				</p>
 			</button>
 
@@ -417,8 +392,8 @@ function LinhaObrigacao({
 						<ul className="portal-list is-tight">
 							{obrigacao.entregasDaCompetencia.map((item) => (
 								<li key={item.id} className="portal-list-row-meta">
-									{LABEL_FORMATO[item.formato]} ·{" "}
-									{LABEL_ESTADO_ENTREGA[item.estado]} · entrega{" "}
+									{ROTULOS_FORMATO_ENTREGA[item.formato]} ·{" "}
+									{ROTULOS_ESTADO_ENTREGA[item.estado]} · entrega{" "}
 									{formatarData(item.dataEntrega)}
 								</li>
 							))}
@@ -629,7 +604,7 @@ export function AdminObrigacoesPage() {
 								}
 							>
 								<option value="TODOS">todos</option>
-								{Object.entries(LABEL_ESTADO).map(([valor, rotulo]) => (
+								{Object.entries(ROTULOS_ESTADO_OBRIGACAO).map(([valor, rotulo]) => (
 									<option key={valor} value={valor}>
 										{rotulo}
 									</option>

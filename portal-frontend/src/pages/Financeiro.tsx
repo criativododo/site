@@ -1,6 +1,14 @@
 import { useEffect, useState } from "react";
 import { ApiError, apiFetch } from "../lib/api";
 import { formatadorMoeda, formatarMoedaPartes } from "../lib/formatters";
+import {
+	ROTULOS_ESTADO_ENTREGA,
+	ROTULOS_ESTADO_OBRIGACAO,
+	ROTULOS_FORMATO_ENTREGA,
+	type EstadoEntrega,
+	type EstadoObrigacao,
+	type FormatoEntrega,
+} from "../lib/statusLabels";
 
 interface ResumoFinanceiro {
 	mesReferencia: string;
@@ -84,17 +92,9 @@ function ResumoDoPeriodo({ mesReferencia }: { mesReferencia: string }) {
 	);
 }
 
-type Formato = "Reel" | "Carrossel" | "Stories1" | "Stories2";
-type EstadoEntrega =
-	| "AGUARDANDO_MATERIAL"
-	| "EM_REVISAO"
-	| "APROVADO"
-	| "PUBLICADO";
-type EstadoObrigacao = "EM_ABERTO" | "APROVADO" | "PAGO";
-
 interface ItemEntregaHistorico {
 	id: string;
-	formato: Formato;
+	formato: FormatoEntrega;
 	estado: EstadoEntrega;
 	dataEntrega: string;
 }
@@ -109,26 +109,6 @@ interface RespostaHistorico {
 	entregas: ItemEntregaHistorico[];
 	obrigacoes: ItemObrigacaoHistorico[];
 }
-
-const LABEL_FORMATO: Record<Formato, string> = {
-	Reel: "reel",
-	Carrossel: "carrossel",
-	Stories1: "stories 1",
-	Stories2: "stories 2",
-};
-
-const LABEL_ESTADO_ENTREGA: Record<EstadoEntrega, string> = {
-	AGUARDANDO_MATERIAL: "aguardando material",
-	EM_REVISAO: "em revisão",
-	APROVADO: "aprovado",
-	PUBLICADO: "publicado",
-};
-
-const LABEL_ESTADO_OBRIGACAO: Record<EstadoObrigacao, string> = {
-	EM_ABERTO: "em aberto",
-	APROVADO: "aprovado",
-	PAGO: "pago",
-};
 
 function HistoricoDoPeriodo({ mesReferencia }: { mesReferencia: string }) {
 	const [historico, setHistorico] = useState<RespostaHistorico | null>(null);
@@ -189,10 +169,10 @@ function HistoricoDoPeriodo({ mesReferencia }: { mesReferencia: string }) {
 						{historico.entregas.map((entrega) => (
 							<li key={entrega.id} className="portal-list-row">
 								<span className="portal-list-row-title">
-									{LABEL_FORMATO[entrega.formato]}
+									{ROTULOS_FORMATO_ENTREGA[entrega.formato]}
 								</span>
 								<span className="portal-list-row-status">
-									{LABEL_ESTADO_ENTREGA[entrega.estado]}
+									{ROTULOS_ESTADO_ENTREGA[entrega.estado]}
 								</span>
 							</li>
 						))}
@@ -210,7 +190,7 @@ function HistoricoDoPeriodo({ mesReferencia }: { mesReferencia: string }) {
 									{formatadorMoeda.format(obrigacao.valor)}
 								</span>
 								<span className="portal-list-row-status">
-									{LABEL_ESTADO_OBRIGACAO[obrigacao.estado]}
+									{ROTULOS_ESTADO_OBRIGACAO[obrigacao.estado]}
 								</span>
 							</li>
 						))}
