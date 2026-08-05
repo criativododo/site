@@ -1,8 +1,12 @@
 import { briefingRepositorio } from "../briefing/briefing.repository.js";
 import type { BlocoBriefing } from "../briefing/briefing.types.js";
+import { colaboracaoMensalRepositorio } from "../colaboracao-mensal/colaboracaoMensal.repository.js";
+import type { ColaboracaoMensal } from "../colaboracao-mensal/colaboracaoMensal.types.js";
 import type { Entrega } from "../conteudo/entrega.types.js";
-import type { Identidade } from "../identidade/identidade.types.js";
 import { entregaRepositorio } from "../conteudo/entrega.repository.js";
+import { documentoEmitidoRepositorio } from "../documentos/documentos.repository.js";
+import type { DocumentoEmitido } from "../documentos/documentos.types.js";
+import type { Identidade } from "../identidade/identidade.types.js";
 import { obrigacaoRepositorio } from "../financeiro/obrigacao.repository.js";
 import type { ObrigacaoFinanceira } from "../financeiro/obrigacao.types.js";
 import { listarContasPendentes } from "../identidade/identidade.service.js";
@@ -12,6 +16,7 @@ import { parceiraRepositorio } from "../parceira/parceira.repository.js";
 import type { Parceira } from "../parceira/parceira.types.js";
 import type {
   ExcecaoOperacional,
+  FichaParceira,
   IndicadoresAdministrativos,
   IndicadoresOperacionaisMarca,
   PanoramaCampanha,
@@ -260,4 +265,75 @@ export async function obterPanoramaCampanha(): Promise<PanoramaCampanha> {
   ]);
 
   return calcularPanoramaCampanha({ indicadores, parceiras, entregas, obrigacoes });
+}
+
+/**
+ * Núcleo puro (testável sem repositório): ficha completa de uma Parceira (Central de
+ * Influenciadoras, Sprint 2). Reaproveita `calcularProximosPrazos`/`calcularExcecoesOperacionais`
+ * já existentes, passando só esta Parceira — zero regra de negócio duplicada.
+ */
+export function calcularFichaParceira(dados: {
+  parceira: Parceira;
+  colaboracoesMensais: ColaboracaoMensal[];
+  entregas: Entrega[];
+  blocosBriefing: BlocoBriefing[];
+  obrigacoes: ObrigacaoFinanceira[];
+  documentos: DocumentoEmitido[];
+  hoje?: string;
+}): FichaParceira {
+  const hoje = dados.hoje ?? hojeISO();
+  const competenciaAtual = hoje.slice(0, 7);
+
+  const colaboracaoAtual =
+    dados.colaboracoesMensais.find((colaboracao) => colaboracao.mesReferencia === competenciaAtual) ?? null;
+  const historicoColaboracoes = dados.colaboracoesMensais
+    .filter((colaboracao) => colaboracao.mesReferencia !== competenciaAtual)
+    .sort((a, b) => b.mesReferencia.localeCompare(a.mesReferencia));
+
+  const obrigacoesPendentes = dados.obrigacoes.filter((obrigacao) => obrigacao.estado !== "PAGO");
+  const obrigacoesPagas = dados.obrigacoes.filter((obrigacao) => obrigacao.estado === "PAGO");
+
+  const parceiras = [dados.parceira];
+
+  return {
+    parceira: dados.parceira,
+    competenciaAtual,
+    colaboracaoAtual,
+    historicoColaboracoes,
+    entregas: {
+      aguardandoMaterial: dados.entregas.filter((entrega) => entrega.estado === "AGUARDANDO_MATERIAL").length,
+      emRevisao: dados.entregas.filter((entrega) => entrega.estado === "EM_REVISAO").length,
+      atrasadas: dados.entregas.filter(
+        (entrega) => entrega.estado === "AGUARDANDO_MATERIAL" && entrega.dataEntrega < hoje,
+      ).length,
+    },
+    proximosPrazos: calcularProximosPrazos({ entregas: dados.entregas, blocosBriefing: dados.blocosBriefing, parceiras, hoje }),
+    excecoes: calcularExcecoesOperacionais({ entregas: dados.entregas, parceiras, hoje }),
+    financeiro: {
+      obrigacoesPendentes,
+      obrigacoesPagas,
+      valorPendente: obrigacoesPendentes.reduce((total, obrigacao) => total + obrigacao.valor, 0),
+    },
+    documentos: [...dados.documentos].sort((a, b) => b.geradoEm.localeCompare(a.geradoEm)),
+  };
+}
+
+/** UC da Central de Influenciadoras (Sprint 2): agrega os módulos existentes para uma Parceira. Retorna `null` se o id não existir. */
+export async function obterFichaParceira(parceiraId: string): Promise<FichaParceira | null> {
+  const parceira = await parceiraRepositorio.buscarPorId(parceiraId);
+  if (!parceira) {
+    return null;
+  }
+
+  const [colaboracoesMensais, entregas, obrigacoes, documentos, blocosBriefingTodos] = await Promise.all([
+    colaboracaoMensalRepositorio.listarPorParceira(parceiraId),
+    entregaRepositorio.listarPorParceira(parceiraId),
+    obrigacaoRepositorio.listarPorParceira(parceiraId),
+    documentoEmitidoRepositorio.listarPorParceiraId(parceiraId),
+    briefingRepositorio.listarTodos(),
+  ]);
+
+  const blocosBriefing = blocosBriefingTodos.filter((bloco) => bloco.parceiraId === parceiraId);
+
+  return calcularFichaParceira({ parceira, colaboracoesMensais, entregas, blocosBriefing, obrigacoes, documentos });
 }

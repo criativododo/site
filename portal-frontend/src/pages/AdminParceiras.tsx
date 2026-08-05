@@ -1,11 +1,11 @@
 import type { ChangeEvent } from "react";
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { OperationalRowHeader } from "../components/OperationalRowHeader";
 import { ApiError, apiFetch } from "../lib/api";
 import { formatadorMoeda, formatarData } from "../lib/formatters";
 import { useSession } from "../lib/session";
-
-type StatusParceira = "ATIVA" | "INATIVA";
+import { rotuloStatusParceira, type StatusParceira } from "../lib/statusLabels";
 
 interface CondicaoComercial {
 	valorMensal: number;
@@ -266,7 +266,7 @@ function LinhaParceira({
 			<span
 				className={`portal-list-row-status status-pill${ativa ? "" : " is-alert"}`}
 			>
-				{ativa ? "ativa" : "inativa"}
+				{rotuloStatusParceira(parceira.status)}
 			</span>
 
 			<button type="button" className="admin-row-title-button" onClick={aoAlternarDetalhes}>
@@ -325,6 +325,9 @@ function LinhaParceira({
 						<dt>prazo de uso de imagem</dt>
 						<dd>{parceira.condicaoComercial.prazoUsoImagemDias} dias</dd>
 					</dl>
+					<Link to={`/admin/parceiras/${parceira.id}`} className="link-button is-large">
+						ver ficha completa →
+					</Link>
 				</div>
 			)}
 

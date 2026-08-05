@@ -6,11 +6,13 @@ import { AdminCampanhaPage } from "./pages/AdminCampanha";
 import { AdminPage } from "./pages/Admin";
 import { AdminBriefingsPage } from "./pages/AdminBriefings";
 import { AdminColaboracoesMensaisPage } from "./pages/AdminColaboracoesMensais";
+import { AdminComunicacaoPage } from "./pages/AdminComunicacao";
 import { AdminDashboardPage } from "./pages/AdminDashboard";
 import { AdminEntregasPage } from "./pages/AdminEntregas";
 import { AdminObrigacoesPage } from "./pages/AdminObrigacoes";
 import { AdminParceirasPage } from "./pages/AdminParceiras";
 import { CadastroPage } from "./pages/Cadastro";
+import { CentralInfluenciadoraPage } from "./pages/CentralInfluenciadora";
 import { ConvitePage } from "./pages/Convite";
 import { FinanceiroPage } from "./pages/Financeiro";
 import { LoginPage } from "./pages/Login";
@@ -203,6 +205,38 @@ function App() {
 				element={
 					<RotaProtegida>
 						<AdminCampanhaPage />
+					</RotaProtegida>
+				}
+			/>
+
+			{/*
+			 * Central de Influenciadoras (Sprint 2) — ficha completa de uma Parceira, mesma família
+			 * visual autônoma de /marca/dashboard e /admin/campanha acima. /admin/parceiras (dentro
+			 * do PortalLayout, abaixo) continua sendo a lista/índice administrativo; esta rota é o
+			 * destino ao abrir uma Parceira específica a partir de lá.
+			 */}
+			<Route
+				path="/admin/parceiras/:id"
+				element={
+					<RotaProtegida>
+						<CentralInfluenciadoraPage />
+					</RotaProtegida>
+				}
+			/>
+
+			{/*
+			 * Comunicação (Sprint 2) — mesma família visual autônoma acima (revisão editorial,
+			 * auditoria obrigatória desta sessão: antes vivia dentro do PortalLayout com o
+			 * vocabulário genérico de `.portal-page`, não pertencia à família). O menu do
+			 * PortalLayout continua linkando para `/admin/comunicacao` normalmente — mesmo padrão
+			 * de /admin/campanha e /admin/parceiras/:id, que também são linkados a partir da
+			 * sidebar mas vivem fora do shell.
+			 */}
+			<Route
+				path="/admin/comunicacao"
+				element={
+					<RotaProtegida>
+						<AdminComunicacaoPage />
 					</RotaProtegida>
 				}
 			/>

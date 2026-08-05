@@ -4,6 +4,7 @@ import { bloquearParceiraIdDeCliente, parceiraDaSessao } from "../middleware/iso
 import { requireAdmin, requireAdministradorMarca, requireAuth, requireContaAtiva } from "../middleware/requireAuth.js";
 import { briefingAdminRoutes } from "../modules/briefing/admin.routes.js";
 import { colaboracaoMensalAdminRoutes } from "../modules/colaboracao-mensal/admin.routes.js";
+import { comunicacaoRoutes } from "../modules/comunicacao/comunicacao.routes.js";
 import { entregaAdminRoutes } from "../modules/conteudo/admin.routes.js";
 import { conteudoRoutes } from "../modules/conteudo/conteudo.routes.js";
 import { campanhaRoutes } from "../modules/dashboard/campanha.routes.js";
@@ -58,6 +59,9 @@ apiRoutes.use("/marca/dashboard", requireAdministradorMarca, dashboardMarcaRoute
 
 /** ADR-023 — Mesa da Campanha: panorama agregado, hub pós-login do Administrador. */
 apiRoutes.use("/admin/campanha", requireAdmin, campanhaRoutes);
+
+/** Comunicação (Sprint 2) — central de comunicação assistida, exclusiva do Administrador. */
+apiRoutes.use("/admin/comunicacao", requireAdmin, comunicacaoRoutes);
 
 /** Backoffice administrativo — Entregas (criação administrativa; SPEC-012, preparação para CRUD completo). */
 apiRoutes.use("/admin/entregas", requireAdmin, entregaAdminRoutes);

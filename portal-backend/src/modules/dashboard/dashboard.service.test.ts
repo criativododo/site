@@ -1,12 +1,15 @@
 import { describe, expect, it } from "vitest";
 import type { BlocoBriefing } from "../briefing/briefing.types.js";
+import type { ColaboracaoMensal } from "../colaboracao-mensal/colaboracaoMensal.types.js";
 import type { Entrega } from "../conteudo/entrega.types.js";
+import type { DocumentoEmitido } from "../documentos/documentos.types.js";
 import type { ObrigacaoFinanceira } from "../financeiro/obrigacao.types.js";
 import type { Identidade } from "../identidade/identidade.types.js";
 import type { SolicitacaoExclusao } from "../lgpd/exclusao.types.js";
 import type { Parceira } from "../parceira/parceira.types.js";
 import {
   calcularExcecoesOperacionais,
+  calcularFichaParceira,
   calcularIndicadores,
   calcularIndicadoresMarca,
   calcularPagamentosCompetencia,
@@ -77,6 +80,37 @@ function blocoBriefing(overrides: Partial<BlocoBriefing> = {}): BlocoBriefing {
     dataAprovacaoInterna: "2026-07-18",
     dataCriacao: "2026-07-01T00:00:00.000Z",
     dataAtualizacao: "2026-07-01T00:00:00.000Z",
+    ...overrides,
+  };
+}
+
+function colaboracaoMensal(overrides: Partial<ColaboracaoMensal> = {}): ColaboracaoMensal {
+  return {
+    id: "cm1",
+    parceiraId: "p1",
+    mesReferencia: "2026-07",
+    condicaoComercial,
+    status: "COMPILADA",
+    criadoPor: "admin@dodo.dev",
+    criadoEm: "2026-07-01T00:00:00.000Z",
+    quantidadeRegistrosGerados: 3,
+    ...overrides,
+  };
+}
+
+function documentoEmitido(overrides: Partial<DocumentoEmitido> = {}): DocumentoEmitido {
+  return {
+    id: "doc1",
+    tipo: "CONTRATO",
+    templateVersaoId: "tv1",
+    parceiraId: "p1",
+    colaboracaoMensalId: null,
+    geradoEm: "2026-07-01T00:00:00.000Z",
+    geradoPor: "admin@dodo.dev",
+    status: "GERADO",
+    hash: "hash1",
+    urlStorage: "https://storage.example/doc1.pdf",
+    storageFileId: "file1",
     ...overrides,
   };
 }
@@ -453,5 +487,97 @@ describe("calcularPanoramaCampanha", () => {
       excecoes: [{ tipo: "atrasado", parceiraNome: "Maria", formato: "Reel", data: "2026-07-10" }],
       pagamentos: { pendentes: 1, valorPendente: 800 },
     });
+  });
+});
+
+describe("calcularFichaParceira", () => {
+  const dadosBase = {
+    parceira: parceira({ id: "p1", nome: "Maria" }),
+    colaboracoesMensais: [] as ColaboracaoMensal[],
+    entregas: [] as Entrega[],
+    blocosBriefing: [] as BlocoBriefing[],
+    obrigacoes: [] as ObrigacaoFinanceira[],
+    documentos: [] as DocumentoEmitido[],
+    hoje: "2026-07-15",
+  };
+
+  it("identifica a Colaboração Mensal da competência corrente como colaboracaoAtual", () => {
+    const resultado = calcularFichaParceira({
+      ...dadosBase,
+      colaboracoesMensais: [
+        colaboracaoMensal({ id: "atual", mesReferencia: "2026-07" }),
+        colaboracaoMensal({ id: "antiga", mesReferencia: "2026-06" }),
+      ],
+    });
+    expect(resultado.colaboracaoAtual?.id).toBe("atual");
+  });
+
+  it("colaboracaoAtual é null quando a competência corrente ainda não foi compilada", () => {
+    const resultado = calcularFichaParceira({
+      ...dadosBase,
+      colaboracoesMensais: [colaboracaoMensal({ id: "antiga", mesReferencia: "2026-06" })],
+    });
+    expect(resultado.colaboracaoAtual).toBeNull();
+    expect(resultado.competenciaAtual).toBe("2026-07");
+  });
+
+  it("historicoColaboracoes exclui a atual e ordena da mais recente para a mais antiga", () => {
+    const resultado = calcularFichaParceira({
+      ...dadosBase,
+      colaboracoesMensais: [
+        colaboracaoMensal({ id: "atual", mesReferencia: "2026-07" }),
+        colaboracaoMensal({ id: "maio", mesReferencia: "2026-05" }),
+        colaboracaoMensal({ id: "junho", mesReferencia: "2026-06" }),
+      ],
+    });
+    expect(resultado.historicoColaboracoes.map((c) => c.id)).toEqual(["junho", "maio"]);
+  });
+
+  it("separa obrigações pendentes de pagas e soma valorPendente só das pendentes", () => {
+    const resultado = calcularFichaParceira({
+      ...dadosBase,
+      obrigacoes: [
+        obrigacao({ id: "a", estado: "EM_ABERTO", valor: 1000 }),
+        obrigacao({ id: "b", estado: "APROVADO", valor: 500 }),
+        obrigacao({ id: "c", estado: "PAGO", valor: 2000 }),
+      ],
+    });
+    expect(resultado.financeiro.obrigacoesPendentes.map((o) => o.id)).toEqual(["a", "b"]);
+    expect(resultado.financeiro.obrigacoesPagas.map((o) => o.id)).toEqual(["c"]);
+    expect(resultado.financeiro.valorPendente).toBe(1500);
+  });
+
+  it("conta entregas por estado, igual a calcularIndicadores, escopado a esta Parceira", () => {
+    const resultado = calcularFichaParceira({
+      ...dadosBase,
+      entregas: [
+        entrega({ id: "atrasada", estado: "AGUARDANDO_MATERIAL", dataEntrega: "2026-07-10" }),
+        entrega({ id: "no-prazo", estado: "AGUARDANDO_MATERIAL", dataEntrega: "2026-07-20" }),
+        entrega({ id: "revisao", estado: "EM_REVISAO" }),
+      ],
+    });
+    expect(resultado.entregas).toEqual({ aguardandoMaterial: 2, emRevisao: 1, atrasadas: 1 });
+  });
+
+  it("documentos vem ordenado do mais recente para o mais antigo", () => {
+    const resultado = calcularFichaParceira({
+      ...dadosBase,
+      documentos: [
+        documentoEmitido({ id: "antigo", geradoEm: "2026-05-01T00:00:00.000Z" }),
+        documentoEmitido({ id: "recente", geradoEm: "2026-07-01T00:00:00.000Z" }),
+      ],
+    });
+    expect(resultado.documentos.map((d) => d.id)).toEqual(["recente", "antigo"]);
+  });
+
+  it("sem nenhum dado vinculado, retorna listas vazias e contagens zeradas", () => {
+    const resultado = calcularFichaParceira(dadosBase);
+    expect(resultado.colaboracaoAtual).toBeNull();
+    expect(resultado.historicoColaboracoes).toEqual([]);
+    expect(resultado.entregas).toEqual({ aguardandoMaterial: 0, emRevisao: 0, atrasadas: 0 });
+    expect(resultado.proximosPrazos).toEqual([]);
+    expect(resultado.excecoes).toEqual([]);
+    expect(resultado.financeiro).toEqual({ obrigacoesPendentes: [], obrigacoesPagas: [], valorPendente: 0 });
+    expect(resultado.documentos).toEqual([]);
   });
 });

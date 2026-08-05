@@ -23,6 +23,7 @@ const gruposNavAdmin = [
 	],
 	[
 		{ to: "/admin/parceiras", label: "parceiras" },
+		{ to: "/admin/comunicacao", label: "comunicação" },
 		{ to: "/admin/financeiro", label: "obrigações" },
 		{ to: "/admin/colaboracoes-mensais", label: "colaboração mensal" },
 		{ to: "/admin", label: "moderação" },

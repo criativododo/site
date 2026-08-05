@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { mensagemDeCamposObrigatoriosAusentes } from "../../shared/validacaoCampos.js";
+import { obterFichaParceira } from "../dashboard/dashboard.service.js";
 import {
   alterarStatusParceira,
   cadastrarParceira,
@@ -12,6 +13,16 @@ export const parceiraRoutes = Router();
 /** UC-002.03 · Consultar base (Ativa/Inativa). */
 parceiraRoutes.get("/", async (_req, res) => {
   res.json({ itens: await listarParceiras() });
+});
+
+/** Central de Influenciadoras (Sprint 2) — ficha completa de uma Parceira, agregação só leitura. */
+parceiraRoutes.get("/:id/ficha", async (req, res) => {
+  const ficha = await obterFichaParceira(req.params.id);
+  if (!ficha) {
+    res.status(404).json({ error: "parceira não encontrada." });
+    return;
+  }
+  res.json(ficha);
 });
 
 /** RF-001/RN-01: cadastro administrativo — nasce sempre `INATIVA`. */

@@ -1,0 +1,314 @@
+/*
+ * Comunicação (Sprint 2) — revisão editorial: mesma família visual autônoma de
+ * Publicacao.css/EnvioConteudo.css/CentralInfluenciadora.css (nav sticky própria, coluna de
+ * 640px, eyebrow + h1, seções com borda superior, rodapé). Antes desta revisão, a tela vivia
+ * dentro do PortalLayout com o vocabulário genérico de `.portal-page` — não pertencia à mesma
+ * família das telas de referência (auditoria obrigatória, sessão desta tarefa). Prefixo
+ * `comunicacao-` próprio (cópia deliberada, não import compartilhado — mesmo padrão de
+ * página-local CSS de toda a família), valores idênticos aos de `CentralInfluenciadora.css`.
+ */
+
+.comunicacao-tela {
+	min-height: 100vh;
+	background: var(--color-paper);
+	color: var(--color-noir);
+	font-family: var(--font-body);
+}
+
+.comunicacao-nav {
+	position: sticky;
+	top: 0;
+	z-index: 20;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 20px 32px;
+	background: color-mix(in srgb, var(--color-paper) 82%, transparent);
+	backdrop-filter: blur(6px);
+}
+
+.comunicacao-nav-marca {
+	font-family: var(--font-display);
+	font-weight: 700;
+	font-size: 14px;
+	color: var(--color-noir);
+	opacity: 0.72;
+}
+
+.comunicacao-nav-link {
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 600;
+	color: var(--color-grafite-70, var(--color-noir));
+	text-decoration: none;
+	position: relative;
+	padding-bottom: 2px;
+}
+
+.comunicacao-nav-link::after {
+	content: "";
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	height: 1px;
+	background: var(--color-cherry);
+	transform: scaleX(0);
+	transform-origin: right;
+	transition: transform 0.4s var(--ease-editorial);
+}
+
+.comunicacao-nav-link:hover::after {
+	transform: scaleX(1);
+	transform-origin: left;
+}
+
+.comunicacao-contexto {
+	max-width: 640px;
+	margin: 0 auto;
+	padding: 20px 32px 0;
+}
+
+.comunicacao-eyebrow {
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 700;
+	letter-spacing: 0.02em;
+	text-transform: lowercase;
+	color: var(--color-cherry);
+	margin-bottom: 16px;
+}
+
+.comunicacao-titulo {
+	font-family: var(--font-display);
+	font-weight: 800;
+	font-size: clamp(1.8rem, 1.5vw + 1.25rem, 2.5rem);
+	line-height: 1.16;
+	letter-spacing: -0.005em;
+	color: var(--color-noir);
+	text-transform: lowercase;
+}
+
+.comunicacao-intro {
+	margin-top: 16px;
+	font-weight: 300;
+	font-size: var(--text-body-lg);
+	line-height: var(--leading-relaxed);
+	color: color-mix(in srgb, var(--color-noir) 70%, transparent);
+	max-width: 62ch;
+}
+
+.comunicacao-corpo {
+	max-width: 640px;
+	margin: 0 auto;
+	padding: 48px 32px 0;
+}
+
+.comunicacao-secao {
+	padding: 32px 0;
+	border-top: 1px solid var(--color-grafite-15, rgba(27, 23, 23, 0.1));
+}
+
+.comunicacao-secao:first-child {
+	border-top: none;
+	padding-top: 0;
+}
+
+.comunicacao-secao-titulo {
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 700;
+	text-transform: lowercase;
+	color: color-mix(in srgb, var(--color-noir) 55%, transparent);
+	margin-bottom: 20px;
+}
+
+.comunicacao-categorias {
+	display: flex;
+	flex-direction: column;
+	gap: 28px;
+}
+
+.comunicacao-categoria-titulo {
+	font-family: var(--font-display);
+	font-weight: 700;
+	font-size: var(--text-body-lg);
+	color: var(--color-cherry);
+	text-transform: lowercase;
+	margin-bottom: 10px;
+}
+
+.comunicacao-modelos-lista {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+}
+
+.comunicacao-modelo-item {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	padding: 14px 0;
+	border-top: 1px solid var(--color-grafite-15, rgba(27, 23, 23, 0.08));
+}
+
+.comunicacao-modelo-item:first-child {
+	border-top: none;
+	padding-top: 0;
+}
+
+.comunicacao-modelo-titulo {
+	font-family: var(--font-display);
+	font-size: var(--text-body-lg);
+	font-weight: 600;
+	color: var(--color-noir);
+	text-transform: lowercase;
+}
+
+.comunicacao-modelo-corpo {
+	font-weight: 300;
+	font-size: var(--text-body-lg);
+	line-height: var(--leading-relaxed);
+	color: color-mix(in srgb, var(--color-noir) 68%, transparent);
+	max-width: 62ch;
+}
+
+.comunicacao-variaveis-lista {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+}
+
+.comunicacao-variavel-item {
+	display: flex;
+	align-items: baseline;
+	gap: 16px;
+	padding: 12px 0;
+	border-top: 1px solid var(--color-grafite-15, rgba(27, 23, 23, 0.08));
+}
+
+.comunicacao-variavel-item:first-child {
+	border-top: none;
+	padding-top: 0;
+}
+
+.comunicacao-variavel-codigo {
+	flex-shrink: 0;
+	font-family: ui-monospace, "SF Mono", monospace;
+	font-size: var(--text-meta);
+	font-weight: 600;
+	color: var(--color-cherry);
+	background: color-mix(in srgb, var(--color-cherry) 8%, transparent);
+	padding: 3px 8px;
+	border-radius: var(--radius-sm);
+	min-width: 92px;
+	text-align: center;
+}
+
+.comunicacao-variavel-descricao {
+	font-size: var(--text-body);
+	color: color-mix(in srgb, var(--color-noir) 65%, transparent);
+}
+
+.comunicacao-historico-lista {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+}
+
+.comunicacao-historico-item {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	padding: 16px 0;
+	border-top: 1px solid var(--color-grafite-15, rgba(27, 23, 23, 0.08));
+}
+
+.comunicacao-historico-item:first-child {
+	border-top: none;
+	padding-top: 0;
+}
+
+.comunicacao-historico-cabecalho {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 12px;
+}
+
+.comunicacao-historico-parceira {
+	font-family: var(--font-display);
+	font-size: var(--text-body-lg);
+	font-weight: 600;
+	color: var(--color-noir);
+}
+
+.comunicacao-historico-categoria {
+	flex-shrink: 0;
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 600;
+	color: var(--color-cherry);
+	text-transform: lowercase;
+}
+
+.comunicacao-historico-corpo {
+	font-weight: 300;
+	font-size: var(--text-body-lg);
+	line-height: var(--leading-relaxed);
+	color: color-mix(in srgb, var(--color-noir) 78%, transparent);
+	max-width: 62ch;
+}
+
+.comunicacao-historico-meta {
+	font-size: var(--text-meta);
+	color: color-mix(in srgb, var(--color-noir) 50%, transparent);
+}
+
+.comunicacao-vazio {
+	font-size: var(--text-body-lg);
+	color: color-mix(in srgb, var(--color-noir) 55%, transparent);
+}
+
+.comunicacao-rodape {
+	max-width: 640px;
+	margin: 40px auto 0;
+	padding: 32px 32px 96px;
+	border-top: 1px solid var(--color-grafite-15, rgba(27, 23, 23, 0.1));
+}
+
+.comunicacao-rodape-nota {
+	font-weight: 300;
+	font-size: var(--text-body-lg);
+	line-height: var(--leading-relaxed);
+	color: color-mix(in srgb, var(--color-noir) 60%, transparent);
+	max-width: 48ch;
+}
+
+@media (max-width: 900px) {
+	.comunicacao-nav,
+	.comunicacao-contexto,
+	.comunicacao-corpo,
+	.comunicacao-rodape {
+		padding-left: 20px;
+		padding-right: 20px;
+	}
+
+	.comunicacao-titulo {
+		font-size: clamp(1.5rem, 5vw + 1rem, 1.9rem);
+	}
+
+	.comunicacao-corpo {
+		padding-top: 36px;
+	}
+
+	.comunicacao-rodape {
+		padding-bottom: 64px;
+	}
+}

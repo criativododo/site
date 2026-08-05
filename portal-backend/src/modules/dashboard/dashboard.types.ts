@@ -1,4 +1,8 @@
+import type { ColaboracaoMensal } from "../colaboracao-mensal/colaboracaoMensal.types.js";
 import type { FormatoEntrega } from "../conteudo/entrega.types.js";
+import type { DocumentoEmitido } from "../documentos/documentos.types.js";
+import type { ObrigacaoFinanceira } from "../financeiro/obrigacao.types.js";
+import type { Parceira } from "../parceira/parceira.types.js";
 
 /**
  * Painel operacional do Administrador: agregações de leitura sobre Parceira (SPEC-001/002),
@@ -92,6 +96,44 @@ export interface ExcecaoOperacional {
  * leitura sobre o que os módulos já expõem, reaproveitando integralmente
  * `IndicadoresAdministrativos` (zero regra de negócio duplicada).
  */
+/**
+ * Ficha completa de uma Parceira (Central de Influenciadoras, Sprint 2) — agregação só
+ * leitura sobre Parceira, ColaboracaoMensal (ADR-016), Entrega (SPEC-012), Briefing (SPEC-009),
+ * Obrigação Financeira (SPEC-020) e Documento Emitido (Motor de Documentos, Fase 5). Reaproveita
+ * `ProximoPrazo`/`ExcecaoOperacional` já existentes, só escopados a uma única Parceira.
+ *
+ * Lacunas declaradas (ADR-003, não presumidas — mesmo padrão de `MarcaDashboard.tsx`/
+ * `AdminCampanha.tsx`): não existe módulo de Comunicação (mensagens/histórico de contato) nem
+ * campo de Observações (notas livres do Administrador) implementado neste repositório hoje —
+ * nenhum dos dois aparece neste tipo. "Cupom" não é entidade própria: é `Parceira.chave`
+ * (ChaveInfluenciadora, SPEC-002 §6.2), já presente em `parceira`. "Nota fiscal" não é um
+ * `TipoDocumentoEmitido` distinto hoje — o mais próximo existente é `RECIBO`, incluído em
+ * `documentos` como qualquer outro tipo.
+ */
+export interface FichaParceira {
+  parceira: Parceira;
+  /** `AAAA-MM` — mês corrente, para exibir mesmo quando `colaboracaoAtual` for `null`. */
+  competenciaAtual: string;
+  /** ColaboracaoMensal da competência corrente (`AAAA-MM` de hoje), ou `null` se ainda não compilada. */
+  colaboracaoAtual: ColaboracaoMensal | null;
+  /** Demais competências, mais recente primeiro — nunca inclui `colaboracaoAtual`. */
+  historicoColaboracoes: ColaboracaoMensal[];
+  entregas: {
+    aguardandoMaterial: number;
+    emRevisao: number;
+    atrasadas: number;
+  };
+  proximosPrazos: ProximoPrazo[];
+  excecoes: ExcecaoOperacional[];
+  financeiro: {
+    obrigacoesPendentes: ObrigacaoFinanceira[];
+    obrigacoesPagas: ObrigacaoFinanceira[];
+    valorPendente: number;
+  };
+  /** Todos os `DocumentoEmitido` desta Parceira (contratos, aditivos, recibos, etc.), mais recente primeiro. */
+  documentos: DocumentoEmitido[];
+}
+
 export interface PanoramaCampanha {
   /** `AAAA-MM` — mês corrente, usado para escopar `pagamentos` (diferente do Financeiro administrativo, que é histórico completo). */
   competenciaAtual: string;
