@@ -1,0 +1,25 @@
+#!/bin/sh
+
+echo
+echo "======================================"
+echo "PRE-PUSH"
+echo "======================================"
+
+if [ -f package.json ]; then
+
+    if npm pkg get scripts.typecheck >/dev/null 2>&1; then
+        echo
+        echo "→ TypeScript"
+        npm run typecheck || exit 1
+    fi
+
+    if npm pkg get scripts.test >/dev/null 2>&1; then
+        echo
+        echo "→ Testes"
+        npm test || exit 1
+    fi
+
+fi
+
+echo
+echo "✔ pre-push OK"
