@@ -1,0 +1,10 @@
+{
+  "projectId": "5724e6f6-f23e-47fd-b827-ada036276ee7",
+  "pkg": "@criativododo/design-system",
+  "globalName": "CriativoDodo",
+  "shape": "package",
+  "cssEntry": "src/styles/components.css",
+  "extraFonts": ["fonts/ElmsSans.ttf", "fonts/WorkSans.ttf"],
+  "guidelinesGlob": ["docs/*.md"],
+  "readmeHeader": ".design-sync/conventions.md"
+}
