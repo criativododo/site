@@ -60,3 +60,41 @@ export function formatarPrazoRelativo(diasRestantes: number): string {
 	if (diasRestantes === 1) return "vence amanhã";
 	return `vence em ${diasRestantes} dias`;
 }
+
+/**
+ * "5 de agosto" — dia por extenso a partir de uma data pura `AAAA-MM-DD`. Faz split manual
+ * (mesma técnica de `Pendencias.tsx`) em vez de `new Date(dataIso)` para não sofrer o desvio
+ * de fuso documentado em `formatarData` acima.
+ */
+export function formatarDiaMes(dataIso: string): string {
+	const [ano, mes, dia] = dataIso.split("-").map(Number);
+	return new Date(Date.UTC(ano, mes - 1, dia)).toLocaleDateString("pt-BR", {
+		day: "numeric",
+		month: "long",
+		timeZone: "UTC",
+	});
+}
+
+const MESES_PT = [
+	"janeiro",
+	"fevereiro",
+	"março",
+	"abril",
+	"maio",
+	"junho",
+	"julho",
+	"agosto",
+	"setembro",
+	"outubro",
+	"novembro",
+	"dezembro",
+];
+
+/**
+ * "agosto de 2026" — competência por extenso a partir de `AAAA-MM` (`PanoramaCampanha.competenciaAtual`).
+ * Split manual, mesma técnica de `formatarDiaMes` — sem instanciar `Date` a partir de string.
+ */
+export function formatarCompetencia(mesReferencia: string): string {
+	const [ano, mes] = mesReferencia.split("-").map(Number);
+	return `${MESES_PT[mes - 1]} de ${ano}`;
+}

@@ -110,9 +110,10 @@ authRoutes.get("/google/callback", async (req, res) => {
     });
 
     // ADR-011: cadastro pendente de preenchimento manda para /cadastro antes de qualquer tela do Portal.
+    // ADR-023: Mesa da Campanha é o destino pós-login do Administrador (não mais /admin/dashboard).
     const destino =
       identidade.papelAtor === "ADMINISTRADOR"
-        ? "/admin/dashboard"
+        ? "/admin/campanha"
         : identidade.estadoConta === "AGUARDANDO_CADASTRO"
           ? "/cadastro"
           : "/pendencias";
@@ -178,10 +179,12 @@ authRoutes.get("/dev-login", async (req, res) => {
 
   const destino =
     papelAtor === "ADMINISTRADOR"
-      ? "/admin/dashboard"
-      : estadoConta === "AGUARDANDO_CADASTRO"
-        ? "/cadastro"
-        : "/pendencias";
+      ? "/admin/campanha"
+      : papelAtor === "ADMINISTRADOR_MARCA"
+        ? "/marca/dashboard"
+        : estadoConta === "AGUARDANDO_CADASTRO"
+          ? "/cadastro"
+          : "/pendencias";
   res.redirect(`${env.frontendUrl}${destino}`);
 });
 

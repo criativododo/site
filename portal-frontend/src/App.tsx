@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { PortalLayout } from "./components/PortalLayout";
 import { RotaProtegida } from "./components/RotaProtegida";
 import { useSession } from "./lib/session";
+import { AdminCampanhaPage } from "./pages/AdminCampanha";
 import { AdminPage } from "./pages/Admin";
 import { AdminBriefingsPage } from "./pages/AdminBriefings";
 import { AdminColaboracoesMensaisPage } from "./pages/AdminColaboracoesMensais";
@@ -13,6 +14,7 @@ import { CadastroPage } from "./pages/Cadastro";
 import { ConvitePage } from "./pages/Convite";
 import { FinanceiroPage } from "./pages/Financeiro";
 import { LoginPage } from "./pages/Login";
+import { MarcaDashboardPage } from "./pages/MarcaDashboard";
 import { PendenciasPage } from "./pages/Pendencias";
 import { PerfilPage } from "./pages/Perfil";
 import { PrivacidadePage } from "./pages/Privacidade";
@@ -41,8 +43,13 @@ function RedirecionamentoInicial() {
 		return <Navigate to="/login" replace />;
 	}
 
+	// ADR-023: Mesa da Campanha é o destino pós-login do Administrador (não mais /admin/dashboard).
 	const destino =
-		sessao.papelAtor === "ADMINISTRADOR" ? "/admin/dashboard" : "/pendencias";
+		sessao.papelAtor === "ADMINISTRADOR"
+			? "/admin/campanha"
+			: sessao.papelAtor === "ADMINISTRADOR_MARCA"
+				? "/marca/dashboard"
+				: "/pendencias";
 	return <Navigate to={destino} replace />;
 }
 
@@ -166,6 +173,36 @@ function App() {
 				element={
 					<RotaProtegida>
 						<PerfilInfluenciadoraPage />
+					</RotaProtegida>
+				}
+			/>
+
+			{/*
+			 * Painel da Marca (ADR-022) — pertence, visualmente, à família de páginas autônomas
+			 * acima (Publicação/Envio/Identidade), não ao shell administrativo do
+			 * PortalLayout: nav própria, fotografia editorial, sem sidebar. Diferente das
+			 * "propostas" acima, esta rota já é RBAC-real (`ADMINISTRADOR_MARCA`, ADR-022), não
+			 * some se não aprovada — só sua direção visual passou por revisão nesta sessão.
+			 */}
+			<Route
+				path="/marca/dashboard"
+				element={
+					<RotaProtegida>
+						<MarcaDashboardPage />
+					</RotaProtegida>
+				}
+			/>
+
+			{/*
+			 * Mesa da Campanha (ADR-023) — hub pós-login do Administrador, mesma família visual
+			 * autônoma acima. Substitui /admin/dashboard como porta de entrada; a Dashboard
+			 * Administrativa permanece intacta e acessível a partir daqui e do menu.
+			 */}
+			<Route
+				path="/admin/campanha"
+				element={
+					<RotaProtegida>
+						<AdminCampanhaPage />
 					</RotaProtegida>
 				}
 			/>

@@ -16,6 +16,7 @@ const navItems = [
  */
 const gruposNavAdmin = [
 	[
+		{ to: "/admin/campanha", label: "mesa da campanha" },
 		{ to: "/admin/dashboard", label: "dashboard" },
 		{ to: "/admin/entregas", label: "entregas" },
 		{ to: "/admin/briefings", label: "briefings" },
@@ -73,14 +74,18 @@ export function PortalLayout() {
 	// Administrador não possui `parceiraId` de sessão (ADR-008, single-tenant): rotas de
 	// self-service da Parceira (`navItems`) sempre falham para este papel (`parceiraDaSessao`
 	// lança erro sem `parceiraId` — ver middleware/isolamento.ts), então nunca aparecem aqui.
-	const gruposNav =
-		sessao?.papelAtor === "ADMINISTRADOR" ? gruposNavAdmin : [navItems];
+	// Administrador da Marca (ADR-022) não usa este shell — página autônoma própria, ver
+	// App.tsx — então nunca chega a renderizar `PortalLayout`.
+	const gruposNav = sessao?.papelAtor === "ADMINISTRADOR" ? gruposNavAdmin : [navItems];
+	// ADR-023: Mesa da Campanha é a porta de entrada do Administrador — o logo volta para lá,
+	// não mais para o Dashboard Administrativo (que continua existindo, ver "dashboard" acima).
+	const destinoLogo = sessao?.papelAtor === "ADMINISTRADOR" ? "/admin/campanha" : "/pendencias";
 
 	return (
 		<div className="portal-shell">
 			<aside className="portal-sidebar">
 				<div className="portal-sidebar-top">
-					<Link to="/pendencias" className="portal-logo-link">
+					<Link to={destinoLogo} className="portal-logo-link">
 						<img
 							className="portal-logo"
 							src={logoPrincipal}

@@ -1,0 +1,365 @@
+/*
+ * Mesa da Campanha (ADR-023) — hub pós-login do Administrador. Mesma língua visual de
+ * MarcaDashboard.css/Publicacao.css (pages/experimentos/): página autônoma, fora do shell de
+ * sidebar, fotografia editorial como abertura, timeline reaproveitada. Prefixo `campanha-`
+ * próprio (cópia deliberada, não import compartilhado — mesmo padrão de página-local CSS já
+ * usado por toda a família).
+ */
+
+.campanha-tela {
+	min-height: 100vh;
+	background: var(--color-paper);
+	color: var(--color-noir);
+	font-family: var(--font-body);
+}
+
+.campanha-nav {
+	position: sticky;
+	top: 0;
+	z-index: 20;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 20px 32px;
+	background: color-mix(in srgb, var(--color-paper) 82%, transparent);
+	backdrop-filter: blur(6px);
+}
+
+.campanha-nav-marca {
+	font-family: var(--font-display);
+	font-weight: 700;
+	font-size: 14px;
+	color: var(--color-noir);
+	opacity: 0.72;
+}
+
+.campanha-nav-sair {
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 600;
+	color: var(--color-grafite-70, var(--color-noir));
+	background: none;
+	border: none;
+	padding: 0 0 2px;
+	cursor: pointer;
+	position: relative;
+}
+
+.campanha-nav-sair::after {
+	content: "";
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	height: 1px;
+	background: var(--color-cherry);
+	transform: scaleX(0);
+	transform-origin: right;
+	transition: transform 0.4s var(--ease-editorial);
+}
+
+.campanha-nav-sair:hover::after {
+	transform: scaleX(1);
+	transform-origin: left;
+}
+
+.campanha-foto {
+	max-width: 900px;
+	margin: 32px auto 0;
+	padding: 0 32px;
+}
+
+.campanha-foto img {
+	display: block;
+	width: 100%;
+	aspect-ratio: 4 / 3;
+	object-fit: cover;
+	border-radius: var(--radius-sm);
+}
+
+.campanha-contexto {
+	max-width: 900px;
+	margin: 20px auto 0;
+	padding: 0 32px;
+}
+
+.campanha-eyebrow {
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 700;
+	letter-spacing: 0.02em;
+	text-transform: lowercase;
+	color: var(--color-cherry);
+	margin-bottom: 4px;
+}
+
+.campanha-assunto {
+	font-family: var(--font-display);
+	font-size: var(--text-body-lg);
+	font-weight: 600;
+	color: color-mix(in srgb, var(--color-noir) 70%, transparent);
+	text-transform: lowercase;
+	margin-bottom: 20px;
+}
+
+.campanha-frase {
+	font-family: var(--font-display);
+	font-weight: 800;
+	font-size: clamp(1.7rem, 1.3vw + 1.2rem, 2.3rem);
+	line-height: 1.2;
+	letter-spacing: -0.005em;
+	color: var(--color-noir);
+	text-transform: lowercase;
+	margin-bottom: 12px;
+}
+
+.campanha-narrativa {
+	font-weight: 300;
+	font-size: var(--text-body-lg);
+	line-height: var(--leading-relaxed);
+	color: color-mix(in srgb, var(--color-noir) 68%, transparent);
+	max-width: 62ch;
+}
+
+.campanha-corpo {
+	max-width: 900px;
+	margin: 0 auto;
+	padding: 44px 32px 0;
+}
+
+.campanha-secao {
+	padding-top: 40px;
+	border-top: 1px solid var(--color-grafite-15, rgba(27, 23, 23, 0.1));
+}
+
+.campanha-secao:first-child {
+	border-top: none;
+	padding-top: 0;
+}
+
+.campanha-secao-titulo {
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 700;
+	text-transform: lowercase;
+	color: color-mix(in srgb, var(--color-noir) 55%, transparent);
+	margin-bottom: 20px;
+}
+
+.campanha-secao-texto {
+	font-size: var(--text-body-lg);
+	line-height: var(--leading-relaxed);
+	color: var(--color-noir);
+	max-width: 62ch;
+}
+
+.campanha-secao-link {
+	display: inline-block;
+	margin-top: 10px;
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 600;
+	color: var(--color-cherry);
+	text-decoration: underline;
+	text-decoration-thickness: 1px;
+	text-underline-offset: 3px;
+}
+
+/* "Pede atenção" — mesma narrativa com marcador de MarcaDashboard.css, reaproveitada. */
+.campanha-atencao-lista {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+}
+
+.campanha-atencao-item {
+	display: flex;
+	align-items: baseline;
+	gap: 12px;
+}
+
+.campanha-atencao-marcador {
+	flex-shrink: 0;
+	width: 7px;
+	height: 7px;
+	margin-top: 7px;
+	border-radius: var(--radius-circle);
+	background: var(--color-cherry);
+}
+
+.campanha-atencao-texto {
+	font-size: var(--text-body-lg);
+	line-height: 1.5;
+	color: var(--color-noir);
+}
+
+/* Timeline — mesma espinha dorsal editorial da família, reaproveitada. */
+.campanha-timeline {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	position: relative;
+}
+
+.campanha-timeline-passo {
+	position: relative;
+	display: flex;
+	gap: 16px;
+	padding-bottom: 24px;
+}
+
+.campanha-timeline-passo::before {
+	content: "";
+	position: absolute;
+	left: 5px;
+	top: 16px;
+	bottom: -4px;
+	width: 1px;
+	background: var(--color-grafite-15, rgba(27, 23, 23, 0.15));
+}
+
+.campanha-timeline-passo:last-child::before {
+	display: none;
+}
+
+.campanha-timeline-marcador {
+	flex-shrink: 0;
+	width: 11px;
+	height: 11px;
+	margin-top: 4px;
+	border-radius: var(--radius-circle);
+	border: 1.5px solid var(--color-grafite-40, rgba(27, 23, 23, 0.4));
+	background: transparent;
+}
+
+.campanha-timeline-passo.is-atual .campanha-timeline-marcador {
+	background: var(--color-cherry);
+	border-color: var(--color-cherry);
+}
+
+.campanha-timeline-conteudo {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	padding-top: 1px;
+}
+
+.campanha-timeline-titulo {
+	font-family: var(--font-display);
+	font-size: var(--text-body-lg);
+	font-weight: 600;
+	color: var(--color-noir);
+	text-transform: lowercase;
+}
+
+.campanha-timeline-passo.is-atual .campanha-timeline-titulo {
+	font-weight: 700;
+}
+
+.campanha-timeline-detalhe {
+	font-size: var(--text-meta);
+	color: color-mix(in srgb, var(--color-noir) 55%, transparent);
+}
+
+.campanha-vazio {
+	font-size: var(--text-body-lg);
+	color: color-mix(in srgb, var(--color-noir) 55%, transparent);
+}
+
+/* Logística — narrativa pequena, sem número isolado, sem atalho (não existe módulo, ADR-023). */
+.campanha-logistica-lista {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.campanha-logistica-linha {
+	font-size: var(--text-meta);
+	color: color-mix(in srgb, var(--color-noir) 62%, transparent);
+}
+
+/* Atalhos — dado (array), não JSX fixo (ADR-023: arquitetura deve prever expansão futura sem
+   reescrever a tela). Cartão editorial simples: rótulo + uma frase, nunca ícone/grid de app. */
+.campanha-atalhos-lista {
+	display: flex;
+	flex-direction: column;
+	gap: 0;
+}
+
+.campanha-atalho {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	padding: 16px 0;
+	border-top: 1px solid var(--color-grafite-15, rgba(27, 23, 23, 0.1));
+	text-decoration: none;
+	color: inherit;
+}
+
+.campanha-atalho:first-child {
+	border-top: none;
+	padding-top: 0;
+}
+
+.campanha-atalho-titulo {
+	font-family: var(--font-display);
+	font-size: var(--text-body-lg);
+	font-weight: 600;
+	color: var(--color-noir);
+	text-transform: lowercase;
+}
+
+.campanha-atalho:hover .campanha-atalho-titulo,
+.campanha-atalho:focus-visible .campanha-atalho-titulo {
+	text-decoration: underline;
+	text-underline-offset: 4px;
+}
+
+.campanha-atalho-descricao {
+	font-size: var(--text-meta);
+	color: color-mix(in srgb, var(--color-noir) 55%, transparent);
+}
+
+.campanha-rodape {
+	max-width: 900px;
+	margin: 44px auto 0;
+	padding: 32px 32px 96px;
+	border-top: 1px solid var(--color-grafite-15, rgba(27, 23, 23, 0.1));
+}
+
+.campanha-rodape-nota {
+	font-weight: 300;
+	font-size: var(--text-body-lg);
+	line-height: var(--leading-relaxed);
+	color: color-mix(in srgb, var(--color-noir) 60%, transparent);
+	max-width: 56ch;
+}
+
+@media (max-width: 960px) {
+	.campanha-nav,
+	.campanha-foto,
+	.campanha-contexto,
+	.campanha-corpo,
+	.campanha-rodape {
+		padding-left: 20px;
+		padding-right: 20px;
+	}
+
+	.campanha-frase {
+		font-size: clamp(1.5rem, 5vw + 1rem, 1.9rem);
+	}
+
+	.campanha-corpo {
+		padding-top: 32px;
+	}
+
+	.campanha-rodape {
+		padding-bottom: 64px;
+	}
+}

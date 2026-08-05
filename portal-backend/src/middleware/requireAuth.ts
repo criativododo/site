@@ -41,3 +41,18 @@ export function requireAdmin(req: Request, res: Response, next: NextFunction) {
   }
   next();
 }
+
+/**
+ * ADR-022/ADR-023: visão operacional da campanha é do Administrador da Marca (nível 2).
+ * O Administrador DODÔ (nível 5, `requireAdmin`) também passa por este gate — RBAC por
+ * hierarquia de nível: nível 5 é superconjunto de nível 2, não papéis isolados. A Mesa da
+ * Campanha (ADR-023) precisa linkar para esta mesma visão a partir do hub do Administrador.
+ */
+export function requireAdministradorMarca(req: Request, res: Response, next: NextFunction) {
+  const papel = req.sessao?.papelAtor;
+  if (papel !== "ADMINISTRADOR_MARCA" && papel !== "ADMINISTRADOR") {
+    res.status(403).json({ error: "área restrita ao administrador da marca." });
+    return;
+  }
+  next();
+}

@@ -10,7 +10,13 @@ import { listarSolicitacoesPendentes } from "../lgpd/exclusao.service.js";
 import type { SolicitacaoExclusao } from "../lgpd/exclusao.types.js";
 import { parceiraRepositorio } from "../parceira/parceira.repository.js";
 import type { Parceira } from "../parceira/parceira.types.js";
-import type { IndicadoresAdministrativos, ProximoPrazo } from "./dashboard.types.js";
+import type {
+  ExcecaoOperacional,
+  IndicadoresAdministrativos,
+  IndicadoresOperacionaisMarca,
+  PanoramaCampanha,
+  ProximoPrazo,
+} from "./dashboard.types.js";
 
 /** `AAAA-MM-DD` de hoje (UTC) — comparável lexicograficamente com `Entrega.dataEntrega`. */
 function hojeISO(referencia: Date = new Date()): string {
@@ -122,4 +128,136 @@ export async function obterIndicadoresAdministrativos(): Promise<IndicadoresAdmi
   ]);
 
   return calcularIndicadores({ parceiras, entregas, obrigacoes, contasPendentes, solicitacoesExclusao, blocosBriefing });
+}
+
+/**
+ * Núcleo puro (testável sem repositório): projeta `IndicadoresAdministrativos` para o recorte
+ * do Administrador da Marca (ADR-022) — só seleciona campos já calculados, não introduz
+ * cálculo novo nem consulta módulo algum diretamente.
+ */
+export function calcularIndicadoresMarca(
+  indicadores: IndicadoresAdministrativos,
+  excecoes: ExcecaoOperacional[],
+): IndicadoresOperacionaisMarca {
+  return {
+    parceiras: {
+      ativas: indicadores.parceiras.ativas,
+      total: indicadores.parceiras.total,
+    },
+    entregas: {
+      aguardandoMaterial: indicadores.entregas.aguardandoMaterial,
+      emRevisao: indicadores.entregas.emRevisao,
+      atrasadas: indicadores.entregas.atrasadas,
+    },
+    proximosPrazos: indicadores.proximosPrazos,
+    excecoes,
+  };
+}
+
+/**
+ * Núcleo puro (testável sem repositório): "pede atenção" da visão da Marca — Entregas que já
+ * são exceção agora (atrasada ou em revisão), resolvidas para nome de Parceira. Diferente de
+ * `calcularProximosPrazos` (prazo futuro, ainda não vencido), aqui é o que já aconteceu e
+ * ainda não foi resolvido.
+ */
+export function calcularExcecoesOperacionais(dados: {
+  entregas: Entrega[];
+  parceiras: Parceira[];
+  hoje?: string;
+}): ExcecaoOperacional[] {
+  const hoje = dados.hoje ?? hojeISO();
+  const nomePorParceira = new Map(dados.parceiras.map((parceira) => [parceira.id, parceira.nome]));
+
+  const atrasadas: ExcecaoOperacional[] = dados.entregas
+    .filter((entrega) => entrega.estado === "AGUARDANDO_MATERIAL" && entrega.dataEntrega < hoje)
+    .map((entrega) => ({
+      tipo: "atrasado" as const,
+      parceiraNome: nomePorParceira.get(entrega.parceiraId) ?? "parceira",
+      formato: entrega.formato,
+      data: entrega.dataEntrega,
+    }));
+
+  const emRevisao: ExcecaoOperacional[] = dados.entregas
+    .filter((entrega) => entrega.estado === "EM_REVISAO")
+    .map((entrega) => ({
+      tipo: "em_revisao" as const,
+      parceiraNome: nomePorParceira.get(entrega.parceiraId) ?? "parceira",
+      formato: entrega.formato,
+      data: null,
+    }));
+
+  return [...atrasadas, ...emRevisao];
+}
+
+/** UC do Administrador da Marca (ADR-022): mesma agregação administrativa, recorte restrito. */
+export async function obterIndicadoresOperacionaisMarca(): Promise<IndicadoresOperacionaisMarca> {
+  const [indicadores, parceiras, entregas] = await Promise.all([
+    obterIndicadoresAdministrativos(),
+    parceiraRepositorio.listarTodas(),
+    entregaRepositorio.listarTodas(),
+  ]);
+
+  const excecoes = calcularExcecoesOperacionais({ entregas, parceiras });
+  return calcularIndicadoresMarca(indicadores, excecoes);
+}
+
+/**
+ * Núcleo puro (testável sem repositório): pagamentos pendentes **da competência atual**
+ * (`mesReferencia` do mês corrente) — diferente de `IndicadoresAdministrativos.financeiro`,
+ * que é histórico completo sem recorte de mês. Usado só pela Mesa da Campanha (ADR-023).
+ */
+export function calcularPagamentosCompetencia(dados: {
+  obrigacoes: ObrigacaoFinanceira[];
+  competencia: string;
+}): { pendentes: number; valorPendente: number } {
+  const daCompetencia = dados.obrigacoes.filter((obrigacao) => obrigacao.mesReferencia === dados.competencia);
+  const pendentes = daCompetencia.filter((obrigacao) => obrigacao.estado !== "PAGO");
+  return {
+    pendentes: pendentes.length,
+    valorPendente: pendentes.reduce((total, obrigacao) => total + obrigacao.valor, 0),
+  };
+}
+
+/**
+ * Núcleo puro (testável sem repositório): panorama da Mesa da Campanha (ADR-023) — reaproveita
+ * integralmente `IndicadoresAdministrativos` (zero regra de negócio duplicada), acrescentando
+ * só o que é genuinamente novo desta tela: nomes das Parceiras ativas e pagamentos escopados
+ * pela competência atual.
+ */
+export function calcularPanoramaCampanha(dados: {
+  indicadores: IndicadoresAdministrativos;
+  parceiras: Parceira[];
+  entregas: Entrega[];
+  obrigacoes: ObrigacaoFinanceira[];
+  hoje?: string;
+}): PanoramaCampanha {
+  const hoje = dados.hoje ?? hojeISO();
+  const competenciaAtual = hoje.slice(0, 7);
+  const parceirasAtivas = dados.parceiras.filter((parceira) => parceira.status === "ATIVA");
+
+  return {
+    competenciaAtual,
+    parceiras: {
+      ativas: dados.indicadores.parceiras.ativas,
+      inativas: dados.indicadores.parceiras.inativas,
+      total: dados.indicadores.parceiras.total,
+      nomesAtivas: parceirasAtivas.map((parceira) => parceira.nome),
+    },
+    entregas: dados.indicadores.entregas,
+    proximosPrazos: dados.indicadores.proximosPrazos,
+    excecoes: calcularExcecoesOperacionais({ entregas: dados.entregas, parceiras: dados.parceiras, hoje }),
+    pagamentos: calcularPagamentosCompetencia({ obrigacoes: dados.obrigacoes, competencia: competenciaAtual }),
+  };
+}
+
+/** UC da Mesa da Campanha (ADR-023): mesma agregação administrativa, panorama do hub. */
+export async function obterPanoramaCampanha(): Promise<PanoramaCampanha> {
+  const [indicadores, parceiras, entregas, obrigacoes] = await Promise.all([
+    obterIndicadoresAdministrativos(),
+    parceiraRepositorio.listarTodas(),
+    entregaRepositorio.listarTodas(),
+    obrigacaoRepositorio.listarTodas(),
+  ]);
+
+  return calcularPanoramaCampanha({ indicadores, parceiras, entregas, obrigacoes });
 }

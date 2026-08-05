@@ -5,7 +5,14 @@ import type { ObrigacaoFinanceira } from "../financeiro/obrigacao.types.js";
 import type { Identidade } from "../identidade/identidade.types.js";
 import type { SolicitacaoExclusao } from "../lgpd/exclusao.types.js";
 import type { Parceira } from "../parceira/parceira.types.js";
-import { calcularIndicadores, calcularProximosPrazos } from "./dashboard.service.js";
+import {
+  calcularExcecoesOperacionais,
+  calcularIndicadores,
+  calcularIndicadoresMarca,
+  calcularPagamentosCompetencia,
+  calcularPanoramaCampanha,
+  calcularProximosPrazos,
+} from "./dashboard.service.js";
 
 const condicaoComercial = {
   valorMensal: 2500,
@@ -268,5 +275,183 @@ describe("calcularProximosPrazos", () => {
       hoje: "2026-07-15",
     });
     expect(resultado[0].parceiraNome).toBe("parceira");
+  });
+});
+
+describe("calcularIndicadoresMarca", () => {
+  it("projeta só os campos operacionais, sem financeiro/lgpd/moderacao (ADR-022)", () => {
+    const indicadores = calcularIndicadores({
+      parceiras: [parceira({ status: "ATIVA" }), parceira({ id: "p2", status: "INATIVA" })],
+      entregas: [
+        entrega({ estado: "AGUARDANDO_MATERIAL", dataEntrega: "2026-07-17" }),
+        entrega({ id: "e2", estado: "EM_REVISAO", dataEntrega: "2026-07-18" }),
+      ],
+      obrigacoes: [],
+      contasPendentes: [],
+      solicitacoesExclusao: [],
+      blocosBriefing: [],
+      hoje: "2026-07-15",
+    });
+
+    expect(calcularIndicadoresMarca(indicadores, [])).toEqual({
+      parceiras: { ativas: 1, total: 2 },
+      entregas: { aguardandoMaterial: 1, emRevisao: 1, atrasadas: 0 },
+      proximosPrazos: indicadores.proximosPrazos,
+      excecoes: [],
+    });
+  });
+
+  it("sem nenhum dado, todos os indicadores operacionais são zero", () => {
+    const indicadores = calcularIndicadores({
+      parceiras: [],
+      entregas: [],
+      obrigacoes: [],
+      contasPendentes: [],
+      solicitacoesExclusao: [],
+      blocosBriefing: [],
+      hoje: "2026-07-15",
+    });
+
+    expect(calcularIndicadoresMarca(indicadores, [])).toEqual({
+      parceiras: { ativas: 0, total: 0 },
+      entregas: { aguardandoMaterial: 0, emRevisao: 0, atrasadas: 0 },
+      proximosPrazos: [],
+      excecoes: [],
+    });
+  });
+});
+
+describe("calcularExcecoesOperacionais", () => {
+  const parceiras = [parceira({ id: "p1", nome: "Maria" }), parceira({ id: "p2", nome: "Juliana" })];
+
+  it("sem entregas, retorna lista vazia", () => {
+    expect(calcularExcecoesOperacionais({ entregas: [], parceiras, hoje: "2026-07-15" })).toEqual([]);
+  });
+
+  it("inclui Entrega AGUARDANDO_MATERIAL com dataEntrega já vencida como 'atrasado'", () => {
+    const resultado = calcularExcecoesOperacionais({
+      entregas: [
+        entrega({ parceiraId: "p1", estado: "AGUARDANDO_MATERIAL", dataEntrega: "2026-07-10" }),
+      ],
+      parceiras,
+      hoje: "2026-07-15",
+    });
+    expect(resultado).toEqual([
+      { tipo: "atrasado", parceiraNome: "Maria", formato: "Reel", data: "2026-07-10" },
+    ]);
+  });
+
+  it("não inclui Entrega AGUARDANDO_MATERIAL com dataEntrega ainda no futuro", () => {
+    const resultado = calcularExcecoesOperacionais({
+      entregas: [
+        entrega({ parceiraId: "p1", estado: "AGUARDANDO_MATERIAL", dataEntrega: "2026-07-20" }),
+      ],
+      parceiras,
+      hoje: "2026-07-15",
+    });
+    expect(resultado).toEqual([]);
+  });
+
+  it("inclui Entrega EM_REVISAO independentemente da data, sem campo data", () => {
+    const resultado = calcularExcecoesOperacionais({
+      entregas: [entrega({ parceiraId: "p2", estado: "EM_REVISAO", dataEntrega: "2026-07-20" })],
+      parceiras,
+      hoje: "2026-07-15",
+    });
+    expect(resultado).toEqual([
+      { tipo: "em_revisao", parceiraNome: "Juliana", formato: "Reel", data: null },
+    ]);
+  });
+
+  it("não inclui Entrega APROVADO nem PUBLICADO", () => {
+    const resultado = calcularExcecoesOperacionais({
+      entregas: [
+        entrega({ id: "a", estado: "APROVADO", dataEntrega: "2026-07-10" }),
+        entrega({ id: "b", estado: "PUBLICADO", dataEntrega: "2026-07-10" }),
+      ],
+      parceiras,
+      hoje: "2026-07-15",
+    });
+    expect(resultado).toEqual([]);
+  });
+
+  it("usa 'parceira' como nome de fallback quando parceiraId não é encontrado", () => {
+    const resultado = calcularExcecoesOperacionais({
+      entregas: [
+        entrega({ parceiraId: "inexistente", estado: "EM_REVISAO", dataEntrega: "2026-07-20" }),
+      ],
+      parceiras,
+      hoje: "2026-07-15",
+    });
+    expect(resultado[0].parceiraNome).toBe("parceira");
+  });
+});
+
+describe("calcularPagamentosCompetencia", () => {
+  it("sem obrigações, retorna zero", () => {
+    expect(calcularPagamentosCompetencia({ obrigacoes: [], competencia: "2026-08" })).toEqual({
+      pendentes: 0,
+      valorPendente: 0,
+    });
+  });
+
+  it("soma só obrigações da competência informada, ignorando outros meses", () => {
+    const resultado = calcularPagamentosCompetencia({
+      obrigacoes: [
+        obrigacao({ id: "a", mesReferencia: "2026-08", valor: 1000, estado: "EM_ABERTO" }),
+        obrigacao({ id: "b", mesReferencia: "2026-08", valor: 500, estado: "APROVADO" }),
+        obrigacao({ id: "c", mesReferencia: "2026-07", valor: 2000, estado: "EM_ABERTO" }),
+      ],
+      competencia: "2026-08",
+    });
+    expect(resultado).toEqual({ pendentes: 2, valorPendente: 1500 });
+  });
+
+  it("não inclui obrigação já PAGA, mesmo na competência certa", () => {
+    const resultado = calcularPagamentosCompetencia({
+      obrigacoes: [obrigacao({ mesReferencia: "2026-08", valor: 1000, estado: "PAGO" })],
+      competencia: "2026-08",
+    });
+    expect(resultado).toEqual({ pendentes: 0, valorPendente: 0 });
+  });
+});
+
+describe("calcularPanoramaCampanha", () => {
+  it("agrega indicadores + nomes de parceiras ativas + pagamentos da competência atual", () => {
+    const parceirasDaCampanha = [
+      parceira({ id: "p1", nome: "Maria", status: "ATIVA" }),
+      parceira({ id: "p2", nome: "Juliana", status: "ATIVA" }),
+      parceira({ id: "p3", nome: "Inativa", status: "INATIVA" }),
+    ];
+    const entregasDaCampanha = [
+      entrega({ parceiraId: "p1", estado: "AGUARDANDO_MATERIAL", dataEntrega: "2026-07-10" }),
+    ];
+    const obrigacoesDaCampanha = [obrigacao({ mesReferencia: "2026-07", valor: 800, estado: "EM_ABERTO" })];
+    const indicadores = calcularIndicadores({
+      parceiras: parceirasDaCampanha,
+      entregas: entregasDaCampanha,
+      obrigacoes: [],
+      contasPendentes: [],
+      solicitacoesExclusao: [],
+      blocosBriefing: [],
+      hoje: "2026-07-15",
+    });
+
+    const resultado = calcularPanoramaCampanha({
+      indicadores,
+      parceiras: parceirasDaCampanha,
+      entregas: entregasDaCampanha,
+      obrigacoes: obrigacoesDaCampanha,
+      hoje: "2026-07-15",
+    });
+
+    expect(resultado).toEqual({
+      competenciaAtual: "2026-07",
+      parceiras: { ativas: 2, inativas: 1, total: 3, nomesAtivas: ["Maria", "Juliana"] },
+      entregas: indicadores.entregas,
+      proximosPrazos: indicadores.proximosPrazos,
+      excecoes: [{ tipo: "atrasado", parceiraNome: "Maria", formato: "Reel", data: "2026-07-10" }],
+      pagamentos: { pendentes: 1, valorPendente: 800 },
+    });
   });
 });

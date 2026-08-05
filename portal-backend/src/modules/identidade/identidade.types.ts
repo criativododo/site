@@ -3,7 +3,11 @@
  * (knowledge/ARCHITECTURAL_DECISIONS.md): Google OIDC federado, sem senha local.
  */
 
-export type PapelAtor = "ADMINISTRADOR" | "INFLUENCIADORA";
+/**
+ * `ADMINISTRADOR_MARCA` (ADR-022, nível 2): visão operacional restrita da própria campanha —
+ * não é um novo tenant, é um ator adicional dentro do mesmo domínio single-tenant.
+ */
+export type PapelAtor = "ADMINISTRADOR" | "ADMINISTRADOR_MARCA" | "INFLUENCIADORA";
 
 /**
  * `AGUARDANDO_CADASTRO` (ADR-011): primeiro login com Google feito, mas o formulário de

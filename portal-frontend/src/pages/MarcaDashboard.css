@@ -1,0 +1,316 @@
+/*
+ * Painel da Marca (ADR-022) — mesma língua visual de Publicacao.css/EnvioConteudo.css/
+ * PerfilInfluenciadora.css (pages/experimentos/): página autônoma, fora do shell de sidebar,
+ * coluna de leitura única, fotografia editorial como abertura. Coluna mais larga que as telas
+ * de uma entrega só (640px) porque aqui o assunto é a campanha inteira, não um material —
+ * revisão de direção desta sessão (aprovação do responsável do projeto).
+ */
+
+.marca-tela {
+	min-height: 100vh;
+	background: var(--color-paper);
+	color: var(--color-noir);
+	font-family: var(--font-body);
+}
+
+.marca-nav {
+	position: sticky;
+	top: 0;
+	z-index: 20;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 20px 32px;
+	background: color-mix(in srgb, var(--color-paper) 82%, transparent);
+	backdrop-filter: blur(6px);
+}
+
+.marca-nav-marca {
+	font-family: var(--font-display);
+	font-weight: 700;
+	font-size: 14px;
+	color: var(--color-noir);
+	opacity: 0.72;
+}
+
+.marca-nav-sair {
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 600;
+	color: var(--color-grafite-70, var(--color-noir));
+	background: none;
+	border: none;
+	padding: 0 0 2px;
+	cursor: pointer;
+	position: relative;
+}
+
+.marca-nav-sair::after {
+	content: "";
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	height: 1px;
+	background: var(--color-cherry);
+	transform: scaleX(0);
+	transform-origin: right;
+	transition: transform 0.4s var(--ease-editorial);
+}
+
+.marca-nav-sair:hover::after {
+	transform: scaleX(1);
+	transform-origin: left;
+}
+
+/* Fotografia primeiro — a campanha, não um "hero" de dashboard. Composição de matéria
+   editorial: retangular, generosa, sem sobrepor texto (decisão desta sessão: a legenda vem
+   logo abaixo, nunca em overlay sobre a foto). */
+.marca-foto {
+	max-width: 900px;
+	margin: 32px auto 0;
+	padding: 0 32px;
+}
+
+.marca-foto img {
+	display: block;
+	width: 100%;
+	aspect-ratio: 4 / 3;
+	object-fit: cover;
+	border-radius: var(--radius-sm);
+}
+
+/* Contexto: eyebrow (campanha) + assunto, colados na foto como legenda editorial — não um
+   bloco de título separado por um vão grande (ART_DIRECTION_GUIDE.md, "a foto é a campanha"). */
+.marca-contexto {
+	max-width: 900px;
+	margin: 20px auto 0;
+	padding: 0 32px;
+}
+
+.marca-eyebrow {
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 700;
+	letter-spacing: 0.02em;
+	text-transform: lowercase;
+	color: var(--color-cherry);
+	margin-bottom: 4px;
+}
+
+.marca-assunto {
+	font-family: var(--font-display);
+	font-size: var(--text-body-lg);
+	font-weight: 600;
+	color: color-mix(in srgb, var(--color-noir) 70%, transparent);
+	text-transform: lowercase;
+	margin-bottom: 20px;
+}
+
+/* A frase de estado é a continuação direta da foto/contexto — não um bloco separado. Calculada
+   a partir do dado real (excecoes), nunca fabricada (mesma disciplina de Hoje.tsx). */
+.marca-frase {
+	font-family: var(--font-display);
+	font-weight: 800;
+	font-size: clamp(1.7rem, 1.3vw + 1.2rem, 2.3rem);
+	line-height: 1.2;
+	letter-spacing: -0.005em;
+	color: var(--color-noir);
+	text-transform: lowercase;
+	margin-bottom: 12px;
+}
+
+.marca-narrativa {
+	font-weight: 300;
+	font-size: var(--text-body-lg);
+	line-height: var(--leading-relaxed);
+	color: color-mix(in srgb, var(--color-noir) 68%, transparent);
+	max-width: 62ch;
+}
+
+.marca-corpo {
+	max-width: 900px;
+	margin: 0 auto;
+	padding: 44px 32px 0;
+}
+
+.marca-secao {
+	padding-top: 40px;
+	border-top: 1px solid var(--color-grafite-15, rgba(27, 23, 23, 0.1));
+}
+
+.marca-secao:first-child {
+	border-top: none;
+	padding-top: 0;
+}
+
+.marca-secao-titulo {
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 700;
+	text-transform: lowercase;
+	color: color-mix(in srgb, var(--color-noir) 55%, transparent);
+	margin-bottom: 20px;
+}
+
+/* "Pede atenção" — narrativas curtas com marcador, nunca cartão/tabela. Cada linha é uma
+   frase inteira sobre uma pessoa real, não um rótulo + número (decisão desta sessão). */
+.marca-atencao-lista {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+}
+
+.marca-atencao-item {
+	display: flex;
+	align-items: baseline;
+	gap: 12px;
+}
+
+.marca-atencao-marcador {
+	flex-shrink: 0;
+	width: 7px;
+	height: 7px;
+	margin-top: 7px;
+	border-radius: var(--radius-circle);
+	background: var(--color-cherry);
+}
+
+.marca-atencao-texto {
+	font-size: var(--text-body-lg);
+	line-height: 1.5;
+	color: var(--color-noir);
+}
+
+/*
+ * Timeline — mesma espinha dorsal editorial de Publicacao.css/Aprovacao.css, reaproveitada
+ * (não reinventada, decisão explícita desta sessão). `is-atual` é o próximo prazo mais
+ * próximo; `is-futuro` são os demais — nenhum é "concluído" aqui, tudo ainda vai acontecer.
+ */
+.marca-timeline {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	position: relative;
+}
+
+.marca-timeline-passo {
+	position: relative;
+	display: flex;
+	gap: 16px;
+	padding-bottom: 24px;
+}
+
+.marca-timeline-passo::before {
+	content: "";
+	position: absolute;
+	left: 5px;
+	top: 16px;
+	bottom: -4px;
+	width: 1px;
+	background: var(--color-grafite-15, rgba(27, 23, 23, 0.15));
+}
+
+.marca-timeline-passo:last-child::before {
+	display: none;
+}
+
+.marca-timeline-marcador {
+	flex-shrink: 0;
+	width: 11px;
+	height: 11px;
+	margin-top: 4px;
+	border-radius: var(--radius-circle);
+	border: 1.5px solid var(--color-grafite-40, rgba(27, 23, 23, 0.4));
+	background: transparent;
+}
+
+.marca-timeline-passo.is-atual .marca-timeline-marcador {
+	background: var(--color-cherry);
+	border-color: var(--color-cherry);
+}
+
+.marca-timeline-conteudo {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	padding-top: 1px;
+}
+
+.marca-timeline-titulo {
+	font-family: var(--font-display);
+	font-size: var(--text-body-lg);
+	font-weight: 600;
+	color: var(--color-noir);
+	text-transform: lowercase;
+}
+
+.marca-timeline-passo.is-atual .marca-timeline-titulo {
+	font-weight: 700;
+}
+
+.marca-timeline-detalhe {
+	font-size: var(--text-meta);
+	color: color-mix(in srgb, var(--color-noir) 55%, transparent);
+}
+
+.marca-vazio {
+	font-size: var(--text-body-lg);
+	color: color-mix(in srgb, var(--color-noir) 55%, transparent);
+}
+
+/* Logística — pequena de propósito, prosa sem número isolado. */
+.marca-logistica-lista {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.marca-logistica-linha {
+	font-size: var(--text-meta);
+	color: color-mix(in srgb, var(--color-noir) 62%, transparent);
+}
+
+.marca-rodape {
+	max-width: 900px;
+	margin: 44px auto 0;
+	padding: 32px 32px 96px;
+	border-top: 1px solid var(--color-grafite-15, rgba(27, 23, 23, 0.1));
+}
+
+.marca-rodape-nota {
+	font-weight: 300;
+	font-size: var(--text-body-lg);
+	line-height: var(--leading-relaxed);
+	color: color-mix(in srgb, var(--color-noir) 60%, transparent);
+	max-width: 56ch;
+}
+
+@media (max-width: 960px) {
+	.marca-nav,
+	.marca-foto,
+	.marca-contexto,
+	.marca-corpo,
+	.marca-rodape {
+		padding-left: 20px;
+		padding-right: 20px;
+	}
+
+	.marca-frase {
+		font-size: clamp(1.5rem, 5vw + 1rem, 1.9rem);
+	}
+
+	.marca-corpo {
+		padding-top: 32px;
+	}
+
+	.marca-rodape {
+		padding-bottom: 64px;
+	}
+}

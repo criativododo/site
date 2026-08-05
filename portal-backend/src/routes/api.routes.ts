@@ -1,12 +1,14 @@
 import { Router } from "express";
 import { registrarAuditoria } from "../middleware/auditoria.js";
 import { bloquearParceiraIdDeCliente, parceiraDaSessao } from "../middleware/isolamento.js";
-import { requireAdmin, requireAuth, requireContaAtiva } from "../middleware/requireAuth.js";
+import { requireAdmin, requireAdministradorMarca, requireAuth, requireContaAtiva } from "../middleware/requireAuth.js";
 import { briefingAdminRoutes } from "../modules/briefing/admin.routes.js";
 import { colaboracaoMensalAdminRoutes } from "../modules/colaboracao-mensal/admin.routes.js";
 import { entregaAdminRoutes } from "../modules/conteudo/admin.routes.js";
 import { conteudoRoutes } from "../modules/conteudo/conteudo.routes.js";
+import { campanhaRoutes } from "../modules/dashboard/campanha.routes.js";
 import { dashboardRoutes } from "../modules/dashboard/dashboard.routes.js";
+import { dashboardMarcaRoutes } from "../modules/dashboard/marca.routes.js";
 import { obrigacaoAdminRoutes } from "../modules/financeiro/admin.routes.js";
 import { financeiroRoutes } from "../modules/financeiro/financeiro.routes.js";
 import { adminRoutes } from "../modules/identidade/admin.routes.js";
@@ -50,6 +52,12 @@ apiRoutes.use("/admin/parceiras", requireAdmin, parceiraRoutes);
 
 /** Backoffice administrativo — Dashboard (painel operacional, agregação só leitura). */
 apiRoutes.use("/admin/dashboard", requireAdmin, dashboardRoutes);
+
+/** ADR-022 — Visão operacional da campanha do Administrador da Marca (nível 2, só leitura). */
+apiRoutes.use("/marca/dashboard", requireAdministradorMarca, dashboardMarcaRoutes);
+
+/** ADR-023 — Mesa da Campanha: panorama agregado, hub pós-login do Administrador. */
+apiRoutes.use("/admin/campanha", requireAdmin, campanhaRoutes);
 
 /** Backoffice administrativo — Entregas (criação administrativa; SPEC-012, preparação para CRUD completo). */
 apiRoutes.use("/admin/entregas", requireAdmin, entregaAdminRoutes);

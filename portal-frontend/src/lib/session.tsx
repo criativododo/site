@@ -26,7 +26,11 @@ export type EstadoConta =
 /** ADR-011: chave usada para carregar o token de convite (`/convite/:token`) até o login. */
 export const CHAVE_CONVITE_TOKEN = "dodo_convite_token";
 
-export type PapelAtor = "ADMINISTRADOR" | "INFLUENCIADORA";
+/**
+ * `ADMINISTRADOR_MARCA` (ADR-022, nível 2): visão operacional restrita da própria campanha —
+ * não é um novo tenant, é um ator adicional dentro do mesmo domínio single-tenant.
+ */
+export type PapelAtor = "ADMINISTRADOR" | "ADMINISTRADOR_MARCA" | "INFLUENCIADORA";
 
 export interface SessaoParceira {
 	parceiraId: string | null;

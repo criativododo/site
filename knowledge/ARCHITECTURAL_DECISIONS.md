@@ -238,7 +238,7 @@ associação automática silenciosa (SPEC-035 §5.1-A).
 
 ## ADR-008 — Escopo do MVP: ator "Marca" fora do MVP, sistema single-tenant
 
-- **Status:** Aceito.
+- **Status:** Superseded por [ADR-022](#adr-022--ator-marca-entra-no-mvp-dois-níveis-administrativos-sistema-permanece-single-tenant).
 - **Data:** 2026-07-26.
 - **Autor da decisão:** responsável do projeto.
 - **Relaciona-se com:** resolve `PORTAL_BRIEFING.md` §13 item 4 / `PORTAL_BACKLOG.md` EPIC 0
@@ -1380,6 +1380,143 @@ sessão antes desta decisão; não repetidos aqui.
 | `journals/INDEX.md`/`PROJECT_STATUS.md`/`START_HERE_NEXT_SESSION.md` como artefatos gerados por função pura | Lock/mutex protegendo edição concorrente dos mesmos arquivos; fila de acesso serializando sessões | Lock e fila resolvem a mecânica de escrita mas não o problema semântico: dois "next task" concorrentes continuam se sobrescrevendo, só que um de cada vez; regeneração determinística elimina o próprio conceito de edição concorrente desses arquivos | `documents.mjs` ganha `renderIndex`/`renderStatus`/`renderNextSession` puras, testáveis sem Git |
 | Worktree efêmero por sessão + retry de fetch/rebase/push | Clone completo por sessão (mais pesado, sem compartilhar objects/refs); um único diretório protegido por lock global (serializa todas as sessões, contradiz o requisito de paralelismo) | `git worktree` é a primitiva nativa do próprio Git para múltiplos working trees seguros sobre um único object store — já usada neste ambiente para isolar código por sessão; reaproveitar o mesmo padrão para a memória é consistente e não introduz mecanismo novo | `/inicio` cria e `/fim` remove um worktree do repositório de memória por sessão |
 | Migração em 5 fases, cada uma com testes e aprovação antes da próxima | Reescrita completa em uma única mudança | Reduz risco de regressão em um componente crítico (memória operacional de todas as sessões); cada fase é validável isoladamente com os testes já existentes em `.claude/session-memory/test/` | Nenhuma fase altera o comportamento externo de `/inicio`, `/check`, `/fim` antes da Fase 4 confirmar tudo |
+
+---
+
+## ADR-022 — Ator "Marca" entra no MVP: dois níveis administrativos, sistema permanece single-tenant
+
+- **Status:** Aceito. Supersede ADR-008.
+- **Data:** 2026-08-05.
+- **Autor da decisão:** responsável do projeto.
+- **Relaciona-se com:** ADR-008 (decisão substituída), SPEC-035 (Identidade e Acesso),
+  `PORTAL_GLOSSARIO.md`, `PORTAL_BRIEFING.md` §4.3/§9.3.
+
+### Contexto
+
+O ADR-008 (2026-07-26) havia deixado o ator "Marca" fora do MVP, com o sistema permanecendo
+single-tenant. O responsável do projeto validou, nesta sessão, a decisão de produto de trazer
+esse ator para o escopo, para que o cliente (Marca) tenha uma visão operacional da própria
+campanha dentro do Portal — sem reabrir a arquitetura geral, o domínio principal, o RBAC
+existente, a política de LGPD ou os fluxos operacionais já definidos.
+
+### Decisão
+
+O Portal passa a ter **dois níveis administrativos**:
+
+- **Administrador DODÔ** (nível 5) — o papel `ADMINISTRADOR` já existente, acesso total,
+  inalterado por este ADR.
+- **Administrador da Marca** (nível 2) — novo papel, autenticado, com permissões limitadas à
+  própria operação/campanha. Não é um novo tenant nem uma nova dimensão de particionamento de
+  dados: é um ator com um recorte mais restrito de leitura sobre o mesmo domínio single-tenant.
+
+O sistema **permanece single-tenant**. A Marca não introduz `tenant_id`, isolamento de banco,
+nem qualquer conceito de multi-tenancy — ela é apenas um ator autenticado adicional, com RBAC
+mais restrito, dentro da mesma instância operada exclusivamente para o Criativo DODÔ.
+
+### Consequências
+
+- `PapelAtor` ganha um terceiro valor (`ADMINISTRADOR_MARCA`) ao lado de `ADMINISTRADOR` e
+  `INFLUENCIADORA` — sem remover nem alterar o comportamento dos dois papéis existentes.
+- Nenhuma entidade `Marca`/`tenant_id` é introduzida no modelo de dados por este ADR; a
+  visão operacional do Administrador da Marca lê o mesmo domínio single-tenant, com o
+  conjunto de campos restrito ao necessário para acompanhar a campanha (sem dados financeiros
+  internos da agência, sem dados de moderação de conta, sem solicitações LGPD de terceiros).
+- Provisionamento (como uma conta chega a ter o papel `ADMINISTRADOR_MARCA`) não é definido
+  por este ADR — fica para uma decisão futura sobre o fluxo de convite/cadastro desse papel;
+  este ADR autoriza apenas o papel e a tela de leitura, não o ciclo de vida completo da conta.
+- ADR-008 passa a **Status: Superseded** — o registro histórico permanece no documento, mas
+  deixa de ser a decisão vigente.
+- Documentos que ainda descrevem "Marca fora do MVP" como decisão vigente (`PORTAL_BACKLOG.md`
+  Feature 0.4, `PORTAL_BRIEFING.md` §9.3, `PORTAL_GLOSSARIO.md`) ficam desatualizados por este
+  ADR e devem ser revisados; ver seção "Legado a Revisar" abaixo.
+
+### Legado a Revisar
+
+Os documentos a seguir descrevem "Marca fora do MVP" como decisão vigente e precisam de
+revisão editorial para refletir este ADR (não bloqueiam a implementação — registrados aqui
+para rastreabilidade, correção fica para sessão de documentação):
+
+- `docs/business/PORTAL_BACKLOG.md` (Feature 0.4 — "Marca fora do MVP").
+- `docs/business/PORTAL_BRIEFING.md` §9.3 (schema `BASE_MARCAS` marcado como não
+  implementada por decisão de escopo).
+- `docs/architecture/PORTAL_GLOSSARIO.md` (verbete "Marca" citando "não implementado").
+- `USER_JOURNEYS.md` (seção "Marca (ator) — jornada não documentada como implementável").
+- `knowledge/Produto/SPEC-035-identidade-e-acesso.md` §4.2 (nota de revisão que condicionava
+  a implementação a validação futura — agora validada por este ADR).
+- Auditorias de 2026-08-03/04 em `docs/_workspace/auditorias/` que citam ADR-008 como vigente
+  para justificar não modelar Marca como entidade de domínio.
+
+---
+
+## ADR-023 — Mesa da Campanha: novo hub pós-login do Administrador; "Campanha" como panorama, não sinônimo de Colaboração Mensal
+
+- **Status:** Aceito.
+- **Data:** 2026-08-05.
+- **Autor da decisão:** responsável do projeto.
+- **Relaciona-se com:** ADR-002 (banimento original de "Campanha" como sinônimo de
+  Colaboração Mensal), ADR-016 (Colaboração Mensal), ADR-022 (ator Marca, dois níveis
+  administrativos).
+
+### Contexto
+
+O responsável do projeto pediu uma nova tela, "Mesa da Campanha", para ser o hub central de
+navegação do Administrador — o ponto de partida de onde se acessa Dashboard da Marca, Central
+de Influenciadoras, Aprovação e Financeiro, respondendo primeiro "como está esta campanha?"
+antes de qualquer detalhe operacional.
+
+O nome colide, à primeira vista, com uma decisão já registrada: `ARCHITECTURAL_DECISIONS.md`
+(tabela de termos banidos, ADR-002) lista `Campanha` como sinônimo banido do agregado
+`Colaboração Mensal`, e `docs/architecture/PORTAL_GLOSSARIO.md` documenta ainda um terceiro
+sentido de "Campanha" no vocabulário do Sistema B legado (ciclo de vida próprio, não
+reconciliado). Nenhum dos dois é o que esta tela representa.
+
+### Decisão
+
+1. **"Campanha" passa a existir como conceito de produto, não como entidade de banco nem
+   sinônimo de `Colaboração Mensal`.** É o panorama agregado de toda a operação corrente do
+   Criativo DODÔ — todas as Parceiras ativas, todas as Entregas, todas as aprovações
+   pendentes, toda a logística narrativa, o financeiro da competência atual — sempre superior,
+   nunca substituto, a uma Colaboração Mensal individual. Hierarquia oficial:
+   `Campanha (panorama) → Parceiras → Colaboração Mensal → Entrega → Material → Publicação`.
+   O código-fonte, os tipos e as tabelas continuam usando exclusivamente `ColaboracaoMensal`
+   como nome de entidade — "Campanha"/"Mesa da Campanha" nunca vira `type`, tabela ou campo de
+   banco; é rótulo de tela e de agregação de leitura (`PanoramaCampanha`, ver Consequências).
+2. **Mesa da Campanha (`/admin/campanha`) passa a ser o destino pós-login do papel
+   `ADMINISTRADOR`**, substituindo `/admin/dashboard` nesse papel específico.
+   `/admin/dashboard` (Dashboard Administrativo, Sprint 2) **permanece intacto, com todas as
+   suas funcionalidades**, acessível a partir da Mesa da Campanha e do menu administrativo —
+   deixa de ser a porta de entrada, não deixa de existir.
+3. **RBAC amplia por hierarquia de nível, não por papel isolado**: o Administrador da Marca
+   (ADR-022, nível 2) e o Administrador DODÔ (nível 5) coexistiam sem sobreposição de acesso —
+   `requireAdministradorMarca` recusava `ADMINISTRADOR`. Como a Mesa da Campanha precisa linkar
+   para a visão da Marca (o Administrador precisa poder ver o que a Marca vê), nível 5 passa a
+   também satisfazer os gates de nível 2. Isso não amplia o que o nível 2 vê — só reconhece que
+   nível 5 é superconjunto de nível 2.
+4. **Sem placeholder para módulos inexistentes**: Comunicação e Resultados não têm nenhuma
+   implementação hoje — não aparecem na Mesa da Campanha, nem como "em breve", nem
+   desabilitados. Logística (SPEC-016) também não tem módulo — aparece só como seção
+   narrativa de texto dentro da própria tela, nunca como atalho de navegação. A lista de
+   atalhos é dado (array), não JSX fixo, para que Comunicação/Resultados entrem por adição de
+   item, não por reescrita da tela, quando forem implementados.
+
+### Consequências
+
+- Novo endpoint de leitura `GET /api/admin/campanha` (`requireAdmin`), função pura
+  `calcularPanoramaCampanha` — reaproveita integralmente `calcularIndicadores`/
+  `obterIndicadoresAdministrativos` (zero duplicação da regra de negócio já testada); soma só
+  o que é genuinamente novo: nomes das Parceiras ativas (para "participantes") e pagamentos
+  pendentes **filtrados pela competência atual** (`mesReferencia` do mês corrente) — diferente
+  do Financeiro administrativo, que é histórico completo sem recorte de mês.
+- `requireAdministradorMarca` (middleware) e o gate de papel em `MarcaDashboard.tsx` passam a
+  aceitar `ADMINISTRADOR` além de `ADMINISTRADOR_MARCA`.
+- Destino pós-login do `ADMINISTRADOR` muda em três lugares que precisam ficar consistentes:
+  `auth.routes.ts` (`/google/callback` e `/dev-login`) e `App.tsx`
+  (`RedirecionamentoInicial`) — todos passam a apontar para `/admin/campanha`.
+- `PortalLayout.tsx` ganha "mesa da campanha" como primeiro item do menu administrativo e como
+  destino do logo, para a tela ser alcançável de qualquer página `/admin/*`, não só no login.
+- Este ADR não reabre nem reverte ADR-002/ADR-016: `Colaboração Mensal` continua sendo o único
+  nome de agregado no domínio; "Campanha" nunca aparece em `knowledge/Historico/`
+  `CONTRATO_SOBERANO.md` nem em nomes de tabela/tipo do backend.
 
 ---
 
