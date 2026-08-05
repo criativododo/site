@@ -7,7 +7,7 @@
 // próxima prioridade — nunca impede o lançamento do Claude Code.
 
 import { execFileSync } from 'node:child_process';
-import { existsSync, statSync } from 'node:fs';
+import { existsSync, statSync, mkdirSync, appendFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const root = process.argv[2];
@@ -20,9 +20,22 @@ if (!root) {
 const memoryCli = join(root, '.claude/session-memory/bin/session-memory.mjs');
 const TAG_PATTERN = /^proxima-sessao:(LOW|MID|HIGH)$/i;
 const TIER_TO_MODEL = { LOW: 'haiku', MID: 'sonnet', HIGH: 'opus' };
+const decisionLog = join(root, 'scripts/logs/dodo-decisions.log');
+
+/** Registro de auditoria (Critérios de sucesso do MODELOS.md): nunca impede a decisão. */
+function logDecision(reason, model) {
+  try {
+    mkdirSync(join(root, 'scripts/logs'), { recursive: true });
+    const line = `${new Date().toISOString()} decision model=${model} reason="${reason}"\n`;
+    appendFileSync(decisionLog, line);
+  } catch (error) {
+    process.stderr.write(`dodo: falha ao gravar log de decisão (${error.message})\n`);
+  }
+}
 
 function decide(reason, model) {
   process.stderr.write(`dodo: modelo "${model}" via ${reason}\n`);
+  logDecision(reason, model);
   process.stdout.write(`${model}\n`);
   process.exit(0);
 }
