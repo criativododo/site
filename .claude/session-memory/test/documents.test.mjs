@@ -4,7 +4,7 @@ import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tempDirectory } from './helpers.mjs';
 import { createInitialMemory } from '../lib/scaffold.mjs';
-import { REQUIRED_JOURNAL_HEADINGS, updateIndex, validateMemory, withMarker } from '../lib/documents.mjs';
+import { REQUIRED_JOURNAL_HEADINGS, regenerateProjectDocs, validateMemory, withMarker } from '../lib/documents.mjs';
 
 test('inicializa a estrutura canônica e indexa journals obrigatórios', () => {
   const directory = tempDirectory();
@@ -21,7 +21,7 @@ test('inicializa a estrutura canônica e indexa journals obrigatórios', () => {
       ...REQUIRED_JOURNAL_HEADINGS.flatMap((heading) => [`## ${heading}`, '', '- Fixture', '']),
     ].join('\n');
     writeFileSync(join(journalDirectory, '2026-07-30_0900.md'), content);
-    updateIndex(directory);
+    regenerateProjectDocs(directory);
     const validation = validateMemory(directory);
     assert.equal(validation.valid, true, validation.errors.join('\n'));
     assert.equal(validation.journals.length, 1);

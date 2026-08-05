@@ -1,6 +1,6 @@
-import { existsSync, readdirSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
-import { join, dirname } from 'node:path';
-import { atomicWrite, dateParts, relativePosix, resolveInside, fail } from './core.mjs';
+import { existsSync, readdirSync, readFileSync, mkdirSync } from 'node:fs';
+import { join } from 'node:path';
+import { atomicWrite, dateParts, relativePosix, fail } from './core.mjs';
 
 export const REQUIRED_JOURNAL_HEADINGS = [
   'Objetivo', 'Contexto', 'Trabalhos realizados', 'Arquivos alterados', 'Arquivos criados',
@@ -59,23 +59,23 @@ export function listJournals(memoryPath) {
 }
 
 /**
- * Nome do journal inclui um sufixo curto derivado do session id (ADR-021, Fase 3): cada
+ * Nome do journal inclui um nonce curto de publicação: cada
  * sessão trabalha em seu próprio worktree isolado, sem visibilidade sobre journals que
  * outras sessões concorrentes ainda não publicaram — um `existsSync` local não basta para
  * evitar colisão de nome entre duas sessões terminando no mesmo minuto. Incluir o session
- * id torna o nome único por construção, sem depender de detectar a colisão.
+ * nonce torna o nome único por construção, sem depender de detectar a colisão.
  */
-function sessionSuffix(sessionId) {
-  if (!sessionId) return '';
-  const safe = String(sessionId).replace(/[^a-zA-Z0-9]/g, '').slice(0, 8);
+function publicationSuffix(publicationNonce) {
+  if (!publicationNonce) return '';
+  const safe = String(publicationNonce).replace(/[^a-zA-Z0-9]/g, '').slice(0, 8);
   return safe ? `--${safe}` : '';
 }
 
-export function nextJournalPath(memoryPath, endedAt, sessionId) {
+export function nextJournalPath(memoryPath, endedAt, publicationNonce) {
   const parts = dateParts(endedAt);
   const directory = join(memoryPath, 'journals', parts.year, parts.month);
   mkdirSync(directory, { recursive: true });
-  const base = `${parts.localDate}_${parts.hhmm}${sessionSuffix(sessionId)}`;
+  const base = `${parts.localDate}_${parts.hhmm}${publicationSuffix(publicationNonce)}`;
   let attempt = 1;
   let candidate = join(directory, `${base}.md`);
   while (existsSync(candidate)) {
@@ -148,7 +148,7 @@ export function renderStatusFromJournals(journals) {
 export function renderNextFromJournals(journals) {
   const status = deriveState(journals);
   const blockersBlock = status.blockers.length ? status.blockers.map((item) => `- ${item}`).join('\n') : '- Nenhum bloqueio informado.';
-  return withMarker(`# Comece aqui\n\n1. Execute \`/inicio <objetivo>\` no repositório da aplicação.\n2. Leia o resumo executivo e valide os bloqueios.\n3. Ao encerrar, execute \`/fim\`.\n\n## Próxima tarefa\n\n${status.nextTask}\n\n## Bloqueios\n\n${blockersBlock}\n`, status);
+  return withMarker(`# Comece aqui\n\n1. Execute \`/inicio\` no repositório da aplicação.\n2. Leia o resumo executivo e valide os bloqueios.\n3. Ao encerrar, execute \`/fim\`.\n\n## Próxima tarefa\n\n${status.nextTask}\n\n## Bloqueios\n\n${blockersBlock}\n`, status);
 }
 
 /**
@@ -163,16 +163,6 @@ export function regenerateProjectDocs(memoryPath) {
   atomicWrite(join(memoryPath, 'project/PROJECT_STATUS.md'), renderStatusFromJournals(journals));
   atomicWrite(join(memoryPath, 'project/START_HERE_NEXT_SESSION.md'), renderNextFromJournals(journals));
   return deriveState(journals);
-}
-
-export function updateIndex(memoryPath) {
-  atomicWrite(join(memoryPath, 'journals/INDEX.md'), renderIndexFromJournals(listJournals(memoryPath)));
-}
-
-export function requireMemoryFile(memoryPath, relativePath) {
-  const filePath = resolveInside(memoryPath, relativePath);
-  if (!existsSync(filePath)) fail(`Documento obrigatório ausente: ${relativePath}`);
-  return filePath;
 }
 
 export function validateMemory(memoryPath) {

@@ -8,7 +8,7 @@ function writeIfAbsent(filePath, content) {
 }
 
 export function createInitialMemory(memoryPath, source) {
-  for (const path of ['journals', 'project', 'templates', 'migration', 'releases']) mkdirSync(join(memoryPath, path), { recursive: true });
+  for (const path of ['journals', 'project', 'templates', 'migration']) mkdirSync(join(memoryPath, path), { recursive: true });
   const createdAt = nowIso();
   const roadmap = {
     schemaVersion: 1,
@@ -34,7 +34,7 @@ export function createInitialMemory(memoryPath, source) {
     affected: ['ADR-017 — OAuth dedicado do Google Drive'],
     attention: 'Há conflito documentado entre ADR-017 vigente e ADR-017 legado sobre o escopo do Drive.',
   };
-  writeIfAbsent(join(memoryPath, 'README.md'), `# Memória operacional — Portal DODÔ\n\nRepositório privado de continuidade de contexto. Não contém código da aplicação, credenciais nem artefatos de deploy.\n\nUse os comandos versionados no repositório da aplicação: \`/inicio\`, \`/fim\`, \`/status\`, \`/journal\`, \`/roadmap\`, \`/check\` e \`/release\`.\n`);
+  writeIfAbsent(join(memoryPath, 'README.md'), `# Memória operacional — Portal DODÔ\n\nRepositório privado de continuidade de contexto. Não contém código da aplicação, credenciais nem artefatos de deploy.\n\nUse os comandos versionados no repositório da aplicação: \`/inicio\`, \`/fim\`, \`/status\`, \`/journal\`, \`/roadmap\` e \`/check\`.\n`);
   // journals/INDEX.md, project/PROJECT_STATUS.md e project/START_HERE_NEXT_SESSION.md são
   // artefatos gerados (ADR-021, Fase 2) — nunca escritos à mão, nem no bootstrap. Com zero
   // journals ainda registrados, regenerateProjectDocs produz o estado vazio determinístico.
@@ -45,5 +45,5 @@ export function createInitialMemory(memoryPath, source) {
   writeIfAbsent(join(memoryPath, 'migration/LEGACY_HANDOFFS.md'), `# Handoffs legados\n\nOs documentos abaixo permanecem no repositório da aplicação como histórico somente-leitura. A partir da ativação deste sistema, o estado canônico vive neste repositório.\n\n- \`START_HERE_NEXT_SESSION.md\`\n- \`docs/handoff/PROJECT_STATUS.md\`\n- \`docs/handoff/*.md\`\n- \`docs/_workspace/\`\n\nFonte consolidada em ${dateParts(createdAt).localDate}; commit de origem: ${source.head}.\n`);
   writeIfAbsent(join(memoryPath, 'templates/JOURNAL_TEMPLATE.md'), `# Journal — {{objective}}\n\n<!-- session-memory\n{{metadata}}\n-->\n\n${['Objetivo', 'Contexto', 'Trabalhos realizados', 'Arquivos alterados', 'Arquivos criados', 'Arquivos removidos', 'Commits', 'Testes', 'Decisões', 'ADRs afetadas', 'Problemas encontrados', 'Bloqueios', 'Próxima tarefa', 'Observações', 'Confiança da IA'].map((heading) => `## ${heading}\n\n- {{preencher}}\n`).join('\n')}`);
   writeIfAbsent(join(memoryPath, 'templates/PROJECT_STATUS_TEMPLATE.md'), '# Estado atual\n\nAtualizado pelo `/fim`; manter fatos presentes, nunca histórico extenso.\n');
-  writeIfAbsent(join(memoryPath, 'templates/START_SESSION_TEMPLATE.md'), '# Comece aqui\n\nExecutar `/inicio <objetivo>` antes de trabalhar.\n');
+  writeIfAbsent(join(memoryPath, 'templates/START_SESSION_TEMPLATE.md'), '# Comece aqui\n\nExecutar `/inicio` antes de trabalhar.\n');
 }

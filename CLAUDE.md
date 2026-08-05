@@ -37,7 +37,7 @@ Quando existir conflito entre uma decisão técnica e uma decisão de Produto, o
 
 Antes de iniciar qualquer tarefa:
 
-1. Execute `/inicio <objetivo>` para carregar o estado operacional da sessão.
+1. Execute `/inicio` para reconstruir o estado operacional a partir do Git.
 
 2. Consulte `knowledge/PROJECT_SOURCE_OF_TRUTH.md`.
 
@@ -510,7 +510,7 @@ Quando necessário, produzir handoff claro para o próximo responsável.
 
 Toda sessão obrigatoriamente inicia com:
 
-/inicio <objetivo>
+/inicio
 
 Este comando:
 
@@ -518,7 +518,7 @@ Este comando:
 
 • registra o estado atual do projeto;
 
-• estabelece o baseline Git;
+• deriva o estado técnico do Git e dos journals versionados;
 
 • recupera o contexto persistente.
 
@@ -532,7 +532,16 @@ Ao finalizar:
 
 /fim
 
-para registrar o encerramento da sessão.
+para registrar o encerramento da sessão. O commit e push desse fluxo pertencem somente ao repositório de memória; alterações no repositório da aplicação nunca recebem commit ou push automático pelo Session Memory.
+
+---
+
+# Becos-sem-saída conhecidos
+
+Abordagens já tentadas e rejeitadas. Consultar antes de retomar trabalho para não repetir a mesma tentativa.
+
+- **Forçar commit com `--no-verify` para contornar falha de hook pre-commit alheia ao diff da sessão.** Rejeitado explicitamente pelo usuário (S11, 2026-08-05). Correção correta: abrir sessão dedicada à saúde do repositório e só então commitar o diff original, sem alterá-lo.
+- **Recriar sessão ou editar manualmente `.claude/session-memory/` para contornar falha de `/fim` quando `/inicio` não foi executado como comando real.** Rejeitado (S12, 2026-08-05). Correção correta: tratar os artefatos de trabalho da sessão (relatórios, documentação atualizada, memória de projeto) como o registro oficial e seguir adiante sem editar a infraestrutura de memória.
 
 ---
 

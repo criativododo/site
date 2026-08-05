@@ -28,6 +28,5 @@ export function loadConfig(root) {
     root,
     configPath,
     memoryPath: resolveMemoryPath(config.memoryDirectory),
-    runtimePath: resolve(root, '.claude/session-memory/runtime'),
   };
 }

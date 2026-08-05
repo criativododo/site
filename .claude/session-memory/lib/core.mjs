@@ -78,15 +78,15 @@ export function dateParts(iso = nowIso()) {
 
 export function readJson(filePath, fallback) {
   if (!existsSync(filePath)) return fallback;
-  try {
-    return JSON.parse(readFileSync(filePath, 'utf8'));
-  } catch (error) {
-    fail(`JSON inválido em ${filePath}: ${error.message}`);
-  }
+  return parseJson(readFileSync(filePath, 'utf8'), filePath);
 }
 
-export function writeJson(filePath, value) {
-  atomicWrite(filePath, `${JSON.stringify(value, null, 2)}\n`);
+export function parseJson(value, label) {
+  try {
+    return JSON.parse(value);
+  } catch (error) {
+    fail(`JSON inválido em ${label}: ${error.message}`);
+  }
 }
 
 export function atomicWrite(filePath, value) {
@@ -111,6 +111,12 @@ export function relativePosix(root, filePath) {
 
 export function print(value) {
   process.stdout.write(`${typeof value === 'string' ? value : JSON.stringify(value, null, 2)}\n`);
+}
+
+/** Estimativa de custo de contexto: chars do payload e aproximação de tokens (chars / 4). */
+export function estimateCost(value) {
+  const chars = (typeof value === 'string' ? value : JSON.stringify(value)).length;
+  return { chars, approxTokens: Math.round(chars / 4) };
 }
 
 export function requireArg(args, name) {

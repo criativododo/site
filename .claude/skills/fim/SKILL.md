@@ -5,7 +5,7 @@ disable-model-invocation: true
 allowed-tools: Bash(node .claude/session-memory/bin/session-memory.mjs:*) Read Write Edit
 ---
 
-Use a sessão atual `${CLAUDE_SESSION_ID}`. Antes de publicar, crie `.claude/session-memory/runtime/${CLAUDE_SESSION_ID}.details.json` com JSON válido:
+Antes de encerrar, prepare os detalhes factuais como JSON válido. Eles são enviados pelo stdin e não geram arquivo temporário no checkout:
 
 ```json
 {
@@ -20,15 +20,17 @@ Use a sessão atual `${CLAUDE_SESSION_ID}`. Antes de publicar, crie `.claude/ses
   "blockers": ["Bloqueio atual"],
   "nextTask": "Próxima tarefa concreta",
   "observations": ["Observação útil"],
-  "confidence": { "level": "Alta", "reason": "Evidência objetiva" }
+  "confidence": { "level": "Alta", "reason": "Evidência objetiva" },
+  "costEstimate": { "chars": 0, "approxTokens": 0 }
 }
 ```
 
-Nunca inclua segredo, token, conteúdo de `.env` ou suposição. Use listas vazias quando não houver ocorrência. Execute então:
+`costEstimate` é opcional: repasse exatamente o valor que `/inicio` retornou nesta sessão, para registrar no journal o custo de ambas as pontas (`/inicio` e `/fim`) e permitir comparação entre sessões. Nunca inclua segredo, token, conteúdo de `.env` ou suposição. Use listas vazias quando não houver ocorrência. Execute então:
 
 ```bash
-node .claude/session-memory/bin/session-memory.mjs finish --session "${CLAUDE_SESSION_ID}" --details-file ".claude/session-memory/runtime/${CLAUDE_SESSION_ID}.details.json"
-node .claude/session-memory/bin/session-memory.mjs publish --session "${CLAUDE_SESSION_ID}" --message "docs(memory): registra sessão"
+node .claude/session-memory/bin/session-memory.mjs fim --details-stdin --message "docs(memory): registra sessão" <<'JSON'
+{ "phase": "Fase atual", "sprint": "Sprint ou Não formalizada", "nextTask": "Próxima tarefa concreta" }
+JSON
 ```
 
-Se qualquer etapa falhar, pare e apresente o erro. Não faça merge, force-push ou edição manual no repositório de memória para contornar validações.
+`/fim` é a única transação de encerramento: gera journal, atualiza documentos derivados, valida, commita, publica e remove seu worktree temporário. Se falhar, pare e apresente o erro. Se a causa não for evidente na mensagem de erro, delegue a investigação (leitura ampla, múltiplos arquivos) a um subagent e traga apenas a conclusão — não investigue amplamente na sessão principal. Não faça merge, force-push ou edição manual no repositório de memória para contornar validações.

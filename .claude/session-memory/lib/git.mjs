@@ -53,25 +53,34 @@ export function sourceSnapshot(root) {
   };
 }
 
-export function changedFilesSince(root, baseline) {
-  const current = sourceSnapshot(root);
-  const allPaths = new Set([...Object.keys(baseline.files), ...Object.keys(current.files)]);
+/**
+ * Estado de alterações que pode ser derivado em qualquer processo, sem um baseline
+ * persistido de sessão. É usado pelo journal V2: arquivos rastreados são comparados
+ * com HEAD e arquivos não rastreados entram como criados.
+ */
+export function changedFilesFromGitState(root) {
+  ensureGitRepository(root, 'Repositório da aplicação');
+  const output = git(['diff', '--name-status', 'HEAD'], root);
   const created = [];
   const modified = [];
   const removed = [];
-  for (const filePath of allPaths) {
-    const before = baseline.files[filePath];
-    const after = current.files[filePath];
-    if (before === undefined && after !== undefined) created.push(redactPath(filePath));
-    else if (before !== undefined && after === undefined) removed.push(redactPath(filePath));
-    else if (before !== after) modified.push(redactPath(filePath));
+  for (const line of output.split('\n').filter(Boolean)) {
+    const [status, ...parts] = line.split('\t');
+    const filePath = parts.at(-1);
+    if (!filePath) continue;
+    if (status.startsWith('A')) created.push(redactPath(filePath));
+    else if (status.startsWith('D')) removed.push(redactPath(filePath));
+    else modified.push(redactPath(filePath));
+  }
+  for (const filePath of splitNull(git(['ls-files', '--others', '--exclude-standard', '-z'], root))) {
+    if (!filePath.startsWith('.claude/session-memory/runtime/')) created.push(redactPath(filePath));
   }
   const compare = (a, b) => a.localeCompare(b, 'pt-BR');
   return {
-    current,
-    created: created.sort(compare),
-    modified: modified.sort(compare),
-    removed: removed.sort(compare),
+    current: sourceSnapshot(root),
+    created: [...new Set(created)].sort(compare),
+    modified: [...new Set(modified)].sort(compare),
+    removed: [...new Set(removed)].sort(compare),
   };
 }
 
@@ -84,18 +93,37 @@ export function commitsSince(root, baselineHead) {
   });
 }
 
-export function workingTreeState(root) {
-  const status = git(['status', '--porcelain=v1'], root);
-  return status ? 'alterada' : 'limpa';
+/** Commits desde uma referência quando ela é informada; sem baseline, o journal V2
+ * registra somente o HEAD atual, que é a evidência técnica derivável no encerramento. */
+export function commitsSinceHead(root, from) {
+  if (from) return commitsSince(root, from);
+  const output = git(['log', '-1', '--format=%H%x1f%h%x1f%ad%x1f%s', '--date=iso-strict'], root);
+  if (!output) return [];
+  const [hash, shortHash, date, subject] = output.split('\x1f');
+  return [{ hash, shortHash, date, subject }];
 }
 
-export function remoteState(root) {
-  const upstream = git(['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}'], root, { allowFailure: true });
-  if (typeof upstream !== 'string') return { upstream: null, ahead: 0, behind: 0 };
-  const counts = git(['rev-list', '--left-right', '--count', `HEAD...${upstream}`], root, { allowFailure: true });
-  if (typeof counts !== 'string') return { upstream, ahead: 0, behind: 0 };
-  const [ahead, behind] = counts.split(/\s+/).map(Number);
-  return { upstream, ahead, behind };
+/**
+ * Descobre a branch publicada do repositório de memória sem assumir um nome.
+ * A configuração explícita é o fallback para remotos sem HEAD simbólico e sem
+ * upstream local identificável.
+ */
+export function resolveMemoryBranch(repositoryPath, configuredBranch) {
+  if (configuredBranch) return configuredBranch;
+
+  const upstream = git(['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}'], repositoryPath, { allowFailure: true });
+  if (typeof upstream === 'string' && upstream.startsWith('origin/')) return upstream.slice('origin/'.length);
+
+  const remoteHead = git(['symbolic-ref', '--quiet', '--short', 'refs/remotes/origin/HEAD'], repositoryPath, { allowFailure: true });
+  if (typeof remoteHead === 'string' && remoteHead.startsWith('origin/')) return remoteHead.slice('origin/'.length);
+
+  const branches = git(['for-each-ref', '--format=%(refname:strip=3)', 'refs/remotes/origin'], repositoryPath, { allowFailure: true });
+  const candidates = typeof branches === 'string'
+    ? branches.split('\n').filter((branch) => branch && branch !== 'HEAD')
+    : [];
+  if (candidates.length === 1) return candidates[0];
+
+  fail('Não foi possível determinar a branch da memória. Configure memoryBranch em .claude/session-memory/config.local.json.');
 }
 
 /**
@@ -112,23 +140,4 @@ export function removeSessionWorktree(hubPath, worktreePath) {
   if (typeof result === 'string') return;
   // diretório já pode ter sido apagado manualmente; apenas limpa o registro administrativo.
   git(['worktree', 'prune'], hubPath, { allowFailure: true });
-}
-
-export function listSessionWorktrees(hubPath) {
-  const output = git(['worktree', 'list', '--porcelain'], hubPath, { allowFailure: true });
-  if (typeof output !== 'string' || !output) return [];
-  const entries = [];
-  let current = null;
-  for (const line of output.split('\n')) {
-    if (line.startsWith('worktree ')) {
-      if (current) entries.push(current);
-      current = { path: line.slice('worktree '.length) };
-    } else if (current && line.startsWith('branch ')) {
-      current.branch = line.slice('branch '.length);
-    } else if (current && line === 'detached') {
-      current.detached = true;
-    }
-  }
-  if (current) entries.push(current);
-  return entries;
 }

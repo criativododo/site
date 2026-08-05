@@ -15,27 +15,27 @@ const DEFAULT_MAX_ATTEMPTS = 5;
  * construção. Nunca faz force-push: se o remoto avançar mais rápido do que conseguimos
  * publicar depois de `maxAttempts` tentativas, falha alto e para (ADR-018).
  *
- * `prepareCommit(worktree)` é chamado a cada tentativa, sempre depois do reset para
- * `origin/main` — deve recriar o journal da sessão e regenerar os artefatos derivados
+ * `prepareCommit(worktree)` é chamado a cada tentativa, sempre depois do reset para a
+ * branch remota resolvida — deve recriar o journal da sessão e regenerar os artefatos derivados
  * contra o conjunto de journals então presente (que já inclui qualquer sessão concorrente
  * que tenha publicado primeiro).
  */
-export function publishSessionWorktree({ worktree, message, prepareCommit, maxAttempts = DEFAULT_MAX_ATTEMPTS, gitFn = git }) {
+export function publishSessionWorktree({ worktree, remoteBranch, message, prepareCommit, maxAttempts = DEFAULT_MAX_ATTEMPTS, gitFn = git }) {
   for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
-    const fetch = gitFn(['fetch', 'origin', 'main'], worktree, { allowFailure: true });
+    const fetch = gitFn(['fetch', 'origin', remoteBranch], worktree, { allowFailure: true });
     if (typeof fetch !== 'string') fail('Não foi possível consultar o remoto da memória. Nenhuma alteração local foi perdida.');
-    gitFn(['reset', '--hard', 'origin/main'], worktree);
+    gitFn(['reset', '--hard', `origin/${remoteBranch}`], worktree);
     prepareCommit(worktree);
     const status = gitFn(['status', '--porcelain=v1'], worktree, { allowFailure: true });
     if (!status) return { published: false, reason: 'Nenhuma alteração para publicar.', attempts: attempt };
     gitFn(['add', '-A'], worktree);
     gitFn(['commit', '-m', message], worktree);
-    const push = gitFn(['push', 'origin', 'HEAD:refs/heads/main'], worktree, { allowFailure: true });
+    const push = gitFn(['push', 'origin', `HEAD:refs/heads/${remoteBranch}`], worktree, { allowFailure: true });
     if (typeof push === 'string') {
       return { published: true, attempts: attempt, commit: gitFn(['rev-parse', '--short', 'HEAD'], worktree) };
     }
     // push rejeitado (provavelmente non-fast-forward: outra sessão publicou entre o
     // nosso fetch e o nosso push) — tenta de novo desde o fetch, nunca force-push.
   }
-  fail(`Publicação da memória falhou após ${maxAttempts} tentativas: o remoto avançou mais rápido do que conseguimos publicar. Nenhum force-push foi tentado; execute publish novamente.`);
+  fail(`Publicação da memória falhou após ${maxAttempts} tentativas: o remoto avançou mais rápido do que conseguimos publicar. Nenhum force-push foi tentado; execute /fim novamente.`);
 }
