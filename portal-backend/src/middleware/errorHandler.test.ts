@@ -59,6 +59,7 @@ describe("tratarErroGlobal (observabilidade de erros não tratados)", () => {
 		expect(primeiraLinha).toContain("requestId=abc-123");
 		expect(primeiraLinha).toContain("method=POST");
 		expect(primeiraLinha).toContain("rota=/auth/cadastro");
+		expect(primeiraLinha).toMatch(/versao=\S+/);
 		expect(primeiraLinha).toContain("status=500");
 		expect(primeiraLinha).toContain("mensagem original do erro");
 	});
