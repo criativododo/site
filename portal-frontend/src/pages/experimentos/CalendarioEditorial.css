@@ -1,0 +1,383 @@
+/*
+ * Calendário Editorial — mesma língua visual de AdminCampanha.css/RelatorioCampanha.css: página
+ * autônoma fora do shell de sidebar, coluna 900px, fotografia editorial no topo, timeline
+ * reaproveitada para a lista de compromissos por dia. Prefixo `calendario-` próprio (cópia
+ * deliberada, mesmo padrão de página-local CSS de toda a família).
+ *
+ * Único componente sem precedente direto na família: `.calendario-controle` (alternador de modo
+ * e filtro de categoria). Reaproveita a interação de sublinhado de `campanha-nav-sair`, apenas
+ * mantendo o sublinhado visível quando `is-ativo` em vez de só no hover — nenhuma pílula/aba nova.
+ */
+
+.calendario-tela {
+	min-height: 100vh;
+	background: var(--color-paper);
+	color: var(--color-noir);
+	font-family: var(--font-body);
+}
+
+.calendario-nav {
+	position: sticky;
+	top: 0;
+	z-index: 20;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 20px 32px;
+	background: color-mix(in srgb, var(--color-paper) 82%, transparent);
+	backdrop-filter: blur(6px);
+}
+
+.calendario-nav-marca {
+	font-family: var(--font-display);
+	font-weight: 700;
+	font-size: 14px;
+	color: var(--color-noir);
+	opacity: 0.72;
+}
+
+.calendario-nav-sair {
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 600;
+	color: var(--color-grafite-70, var(--color-noir));
+	background: none;
+	border: none;
+	padding: 0 0 2px;
+	cursor: pointer;
+	position: relative;
+}
+
+.calendario-nav-sair::after {
+	content: "";
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	height: 1px;
+	background: var(--color-cherry);
+	transform: scaleX(0);
+	transform-origin: right;
+	transition: transform 0.4s var(--ease-editorial);
+}
+
+.calendario-nav-sair:hover::after {
+	transform: scaleX(1);
+	transform-origin: left;
+}
+
+.calendario-foto {
+	max-width: 900px;
+	margin: 32px auto 0;
+	padding: 0 32px;
+}
+
+.calendario-foto img {
+	display: block;
+	width: 100%;
+	aspect-ratio: 4 / 3;
+	object-fit: cover;
+	border-radius: var(--radius-sm);
+}
+
+.calendario-contexto {
+	max-width: 900px;
+	margin: 20px auto 0;
+	padding: 0 32px;
+}
+
+.calendario-eyebrow {
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 700;
+	letter-spacing: 0.02em;
+	text-transform: lowercase;
+	color: var(--color-cherry);
+	margin-bottom: 4px;
+}
+
+.calendario-assunto {
+	font-family: var(--font-display);
+	font-size: var(--text-body-lg);
+	font-weight: 600;
+	color: color-mix(in srgb, var(--color-noir) 70%, transparent);
+	text-transform: lowercase;
+	margin-bottom: 20px;
+}
+
+.calendario-frase {
+	font-family: var(--font-display);
+	font-weight: 800;
+	font-size: clamp(1.7rem, 1.3vw + 1.2rem, 2.3rem);
+	line-height: 1.2;
+	letter-spacing: -0.005em;
+	color: var(--color-noir);
+	text-transform: lowercase;
+	margin-bottom: 12px;
+}
+
+.calendario-narrativa {
+	font-weight: 300;
+	font-size: var(--text-body-lg);
+	line-height: var(--leading-relaxed);
+	color: color-mix(in srgb, var(--color-noir) 68%, transparent);
+	max-width: 62ch;
+}
+
+.calendario-corpo {
+	max-width: 900px;
+	margin: 0 auto;
+	padding: 44px 32px 0;
+}
+
+.calendario-secao {
+	padding-top: 40px;
+	border-top: 1px solid var(--color-grafite-15, rgba(27, 23, 23, 0.1));
+}
+
+.calendario-secao:first-child {
+	border-top: none;
+	padding-top: 0;
+}
+
+.calendario-secao-titulo {
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 700;
+	text-transform: lowercase;
+	color: color-mix(in srgb, var(--color-noir) 55%, transparent);
+	margin-bottom: 20px;
+}
+
+.calendario-secao-texto {
+	font-size: var(--text-body-lg);
+	line-height: var(--leading-relaxed);
+	color: var(--color-noir);
+	max-width: 62ch;
+}
+
+.calendario-secao-link {
+	display: inline-block;
+	margin-top: 10px;
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 600;
+	color: var(--color-cherry);
+	text-decoration: underline;
+	text-decoration-thickness: 1px;
+	text-underline-offset: 3px;
+}
+
+/* Alternador de modo / filtro de categoria — sublinhado herdado de `campanha-nav-sair`, fixo
+   enquanto `is-ativo` em vez de só no hover. */
+.calendario-controles {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 20px;
+}
+
+.calendario-controle {
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 600;
+	text-transform: lowercase;
+	color: color-mix(in srgb, var(--color-noir) 55%, transparent);
+	background: none;
+	border: none;
+	padding: 0 0 3px;
+	cursor: pointer;
+	position: relative;
+}
+
+.calendario-controle::after {
+	content: "";
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	height: 1px;
+	background: var(--color-cherry);
+	transform: scaleX(0);
+	transform-origin: right;
+	transition: transform 0.4s var(--ease-editorial);
+}
+
+.calendario-controle:hover::after {
+	transform: scaleX(1);
+	transform-origin: left;
+}
+
+.calendario-controle.is-ativo {
+	color: var(--color-noir);
+	font-weight: 700;
+}
+
+.calendario-controle.is-ativo::after {
+	background: var(--color-cherry);
+	transform: scaleX(1);
+	transform-origin: left;
+}
+
+.calendario-vazio {
+	font-size: var(--text-body-lg);
+	color: color-mix(in srgb, var(--color-noir) 55%, transparent);
+}
+
+/* Dias — mesma espinha dorsal de `campanha-timeline`/`relatorio-timeline`, reaproveitada: cada
+   dia é um passo, cada compromisso do dia é uma linha dentro do passo. */
+.calendario-dias {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	position: relative;
+}
+
+.calendario-dia {
+	position: relative;
+	padding-bottom: 28px;
+	padding-left: 20px;
+	border-left: 1px solid var(--color-grafite-15, rgba(27, 23, 23, 0.15));
+}
+
+.calendario-dia:last-child {
+	padding-bottom: 0;
+}
+
+.calendario-dia::before {
+	content: "";
+	position: absolute;
+	left: -5px;
+	top: 4px;
+	width: 9px;
+	height: 9px;
+	border-radius: var(--radius-circle);
+	border: 1.5px solid var(--color-grafite-40, rgba(27, 23, 23, 0.4));
+	background: var(--color-paper);
+}
+
+.calendario-dia.is-hoje::before {
+	background: var(--color-cherry);
+	border-color: var(--color-cherry);
+}
+
+.calendario-dia-titulo {
+	font-family: var(--font-display);
+	font-size: var(--text-body-lg);
+	font-weight: 700;
+	color: var(--color-noir);
+	text-transform: lowercase;
+	margin-bottom: 14px;
+}
+
+.calendario-dia-marca {
+	margin-left: 8px;
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.03em;
+	text-transform: uppercase;
+	color: var(--color-cherry);
+}
+
+.calendario-eventos {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
+.calendario-evento {
+	display: flex;
+	align-items: baseline;
+	gap: 12px;
+}
+
+.calendario-evento-marcador {
+	flex-shrink: 0;
+	width: 5px;
+	height: 5px;
+	margin-top: 8px;
+	border-radius: var(--radius-circle);
+	background: var(--color-grafite-40, rgba(27, 23, 23, 0.4));
+}
+
+.calendario-evento-conteudo {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.calendario-evento-categoria {
+	font-family: var(--font-display);
+	font-size: var(--text-meta);
+	font-weight: 700;
+	text-transform: lowercase;
+	color: color-mix(in srgb, var(--color-noir) 55%, transparent);
+}
+
+.calendario-evento-titulo {
+	font-size: var(--text-body-lg);
+	line-height: 1.4;
+	color: var(--color-noir);
+}
+
+.calendario-evento-parceira {
+	font-size: var(--text-meta);
+	color: color-mix(in srgb, var(--color-noir) 55%, transparent);
+}
+
+.calendario-evento-agenda {
+	display: inline-block;
+	margin-top: 4px;
+	font-family: var(--font-display);
+	font-size: 12.4px;
+	font-weight: 600;
+	color: var(--color-cherry);
+	text-decoration: underline;
+	text-decoration-thickness: 1px;
+	text-underline-offset: 3px;
+	width: fit-content;
+}
+
+.calendario-rodape {
+	max-width: 900px;
+	margin: 44px auto 0;
+	padding: 32px 32px 96px;
+	border-top: 1px solid var(--color-grafite-15, rgba(27, 23, 23, 0.1));
+}
+
+.calendario-rodape-nota {
+	font-weight: 300;
+	font-size: var(--text-body-lg);
+	line-height: var(--leading-relaxed);
+	color: color-mix(in srgb, var(--color-noir) 60%, transparent);
+	max-width: 56ch;
+}
+
+@media (max-width: 960px) {
+	.calendario-nav,
+	.calendario-foto,
+	.calendario-contexto,
+	.calendario-corpo,
+	.calendario-rodape {
+		padding-left: 20px;
+		padding-right: 20px;
+	}
+
+	.calendario-frase {
+		font-size: clamp(1.5rem, 5vw + 1rem, 1.9rem);
+	}
+
+	.calendario-corpo {
+		padding-top: 32px;
+	}
+
+	.calendario-controles {
+		gap: 16px;
+	}
+
+	.calendario-rodape {
+		padding-bottom: 64px;
+	}
+}

@@ -1,0 +1,323 @@
+/*
+ * Logística — detalhe do envio (`/admin/logistica/:id`). Mesmo padrão estrutural de
+ * `CentralInfluenciadora.css` (`ficha-*`): nav com link de volta, cabeçalho com identificação
+ * principal, corpo em seções. Sem fotografia (mesma decisão operacional da lista). A
+ * mini-timeline que antes vivia na lista agora é a timeline completa e única protagonista desta
+ * tela — mesma espinha dorsal de `campanha-timeline`/`relatorio-timeline`, em escala cheia.
+ */
+
+.logistica-detalhe-tela {
+	min-height: 100vh;
+	background: var(--color-paper);
+	color: var(--color-noir);
+	font-family: var(--font-body);
+}
+
+.logistica-detalhe-nav {
+	position: sticky;
+	top: 0;
+	z-index: 20;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 20px 32px;
+	background: color-mix(in srgb, var(--color-paper) 82%, transparent);
+	backdrop-filter: blur(6px);
+}
+
+.logistica-detalhe-nav-marca {
+	font-family: var(--font-display);
+	font-weight: 700;
+	font-size: 14px;
+	color: var(--color-noir);
+	opacity: 0.72;
+}
+
+.logistica-detalhe-nav-acoes {
+	display: flex;
+	align-items: center;
+	gap: 24px;
+}
+
+.logistica-detalhe-nav-link {
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 600;
+	color: var(--color-grafite-70, var(--color-noir));
+	text-decoration: none;
+	position: relative;
+	padding-bottom: 2px;
+}
+
+.logistica-detalhe-nav-link::after {
+	content: "";
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	height: 1px;
+	background: var(--color-cherry);
+	transform: scaleX(0);
+	transform-origin: right;
+	transition: transform 0.4s var(--ease-editorial);
+}
+
+.logistica-detalhe-nav-link:hover::after {
+	transform: scaleX(1);
+	transform-origin: left;
+}
+
+.logistica-detalhe-nav-sair {
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 600;
+	color: var(--color-grafite-70, var(--color-noir));
+	background: none;
+	border: none;
+	padding: 0 0 2px;
+	cursor: pointer;
+	position: relative;
+}
+
+.logistica-detalhe-nav-sair::after {
+	content: "";
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	height: 1px;
+	background: var(--color-cherry);
+	transform: scaleX(0);
+	transform-origin: right;
+	transition: transform 0.4s var(--ease-editorial);
+}
+
+.logistica-detalhe-nav-sair:hover::after {
+	transform: scaleX(1);
+	transform-origin: left;
+}
+
+.logistica-detalhe-vazio {
+	padding: 48px 32px;
+	font-size: var(--text-body-lg);
+	color: color-mix(in srgb, var(--color-noir) 55%, transparent);
+}
+
+.logistica-detalhe-cabecalho {
+	max-width: 640px;
+	margin: 28px auto 0;
+	padding: 0 32px;
+}
+
+.logistica-detalhe-eyebrow {
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 700;
+	letter-spacing: 0.02em;
+	text-transform: lowercase;
+	color: var(--color-cherry);
+	margin-bottom: 8px;
+}
+
+.logistica-detalhe-parceira {
+	font-family: var(--font-display);
+	font-weight: 800;
+	font-size: clamp(1.6rem, 1.4vw + 1.1rem, 2.1rem);
+	line-height: 1.15;
+	color: var(--color-noir);
+	text-transform: lowercase;
+	margin-bottom: 6px;
+}
+
+.logistica-detalhe-status {
+	font-family: var(--font-display);
+	font-size: var(--text-body-lg);
+	font-weight: 600;
+	text-transform: lowercase;
+	color: color-mix(in srgb, var(--color-noir) 70%, transparent);
+	margin-bottom: 2px;
+}
+
+.logistica-detalhe-kit {
+	font-size: var(--text-meta);
+	color: color-mix(in srgb, var(--color-noir) 55%, transparent);
+	margin-bottom: 20px;
+}
+
+.logistica-detalhe-alerta {
+	display: flex;
+	align-items: baseline;
+	gap: 10px;
+	padding: 14px 16px;
+	background: color-mix(in srgb, var(--color-cherry) 8%, transparent);
+	border-radius: var(--radius-sm);
+	margin-bottom: 4px;
+}
+
+.logistica-detalhe-alerta-marcador {
+	flex-shrink: 0;
+	width: 7px;
+	height: 7px;
+	margin-top: 6px;
+	border-radius: var(--radius-circle);
+	background: var(--color-cherry);
+}
+
+.logistica-detalhe-alerta-texto {
+	font-size: var(--text-body-lg);
+	font-weight: 600;
+	color: var(--color-cherry);
+	line-height: 1.4;
+}
+
+.logistica-detalhe-corpo {
+	max-width: 640px;
+	margin: 0 auto;
+	padding: 36px 32px 96px;
+}
+
+.logistica-detalhe-secao {
+	padding-top: 32px;
+	border-top: 1px solid var(--color-grafite-15, rgba(27, 23, 23, 0.1));
+}
+
+.logistica-detalhe-secao:first-child {
+	border-top: none;
+	padding-top: 0;
+}
+
+.logistica-detalhe-secao-titulo {
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 700;
+	text-transform: lowercase;
+	color: color-mix(in srgb, var(--color-noir) 55%, transparent);
+	margin-bottom: 14px;
+}
+
+.logistica-detalhe-secao-texto {
+	font-size: var(--text-body-lg);
+	line-height: var(--leading-relaxed);
+	color: var(--color-noir);
+	max-width: 56ch;
+}
+
+.logistica-detalhe-secao-texto.is-vazio {
+	color: color-mix(in srgb, var(--color-noir) 55%, transparent);
+}
+
+.logistica-detalhe-acoes-linha {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 20px;
+	margin-top: 14px;
+}
+
+.logistica-detalhe-acao {
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 600;
+	color: var(--color-cherry);
+	background: none;
+	border: none;
+	padding: 0 0 2px;
+	cursor: pointer;
+	text-decoration: underline;
+	text-decoration-thickness: 1px;
+	text-underline-offset: 3px;
+}
+
+/* Timeline completa — mesma espinha dorsal de `campanha-timeline`/`relatorio-timeline`, escala
+   cheia (marcador maior que a versão compacta que existia na lista antes deste redesenho). */
+.logistica-detalhe-timeline {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	position: relative;
+}
+
+.logistica-detalhe-timeline-passo {
+	position: relative;
+	display: flex;
+	gap: 16px;
+	padding-bottom: 22px;
+}
+
+.logistica-detalhe-timeline-passo::before {
+	content: "";
+	position: absolute;
+	left: 5px;
+	top: 16px;
+	bottom: -4px;
+	width: 1px;
+	background: var(--color-grafite-15, rgba(27, 23, 23, 0.15));
+}
+
+.logistica-detalhe-timeline-passo:last-child {
+	padding-bottom: 0;
+}
+
+.logistica-detalhe-timeline-passo:last-child::before {
+	display: none;
+}
+
+.logistica-detalhe-timeline-marcador {
+	flex-shrink: 0;
+	width: 11px;
+	height: 11px;
+	margin-top: 4px;
+	border-radius: var(--radius-circle);
+	border: 1.5px solid var(--color-grafite-40, rgba(27, 23, 23, 0.4));
+	background: var(--color-paper);
+}
+
+.logistica-detalhe-timeline-passo.is-concluido .logistica-detalhe-timeline-marcador {
+	background: var(--color-grafite-70, var(--color-noir));
+	border-color: var(--color-grafite-70, var(--color-noir));
+}
+
+.logistica-detalhe-timeline-passo.is-atual .logistica-detalhe-timeline-marcador {
+	background: var(--color-cherry);
+	border-color: var(--color-cherry);
+}
+
+.logistica-detalhe-timeline-conteudo {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	padding-top: 1px;
+}
+
+.logistica-detalhe-timeline-titulo {
+	font-family: var(--font-display);
+	font-size: var(--text-body-lg);
+	font-weight: 600;
+	color: var(--color-noir);
+	text-transform: lowercase;
+}
+
+.logistica-detalhe-timeline-passo.is-atual .logistica-detalhe-timeline-titulo {
+	font-weight: 700;
+}
+
+.logistica-detalhe-timeline-detalhe {
+	font-size: var(--text-meta);
+	color: color-mix(in srgb, var(--color-noir) 55%, transparent);
+}
+
+@media (max-width: 720px) {
+	.logistica-detalhe-nav,
+	.logistica-detalhe-cabecalho,
+	.logistica-detalhe-corpo {
+		padding-left: 20px;
+		padding-right: 20px;
+	}
+
+	.logistica-detalhe-nav-acoes {
+		gap: 16px;
+	}
+
+	.logistica-detalhe-parceira {
+		font-size: clamp(1.4rem, 5vw + 1rem, 1.8rem);
+	}
+}

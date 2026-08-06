@@ -29,6 +29,9 @@ import { PublicacaoPage } from "./pages/experimentos/Publicacao";
 import { FinanceiroInfluenciadoraPage } from "./pages/experimentos/FinanceiroInfluenciadora";
 import { PerfilInfluenciadoraPage } from "./pages/experimentos/PerfilInfluenciadora";
 import { RelatorioCampanhaPage } from "./pages/experimentos/RelatorioCampanha";
+import { CalendarioEditorialPage } from "./pages/experimentos/CalendarioEditorial";
+import { LogisticaCampanhaPage } from "./pages/experimentos/LogisticaCampanha";
+import { LogisticaEnvioDetalhePage } from "./pages/experimentos/LogisticaEnvioDetalhe";
 
 /**
  * Espelha a regra de destino pós-login do backend (auth.routes.ts: callback do Google) para
@@ -254,6 +257,52 @@ function App() {
 				element={
 					<RotaProtegida>
 						<RelatorioCampanhaPage />
+					</RotaProtegida>
+				}
+			/>
+
+			{/*
+			 * Proposta de Calendário Editorial (DOC SPRINT #2, item 8) — décima tela da família,
+			 * mesmo padrão aditivo das nove anteriores. Rota própria (`/admin/calendario`, sem
+			 * colisão com nenhuma rota legada). Gate de acesso duplo (Administrador e
+			 * Administrador da Marca), mesmo padrão de /relatorio e /marca/dashboard. Rota some
+			 * se a proposta não for aprovada.
+			 */}
+			<Route
+				path="/admin/calendario"
+				element={
+					<RotaProtegida>
+						<CalendarioEditorialPage />
+					</RotaProtegida>
+				}
+			/>
+
+			{/*
+			 * Proposta de Logística (DOC SPRINT #2, item 6) — décima primeira tela da família, mesmo
+			 * padrão aditivo das dez anteriores. Rota própria (`/admin/logistica`, sem colisão com
+			 * nenhuma rota legada). Gate exclusivo Administrador (visão interna com rastreio e
+			 * observações — ver comentário no topo de `LogisticaCampanha.tsx`). Rota some se a
+			 * proposta não for aprovada.
+			 */}
+			<Route
+				path="/admin/logistica"
+				element={
+					<RotaProtegida>
+						<LogisticaCampanhaPage />
+					</RotaProtegida>
+				}
+			/>
+
+			{/*
+			 * Detalhe do envio de Logística (redesenho operacional de 2026-08-06) — mesmo padrão de
+			 * rota de `/admin/parceiras/:id`: a lista fica enxuta, o detalhe concentra timeline
+			 * completa, rastreamento, observações, comprovante e ações.
+			 */}
+			<Route
+				path="/admin/logistica/:id"
+				element={
+					<RotaProtegida>
+						<LogisticaEnvioDetalhePage />
 					</RotaProtegida>
 				}
 			/>

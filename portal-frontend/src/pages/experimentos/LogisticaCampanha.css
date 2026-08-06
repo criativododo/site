@@ -1,0 +1,245 @@
+/*
+ * Logística — lista (`/admin/logistica`). Redesenho operacional de 2026-08-06: preserva só a
+ * identidade do Portal (tokens de cor/tipografia/espaçamento, nav padrão da família), não a
+ * linguagem editorial (sem fotografia hero, sem frase de estado grande, sem timeline na lista —
+ * isso tudo migrou para `LogisticaEnvioDetalhe.css`). Coluna mais estreita que o resto da
+ * família (640px, não 900px): esta tela é para escanear rápido, não para ler.
+ */
+
+.logistica-tela {
+	min-height: 100vh;
+	background: var(--color-paper);
+	color: var(--color-noir);
+	font-family: var(--font-body);
+}
+
+.logistica-nav {
+	position: sticky;
+	top: 0;
+	z-index: 20;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 20px 32px;
+	background: color-mix(in srgb, var(--color-paper) 82%, transparent);
+	backdrop-filter: blur(6px);
+}
+
+.logistica-nav-marca {
+	font-family: var(--font-display);
+	font-weight: 700;
+	font-size: 14px;
+	color: var(--color-noir);
+	opacity: 0.72;
+}
+
+.logistica-nav-sair {
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 600;
+	color: var(--color-grafite-70, var(--color-noir));
+	background: none;
+	border: none;
+	padding: 0 0 2px;
+	cursor: pointer;
+	position: relative;
+}
+
+.logistica-nav-sair::after {
+	content: "";
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	height: 1px;
+	background: var(--color-cherry);
+	transform: scaleX(0);
+	transform-origin: right;
+	transition: transform 0.4s var(--ease-editorial);
+}
+
+.logistica-nav-sair:hover::after {
+	transform: scaleX(1);
+	transform-origin: left;
+}
+
+.logistica-cabecalho {
+	max-width: 640px;
+	margin: 28px auto 0;
+	padding: 0 32px;
+}
+
+.logistica-eyebrow {
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 700;
+	letter-spacing: 0.02em;
+	text-transform: lowercase;
+	color: var(--color-cherry);
+	margin-bottom: 16px;
+}
+
+/* Estatísticas — mesmo padrão tipográfico de `relatorio-indicador` (rótulo + valor, sem card),
+   só que lado a lado em vez de grade 2 colunas: aqui é um resumo curto, não uma seção de leitura. */
+.logistica-stats {
+	display: flex;
+	gap: 32px;
+	margin-bottom: 24px;
+}
+
+.logistica-stat-valor {
+	font-family: var(--font-display);
+	font-weight: 800;
+	font-size: clamp(1.6rem, 1.6vw + 1.1rem, 2rem);
+	line-height: 1;
+	color: var(--color-noir);
+	margin-bottom: 4px;
+}
+
+.logistica-stat.is-alerta .logistica-stat-valor {
+	color: var(--color-cherry);
+}
+
+.logistica-stat-rotulo {
+	font-size: var(--text-meta);
+	color: color-mix(in srgb, var(--color-noir) 55%, transparent);
+	text-transform: lowercase;
+}
+
+.logistica-filtros {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 20px;
+	padding-bottom: 20px;
+	border-bottom: 1px solid var(--color-grafite-15, rgba(27, 23, 23, 0.1));
+}
+
+.logistica-filtro {
+	font-family: var(--font-display);
+	font-size: 13.6px;
+	font-weight: 600;
+	text-transform: lowercase;
+	color: color-mix(in srgb, var(--color-noir) 55%, transparent);
+	background: none;
+	border: none;
+	padding: 0 0 3px;
+	cursor: pointer;
+	position: relative;
+}
+
+.logistica-filtro::after {
+	content: "";
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	height: 1px;
+	background: var(--color-cherry);
+	transform: scaleX(0);
+	transform-origin: right;
+	transition: transform 0.4s var(--ease-editorial);
+}
+
+.logistica-filtro:hover::after {
+	transform: scaleX(1);
+	transform-origin: left;
+}
+
+.logistica-filtro.is-ativo {
+	color: var(--color-noir);
+	font-weight: 700;
+}
+
+.logistica-filtro.is-ativo::after {
+	background: var(--color-cherry);
+	transform: scaleX(1);
+	transform-origin: left;
+}
+
+.logistica-corpo {
+	max-width: 640px;
+	margin: 0 auto;
+	padding: 8px 32px 96px;
+}
+
+.logistica-vazio {
+	padding-top: 24px;
+	font-size: var(--text-body-lg);
+	color: color-mix(in srgb, var(--color-noir) 55%, transparent);
+}
+
+.logistica-lista {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+/* Linha — o núcleo do redesenho: parceira+status, alerta (se houver) logo abaixo (informação
+   mais crítica primeiro), rastreio por último (menor prioridade). Sem timeline, sem ação —
+   clicar navega para o detalhe. */
+.logistica-linha {
+	display: block;
+	padding: 18px 0;
+	border-top: 1px solid var(--color-grafite-15, rgba(27, 23, 23, 0.08));
+	text-decoration: none;
+	color: inherit;
+}
+
+.logistica-lista li:first-child .logistica-linha {
+	border-top: none;
+}
+
+.logistica-linha-topo {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 12px;
+	margin-bottom: 2px;
+}
+
+.logistica-linha-parceira {
+	font-family: var(--font-display);
+	font-size: var(--text-body-lg);
+	font-weight: 700;
+	color: var(--color-noir);
+	text-transform: lowercase;
+}
+
+.logistica-linha:hover .logistica-linha-parceira,
+.logistica-linha:focus-visible .logistica-linha-parceira {
+	text-decoration: underline;
+	text-underline-offset: 3px;
+}
+
+.logistica-linha-status {
+	flex-shrink: 0;
+	font-size: var(--text-meta);
+	font-weight: 600;
+	text-transform: lowercase;
+	color: color-mix(in srgb, var(--color-noir) 55%, transparent);
+}
+
+.logistica-linha-alerta {
+	font-size: var(--text-meta);
+	font-weight: 600;
+	color: var(--color-cherry);
+	margin-bottom: 2px;
+}
+
+.logistica-linha-rastreio {
+	font-size: var(--text-meta);
+	color: color-mix(in srgb, var(--color-noir) 45%, transparent);
+}
+
+@media (max-width: 720px) {
+	.logistica-nav,
+	.logistica-cabecalho,
+	.logistica-corpo {
+		padding-left: 20px;
+		padding-right: 20px;
+	}
+
+	.logistica-stats {
+		gap: 24px;
+	}
+}

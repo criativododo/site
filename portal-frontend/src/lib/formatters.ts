@@ -75,6 +75,18 @@ export function formatarDiaMes(dataIso: string): string {
 	});
 }
 
+/**
+ * "quarta-feira" — dia da semana por extenso a partir de uma data pura `AAAA-MM-DD`. Mesma
+ * técnica de split manual de `formatarDiaMes` (evita o desvio de fuso de `new Date(dataIso)`).
+ */
+export function formatarDiaSemana(dataIso: string): string {
+	const [ano, mes, dia] = dataIso.split("-").map(Number);
+	return new Date(Date.UTC(ano, mes - 1, dia)).toLocaleDateString("pt-BR", {
+		weekday: "long",
+		timeZone: "UTC",
+	});
+}
+
 const MESES_PT = [
 	"janeiro",
 	"fevereiro",
