@@ -67,7 +67,11 @@ authRoutes.get("/google/callback", async (req, res) => {
   let handshake: HandshakeOidc;
   try {
     handshake = JSON.parse(Buffer.from(cookieBruto, "base64url").toString("utf8"));
-  } catch {
+  } catch (erro) {
+    console.error(
+      `[oidc-handshake-invalido] timestamp=${new Date().toISOString()} requestId=${req.requestId ?? "-"} ` +
+        `mensagem=${JSON.stringify(erro instanceof Error ? erro.message : String(erro))}`,
+    );
     res.status(400).json({ error: "não foi possível concluir o login. tente novamente." });
     return;
   }
@@ -118,8 +122,18 @@ authRoutes.get("/google/callback", async (req, res) => {
           ? "/cadastro"
           : "/pendencias";
     res.redirect(`${env.frontendUrl}${destino}`);
-  } catch {
-    // Nunca vazar detalhe interno do erro OIDC para o cliente (aud/iss/exp inválidos, etc.).
+  } catch (erro) {
+    // Nunca vazar detalhe interno do erro OIDC para o cliente (aud/iss/exp inválidos, etc.) —
+    // mas registrar sempre no servidor, mesma lógica de tratarErroGlobal (incidente 2026-08-06):
+    // sem isto, uma falha aqui (grant, claims, persistência) fica sem nenhum rastro.
+    const erroFormatado = erro instanceof Error ? erro : new Error(String(erro));
+    console.error(
+      `[oidc-callback-falhou] timestamp=${new Date().toISOString()} requestId=${req.requestId ?? "-"} ` +
+        `mensagem=${JSON.stringify(erroFormatado.message)}`,
+    );
+    if (erroFormatado.stack) {
+      console.error(erroFormatado.stack);
+    }
     res.status(401).json({ error: "não foi possível concluir o login com o Google." });
   }
 });

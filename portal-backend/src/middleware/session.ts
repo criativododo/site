@@ -51,7 +51,14 @@ function decodificar(valorCookie: string): SessaoAutenticada | null {
       return null;
     }
     return sessao;
-  } catch {
+  } catch (erro) {
+    // Cookie de sessão corrompido ou em formato incompatível (ex.: mudança de schema entre
+    // deploys) — tratado como sessão inválida (fail-closed), mas registrado para não passar
+    // despercebido caso vire um padrão em vez de um caso isolado.
+    console.error(
+      `[sessao-cookie-invalido] timestamp=${new Date().toISOString()} ` +
+        `mensagem=${JSON.stringify(erro instanceof Error ? erro.message : String(erro))}`,
+    );
     return null;
   }
 }

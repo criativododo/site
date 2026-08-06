@@ -34,7 +34,10 @@ function GerarConvite() {
 	function carregar() {
 		apiFetch<{ itens: Convite[] }>("/api/admin/convites")
 			.then((dados) => setConvites(dados.itens))
-			.catch(() => setConvites([]));
+			.catch((erroCapturado) => {
+				console.error("falha ao carregar convites:", erroCapturado);
+				setConvites([]);
+			});
 	}
 
 	useEffect(() => {
