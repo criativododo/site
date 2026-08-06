@@ -1520,6 +1520,90 @@ reconciliado). Nenhum dos dois é o que esta tela representa.
 
 ---
 
+## ADR-024 — Unidade Oficial de Entrega: 1 Entrega = 1 Material = 1 Publicação
+
+- **Status:** Aceito.
+- **Data:** 2026-08-06.
+- **Autor da decisão:** responsável do projeto (sessão de decisão de Produto dedicada).
+- **Relaciona-se com:** `SPEC-012` (Gestão de Conteúdo e Ativações, §4/§6/§16), `ADR-012` da
+  série antiga (`knowledge/Arquitetura/ADR-012-renome-ativacao-fluxo-logistico.md`,
+  introduziu o termo "Entrega"), `docs/architecture/PORTAL_GLOSSARIO.md`,
+  `docs/TDD_STORAGE_GOOGLE_DRIVE.md`, `ADR-023` (hierarquia
+  `Campanha → Parceiras → Colaboração Mensal → Entrega → Material → Publicação`).
+
+### Contexto
+
+Uma investigação arquitetural identificou conflito entre o domínio oficial e uma interface
+experimental do Portal, que modela uma Entrega como contendo múltiplas mídias (vídeo
+principal + still + bastidor — "materiais de apoio"), conceito ausente de toda SPEC, ADR e
+do schema físico. A interface em questão é uma fixture de Layout, aprovada numa sessão de
+design visual, sem base em nenhuma decisão de Produto; a adequação de implementações
+concretas ao modelo aqui decidido é tratada como tarefa futura (ver Consequências), não como
+parte desta decisão arquitetural.
+
+Uma sessão de decisão de Produto dedicada avaliou a questão desde o negócio (não desde a
+implementação) e concluiu que o domínio já documentado responde à questão corretamente:
+
+- `SPEC-012` §4/§6.2 já define **Entrega** como agregado com **um** "material enviado"
+  (singular), e RN-01 já resolve o caso de múltiplas peças por competência: **"cada unidade
+  contratada de cada formato gera uma Entrega"** — i.e., Stories 1 e Stories 2, por exemplo,
+  já são duas Entregas, não uma Entrega com dois materiais.
+- `SPEC-012` §16 CB-01 já define reenvio como **substituição** do material existente
+  ("mantém identidade"), não como adição a uma coleção.
+- `docs/TDD_STORAGE_GOOGLE_DRIVE.md` já projeta a camada de armazenamento inteira (Google
+  Drive) sobre a premissa de um único arquivo por Entrega, com substituição via `PATCH` no
+  mesmo `fileId` — auditado e aprovado no Gate 2 da Fase 4.
+- `docs/architecture/PORTAL_GLOSSARIO.md` já registra a hierarquia
+  `Entrega → Material → Publicação`, com **Material** definido como "conteúdo de uma
+  Entrega" (singular).
+- O schema físico (`entrega.repository.ts`, `entrega.types.ts`, coluna
+  `material_enviado`) já é singular (`string | null`).
+
+Ou seja: nenhum dos documentos soberanos precisou ser corrigido — todos já expressavam o
+modelo correto. A lacuna era a ausência de um registro explícito, no nível de ADR, que
+fechasse a ambiguidade levantada e declarasse formalmente que "materiais de apoio" não é um
+conceito do domínio.
+
+Esta ADR é declarativa: não cria um modelo novo, apenas formaliza, num único registro
+arquitetural, o modelo já refletido em `SPEC-012`, no schema físico, no TDD de Storage e na
+documentação de domínio existente. Seu objetivo é eliminar ambiguidade para implementações
+futuras, não introduzir uma regra nova.
+
+### Decisão
+
+1. **1 Entrega = 1 Material = 1 Publicação** é a unidade oficial vigente do domínio de
+   conteúdo do Portal, enquanto este modelo não for revisto por uma nova decisão de Produto
+   documentada. Uma Entrega nunca contém uma coleção de arquivos.
+2. **Múltiplas peças de uma campanha continuam sendo modeladas como múltiplas Entregas** —
+   uma por unidade contratada de cada formato (RN-01, `SPEC-012`), nunca como itens dentro de
+   uma mesma Entrega.
+3. **Reenvio de material substitui o material existente da mesma Entrega**, mantendo a
+   identidade do recurso (CB-01, `SPEC-012` §16) — nunca cria um segundo item associado à
+   mesma Entrega.
+4. **"Materiais de apoio" (still, bastidor, making of, thumbnail, arquivo auxiliar) não são
+   um conceito oficial do domínio do Portal.** Não há Produto, UX ou Arquitetura aprovados
+   para esse conceito. Nenhuma implementação deve assumi-lo.
+5. `SPEC-012`, `PORTAL_GLOSSARIO.md`, `CONTRATO_SOBERANO.md` e
+   `docs/TDD_STORAGE_GOOGLE_DRIVE.md` permanecem **inalterados** — já expressavam
+   corretamente esta decisão antes dela ser formalizada aqui. Este ADR não corrige conteúdo
+   divergente; consolida e declara oficial um modelo que já era, de fato, o modelo vigente.
+
+### Consequências
+
+- Qualquer interface que modele uma Entrega contendo múltiplos materiais é considerada
+  divergente do domínio oficial definido nesta ADR. A adequação de implementações existentes
+  a este modelo (reduzir para um único material por Entrega, onde aplicável) é tarefa de
+  implementação futura, fora do escopo desta decisão de Produto, e deve ser tratada como
+  consumo desta ADR, não como reabertura da decisão.
+- Nenhuma SPEC, glossário ou TDD precisou de correção — esta ADR é puramente declarativa
+  sobre um modelo já correto, fechando a ambiguidade para sessões futuras.
+- Qualquer proposta futura de "materiais de apoio" exige uma nova sessão de decisão de
+  Produto, com dor de negócio documentada (não uma tela de UI como origem), e revisão
+  explícita desta ADR — nunca implementação direta por suposição (`CLAUDE.md`, regra
+  permanente: nunca criar funcionalidade por suposição).
+
+---
+
 ## Como usar este documento
 
 Toda decisão arquitetural nova e permanente deste projeto (que não seja um detalhe de
