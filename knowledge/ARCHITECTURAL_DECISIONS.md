@@ -1604,6 +1604,150 @@ futuras, não introduzir uma regra nova.
 
 ---
 
+## ADR-025 — Design System Criativo Dodô: nova fonte de verdade da identidade visual, ADR-019 (série antiga) superada
+
+- **Status:** Aceito.
+- **Data:** 2026-08-06.
+- **Autor da decisão:** responsável do projeto (sessão de decisão de governança dedicada).
+- **Relaciona-se com:** `knowledge/Arquitetura/ADR-019-design-system-dodo-como-ssot-visual.md`
+  (série antiga), `knowledge/PROJECT_SOURCE_OF_TRUTH.md` §1 e §8, `design-system/` (estado
+  atual do repositório), `docs/design/archive/` (gerações já arquivadas por ADR-019 antiga),
+  `criativododo-interno/MATERIAL PARA DESIGN SYSTEM FINAL/` (fonte de trabalho externa ao
+  repositório git, mesmo padrão de `criativododo-interno/PLANO_MESTRE_IMPLEMENTACAO_PORTAL_
+  DODO.md` citado em `PROJECT_SOURCE_OF_TRUTH.md` §5).
+
+### Contexto
+
+O repositório chega a esta decisão com uma ADR já vigente sobre identidade visual: `ADR-019`
+da série antiga (`knowledge/Arquitetura/`), que declarou `design-system/` (paleta
+laranja-primária `#f14f28` / roxo-secundária `#504ea1`) como SSOT visual do frontend React, ao
+final de um histórico de três gerações de Design System em conflito entre si.
+
+Paralelamente, o responsável do projeto conduziu uma fase de descoberta dedicada, resultando
+num briefing fechado (`BRIEFING-FINAL-CLAUDE-CODE.md`, versão 1.0, 06/08/2026, 31 decisões
+numeradas, 15 conflitos resolvidos), construído a partir das 41 telas aprovadas do Portal
+Dodô e do kit de marca oficial (`LOGOS/`, `KIT DE MARCA/`) — material com paleta Cotton
+`#EDEBDD` / Cherry `#810100` / Maroon `#630000` / Noir `#1B1717`, sem relação com a paleta de
+`ADR-019` antiga. Todo esse material — briefing, telas aprovadas, kit de marca e demais
+insumos — está concentrado em `/Users/danielperrut/criativododo-interno/MATERIAL PARA DESIGN
+SYSTEM FINAL/`, pasta externa ao repositório git (mesmo padrão de tratamento já usado para
+`PLANO_MESTRE_IMPLEMENTACAO_PORTAL_DODO.md`, `PROJECT_SOURCE_OF_TRUTH.md` §5).
+
+O responsável do projeto decidiu que esse material passa a ser a única fonte de verdade da
+identidade visual do projeto, desconsiderando qualquer versão anterior de Design System,
+Brand Book ou Manual de Marca. Como `CLAUDE.md` proíbe alterar arquitetura sem ADR e proíbe a
+existência de múltiplas fontes de verdade para o mesmo assunto, essa substituição precisa de
+registro arquitetural formal antes de qualquer conteúdo novo ser produzido.
+
+Esta ADR resolve exclusivamente a governança dessa transição. Não define, sugere ou antecipa
+nenhum token, cor, tipografia, componente ou qualquer outra decisão de design — essas decisões
+pertencem ao próprio Design System em construção, não a este registro.
+
+### Decisão
+
+1. **Passa a existir uma única fonte de verdade para a identidade visual e o sistema de
+   design do projeto: o Design System Criativo Dodô**, em construção a partir do material
+   consolidado em `criativododo-interno/MATERIAL PARA DESIGN SYSTEM FINAL/` (briefing, 41
+   telas aprovadas do Portal Dodô, kit de marca — ver item 3). Nenhum outro documento de marca
+   ou Design System, anterior a esta ADR, é considerado fonte de decisão a partir de agora.
+2. **Governança do Design System Criativo Dodô como ativo independente.** O Design System
+   Criativo Dodô é um ativo próprio do ecossistema Criativo Dodô, com governança, evolução e
+   ciclo de vida independentes — não pertence ao Portal Dodô, à Landing (`app/`), nem a
+   qualquer outro produto específico do ecossistema, presente ou futuro. Portal, Landing e
+   qualquer produto futuro **consomem** o Design System Criativo Dodô; nenhum deles o define.
+   A guarda operacional do Design System Criativo Dodô é exercida por um responsável
+   institucional designado pelo projeto, não por um produto ou área específica do ecossistema.
+   Quem exerce essa guarda pode mudar ao longo do tempo — isso é detalhe operacional, não uma
+   alteração desta ADR — desde que o modelo de governança aqui definido (ativo independente,
+   consumido por Portal, Landing e produtos futuros, nunca definido por eles) seja preservado.
+   Esta é uma decisão de governança — a forma técnica pela qual cada produto consome o Design
+   System (empacotamento, distribuição, sincronização de tokens etc.) não é definida por esta
+   ADR.
+3. **Fonte de trabalho durante a construção.** Enquanto o Design System Criativo Dodô está em
+   construção, a fonte de verdade operacional é a pasta `criativododo-interno/MATERIAL PARA
+   DESIGN SYSTEM FINAL/` (externa ao repositório git, mesmo padrão de
+   `PLANO_MESTRE_IMPLEMENTACAO_PORTAL_DODO.md`, `PROJECT_SOURCE_OF_TRUTH.md` §5) — concentra o
+   briefing, as telas aprovadas e o kit de marca. Essa localização é provisória: quando o
+   Design System Criativo Dodô for publicado, a localização oficial da documentação passa a
+   ser a registrada em `PROJECT_SOURCE_OF_TRUTH.md` §8 (ver item 7), não mais esta pasta de
+   trabalho.
+4. **`ADR-019` da série antiga é considerada superada para fins de identidade visual.**
+   Permanece no repositório apenas como registro histórico e rastreabilidade, nunca mais como
+   referência normativa.
+5. **Toda documentação de Design System anterior é arquivada, nunca apagada.** Isso inclui o
+   conteúdo atual de `design-system/` e qualquer geração já preservada em
+   `docs/design/archive/`. Arquivar aqui significa: deixa de ser consultada como fonte de
+   decisão; continua fisicamente disponível para consulta histórica pontual, quando
+   necessário.
+6. **Nenhum arquivo legado é considerado referência ativa apenas por existir no
+   repositório.** A partir desta ADR, todo material anterior ao Design System Criativo Dodô
+   passa automaticamente para estado de arquivo histórico, independentemente de já ter sido
+   movido fisicamente para uma pasta de arquivo.
+7. `knowledge/PROJECT_SOURCE_OF_TRUTH.md` §8 ("Design System HTML") passa a apontar para o
+   Design System Criativo Dodô. A localização física definitiva do Design System Criativo Dodô
+   será registrada em `PROJECT_SOURCE_OF_TRUTH.md` no momento em que a primeira entrega for
+   publicada.
+8. **Escopo e evolução do sistema.** O Design System Criativo Dodô documenta seus componentes
+   em duas classificações: **Existente** (já presente e validado nas 41 telas aprovadas do
+   Portal Dodô) e **Proposto** (componente novo, necessário para uma tela ou fluxo futuro,
+   ainda sem validação nas telas aprovadas). Todo componente criado depois desta ADR nasce
+   classificado como Proposto até ser validado. Essa classificação é parte da filosofia e do
+   escopo do Design System Criativo Dodô — organiza como ele é documentado e ampliado — e é
+   responsabilidade distinta da política de versionamento (item 9).
+9. **Política de versionamento.** A partir desta ADR, o Design System Criativo Dodô passa a
+   ter uma política oficial de versionamento. Essa política é mantida como documento próprio,
+   separado desta ADR — este registro arquitetural estabelece apenas a obrigatoriedade de sua
+   existência, não suas regras de manutenção do dia a dia. A localização física da política
+   acompanha a do próprio Design System Criativo Dodô (item 7) e será registrada em
+   `PROJECT_SOURCE_OF_TRUTH.md` no momento em que a primeira entrega for publicada.
+10. **Relação entre o Design System Criativo Dodô e o Portal.** Nesta fase, o Portal Dodô (as
+    41 telas aprovadas) é utilizado exclusivamente como **referência visual** para extrair
+    padrões e consolidar o Design System Criativo Dodô — não como algo a ser alterado.
+    Concluído o Design System Criativo Dodô, será realizada uma **auditoria** comparando o
+    sistema construído com o portal existente (`app/`, `portal-frontend/`); somente essa
+    auditoria pode gerar propostas de atualização do portal. A existência do Design System
+    Criativo Dodô, por si só, **não implica** alteração automática do produto — qualquer
+    mudança no portal decorrente da auditoria segue o fluxo normal do projeto (Produto → UX →
+    Layout → Implementação, `CLAUDE.md`).
+11. Esta ADR **não** resolve `PROJECT_SOURCE_OF_TRUTH.md` §1 (identidade visual da Landing,
+    hoje `app/`). Fica como pendência explícita, separada, a decidir apenas quando houver
+    decisão de Produto e UX dedicada sobre migrar a Landing para o Design System Criativo
+    Dodô — nunca por extensão automática desta ADR nem da auditoria citada no item 10.
+
+### Consequências
+
+- O Design System Criativo Dodô é construído sem consultar `design-system/` atual,
+  `docs/design/archive/*`, `SOBRE A DODÔ.md` (saída de NotebookLM já identificada como
+  parcialmente contaminada) ou qualquer Design System citado por skills antigas, exceto para
+  eventual consulta histórica pontual e explicitamente marcada como tal.
+- As skills que hoje citam o Design System antigo (`tom-dodo`, `planilhas-dodo`, e outras a
+  identificar) precisam ser atualizadas para apontar para o Design System Criativo Dodô, como
+  tarefa de implementação subsequente — não é parte desta ADR.
+- **Nenhuma tela, componente ou token do portal (`app/`, `portal-frontend/`) é alterado por
+  esta ADR.** A migração, se e quando decidida, só pode nascer da auditoria descrita no item
+  10 da Decisão — nunca como consequência automática da publicação do Design System Criativo
+  Dodô. Consistente com a regra do próprio briefing de que "o Design System descreve, não
+  altera o portal".
+- Divergência entre `ADR-019` antiga (paleta laranja/roxo) e o Design System Criativo Dodô
+  (paleta Cotton/Cherry/Maroon/Noir) deixa de ser tratada como conflito a partir desta ADR:
+  `ADR-019` está superada, não há duas fontes concorrentes.
+- A política de versionamento (item 9) e a classificação Existente/Proposto (item 8) são
+  regras operacionais do próprio Design System Criativo Dodô, não desta ADR. Detalhá-las ou
+  alterá-las é responsabilidade do documento correspondente e não exige nova ADR, salvo se a
+  mudança alterar a decisão de governança registrada aqui.
+- A governança como ativo independente (item 2) é a decisão permanente; quem exerce a guarda
+  operacional pode mudar ao longo do tempo sem reabrir esta ADR — o que não muda é o próprio
+  modelo de governança (ativo independente, consumido por Portal, Landing e produtos futuros,
+  nunca definido por eles). Qualquer detalhe técnico de como cada produto consome o Design
+  System Criativo Dodô é implementação, não uma reabertura desta ADR.
+- `criativododo-interno/MATERIAL PARA DESIGN SYSTEM FINAL/` (item 3) não é versionado neste
+  repositório git — mesma situação já aceita para `PLANO_MESTRE_IMPLEMENTACAO_PORTAL_DODO.md`
+  (`PROJECT_SOURCE_OF_TRUTH.md` §5). Referenciá-la aqui não a torna parte do controle de
+  versão do projeto, nem elimina a necessidade de registrar a localização oficial final em
+  `PROJECT_SOURCE_OF_TRUTH.md` quando a primeira entrega for publicada.
+
+---
+
 ## Como usar este documento
 
 Toda decisão arquitetural nova e permanente deste projeto (que não seja um detalhe de

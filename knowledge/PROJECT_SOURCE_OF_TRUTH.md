@@ -80,12 +80,28 @@ Marca, Assessoria) são declaradas como tal, não inventadas.
 partir do Contrato Soberano, das SPECs e dos ADRs, incluindo os termos banidos e a
 divergência de vocabulário com o Sistema B.
 
-## 8. Design System HTML
+## 8. Design System
 
-**`design-system/index.html` e `DESIGN.md` — documentação auxiliar, nunca fonte primária.**
-Foram gerados a partir do código de `app/` numa sessão anterior; podem ser completamente
-refeitos no futuro. Nunca usar como referência isolada, sem checar contra o código real de
-`app/src` (ver §1).
+**Fonte oficial: o Design System Criativo Dodô — ver `ADR-025`
+(`knowledge/ARCHITECTURAL_DECISIONS.md`).**
+
+`ADR-025` supera `ADR-019` da série antiga (`knowledge/Arquitetura/`) para fins de identidade
+visual. O conteúdo anterior de `design-system/` (paleta laranja/roxo) e qualquer material em
+`docs/design/archive/` são arquivo histórico, nunca fonte de decisão a partir desta ADR.
+
+**Governança.** O Design System Criativo Dodô é um ativo independente do ecossistema Criativo
+Dodô — não pertence ao Portal, à Landing, nem a qualquer produto específico. Portal, Landing e
+produtos futuros o consomem; nenhum deles o define (`ADR-025` item 2).
+
+**Fonte de trabalho durante a construção:** `criativododo-interno/MATERIAL PARA DESIGN SYSTEM
+FINAL/` (externa ao repositório git, mesmo padrão de `PLANO_MESTRE_IMPLEMENTACAO_PORTAL_
+DODO.md`, ver §5). A localização física definitiva do Design System Criativo Dodô será
+registrada aqui quando a primeira entrega for publicada (`ADR-025` item 7).
+
+**Este item não altera o §1 abaixo** (identidade visual da Landing, `app/`) — essa migração,
+se e quando decidida, exige decisão de Produto e UX dedicada, separada de `ADR-025`, e só pode
+nascer da auditoria entre o Design System construído e o portal existente prevista em
+`ADR-025` item 10.
 
 ## 9. Estado físico do repositório (o que existe de fato)
 
@@ -124,7 +140,7 @@ removido do projeto.
 | 5 | Ordem oficial de implementação | `docs/business/PORTAL_BACKLOG.md` |
 | 6 | Jornadas oficiais dos usuários | `USER_JOURNEYS.md` |
 | 7 | Linguagem ubíqua do domínio | `docs/architecture/PORTAL_GLOSSARIO.md` |
-| 8 | Design System HTML | Auxiliar — nunca fonte primária |
+| 8 | Design System | Design System Criativo Dodô, ativo independente (`ADR-025`) — supera `ADR-019` antiga |
 | 9 | Estado operacional vigente | `criativododo-memory`, carregado por `/inicio <objetivo>` |
 | 9a | Estado físico e histórico local | `docs/business/PORTAL_BRIEFING.md` §0 / `docs/guides/START_HERE_NEXT_SESSION.md` (legado) |
 | 10 | Decisões arquiteturais permanentes | `knowledge/ARCHITECTURAL_DECISIONS.md` |
