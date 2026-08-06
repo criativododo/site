@@ -1,4 +1,4 @@
-# Handoff — Incidente: login Google OIDC fora do ar em produção (SESSÃO 1/3)
+# Handoff — Incidente: login Google OIDC fora do ar em produção (SESSÃO 1/3 + fechamento SESSÃO 2)
 
 > Handoff oficial desta sessão. Objetivo: permitir que a próxima sessão principal (C1)
 > continue exatamente do ponto atual sem reler o histórico da conversa.
@@ -61,6 +61,10 @@ de produção.
 | 2026-08-06 (nova rodada, a pedido do usuário) | Investigação formal, sem assumir outage: `gh auth status`, usuário/org, remote, workflows/estado, últimos 20 runs via API, branch protection/rulesets, Actions habilitado, concorrência — todas as hipóteses locais descartadas com evidência. Confirmado via `githubstatus.com/api/v2/incidents/unresolved.json`: incidente oficial "Incident with Actions", impacto `critical`, aberto às 15:22:49Z, update das 17:02:43Z cita literalmente "queued jobs may time out" — bate exatamente com o sintoma observado. Achado colateral não relacionado: `notebooklm-sync.yml` falha com `0 jobs` (startup failure) em todo push, inclusive antes do outage — pré-existente, fora de escopo |
 | 2026-08-06 15:00–15:05 (-03) | Dois subagentes em paralelo: (1) investigação read-only do fluxo de log + busca por outros pontos cegos; (2) deploy manual do HEAD atual de `main` (commit `02097c3`, inclui `f0cb58d`), repetindo o mesmo comando SSH já pré-aprovado. Deploy: **SUCESSO COMPLETO** — healthcheck 6/6, HEAD da VPS == HEAD local, `/auth/google/login` 302, `/health` 200, `/auth/me` 401, header `x-request-id` presente (prova de que o código novo está de fato rodando) |
 | 2026-08-06 15:07 (-03) | Validação final independente do coordenador (eu): commit VPS confirmado de novo, PM2 `online` (sem crash-loop, `restart_time` avançou só +2 pelos dois reloads desta sessão), `/auth/google/login`/`/health`/`x-request-id` reconfirmados, log de erro sem entrada `[erro-nao-tratado]` ainda (esperado — nenhum erro real ocorreu desde o redeploy) |
+| 2026-08-06 15:19–15:26 (-03), **SESSÃO 2** | Nova sessão retoma exatamente o item pendente da Seção 7 (item 1): revisão preventiva ampla de pontos onde exceções podem ser perdidas, achando de novo (independentemente) o mesmo ponto cego já registrado (`auth.routes.ts:121`/`:70`) mais dois adjacentes (`session.ts` — parse do cookie de sessão; `Admin.tsx` — único `.catch` do frontend sem log/feedback nenhum) |
+| 2026-08-06 15:24 (-03) | Commit `c076b15` — `fix(observability): loga erros hoje silenciosos no callback OIDC e no parse de cookies`. Pre-commit hook (lint+build das 3 apps, typecheck+build do backend) verde. Push para `main` bem-sucedido apesar do outage do GitHub ainda ativo (Git HTTPS não é afetado, só Actions/Pages/webhooks — `gh run list` confirma que o novo push nem chegou a dar `queued`, evidência direta de que o outage também está represando a entrega do webhook, não só a fila de execução) |
+| 2026-08-06 15:25–15:26 (-03) | Deploy manual via SSH do commit `c076b15` (mesmo procedimento validado na Seção 3: `deploy/deploy.sh` + `deploy/healthcheck.sh`), sem intervenção de subagente desta vez — executado e validado diretamente nesta sessão. `git pull --ff-only` fast-forward `02097c3..c076b15` sem conflito. Healthcheck: 6/6. `git rev-parse HEAD` da VPS confirmado == HEAD local (`c076b15`) |
+| 2026-08-06 15:26:33 (-03) | **Fecha a última milha de evidência da Seção 7, item 4 (herdada da sessão anterior):** requisição real contra `/auth/google/callback` em produção com cookie de handshake corrompido → resposta `400` inalterada **e**, pela primeira vez, uma linha de log real e ao vivo apareceu no arquivo de produção: `2026-08-06T15:26:33: [oidc-handshake-invalido] timestamp=2026-08-06T18:26:33.585Z requestId=fbc6e703-49d3-4670-b1ad-f536331ec5e1 mensagem="Unexpected token 'r'…"` — `requestId` do log bate exatamente com o header `x-request-id` da resposta HTTP, provando correlação ponta a ponta (não só que o mecanismo existe, mas que ele funciona com um evento real) |
 
 ## 4. Commits
 
@@ -68,7 +72,8 @@ Branch `main`:
 
 - **`52bfe81`** — `fix(auth): impede que falha transitória no discovery OIDC do Google trave login para sempre`. **Deployado em produção** (deploy manual, ver Seção 3).
 - **`f0cb58d`** — `fix(observability): handler global de erros passa a logar sempre, com contexto estruturado`. **Deployado em produção** via SSH (mesmo commit publicado como parte do HEAD `02097c3`, ver Seção 3).
-- **`81608bb`**, **`02097c3`** — `docs(handoff): ...` (este próprio documento, criado e depois atualizado com a conclusão do CI cancelado por outage). Documentação apenas, sem código.
+- **`81608bb`**, **`02097c3`**, **`8168d94`** — `docs(handoff): ...` (este próprio documento, ao longo da SESSÃO 1). Documentação apenas, sem código.
+- **`c076b15`** — `fix(observability): loga erros hoje silenciosos no callback OIDC e no parse de cookies` (SESSÃO 2). **Deployado em produção** (deploy manual via SSH, ver linha de 2026-08-06 15:25–15:26 na Seção 3).
 
 ## 5. Arquivos alterados
 
@@ -88,6 +93,16 @@ Nenhum outro arquivo do repositório foi tocado por este incidente. Mudanças pr
 não relacionadas (`perfil.service.ts`, 3 telas de `experimentos/`, `.claude/jobs/`,
 `docs/ssh-diagnostico-20260802-120813.txt`) seguem exatamente como estavam no início da
 sessão — não commitadas, não revertidas.
+
+**`c076b15` (SESSÃO 2):**
+- `portal-backend/src/modules/identidade/auth.routes.ts` (M) — log estruturado
+  (timestamp/requestId/mensagem/stack) nos dois `catch` do callback OIDC que engoliam erro
+  sem rastro (linhas 121 e 70 na versão pré-fix); resposta HTTP (400/401) inalterada nos dois.
+- `portal-backend/src/middleware/session.ts` (M) — mesmo tratamento no `catch` do parse do
+  cookie de sessão (`decodificar`); fail-closed inalterado.
+- `portal-frontend/src/pages/Admin.tsx` (M) — `console.error` no único `.catch` do frontend
+  que não dava nenhuma indicação de falha (nem UI, nem log); comportamento de UI (lista vazia)
+  inalterado.
 
 ## 6. Validações realizadas
 
@@ -151,40 +166,79 @@ real de middleware (`requestId` → `helmet` → `cors` → rotas → `tratarErr
 nenhuma asserção de status/CORS/rate-limit existente; em produção, login/health/rate-limit/
 headers de segurança/cookies permanecem exatamente como antes do deploy (tabela acima).
 
+### SESSÃO 2 — fechamento do ponto cego `auth.routes.ts:121`/`:70` (commit `c076b15`)
+
+**Testes automatizados (local, antes do commit):**
+
+| Checagem | Resultado |
+|---|---|
+| `portal-backend`: `npx vitest run` | ✅ 398/398 testes, 53 arquivos |
+| `portal-backend`: `npm run typecheck` / `npm run build` | ✅ sem erros |
+| `portal-frontend`: `npx tsc -b` | ✅ sem erros |
+| `portal-frontend`: `npx vitest run` | ✅ 17/17 testes, 1 arquivo |
+| `portal-frontend`: `npx oxlint` (arquivo alterado) | ✅ sem achados |
+| Pre-commit hook (lint+build `app`/`portal-frontend`, typecheck+build `portal-backend`) | ✅ passou no commit `c076b15` |
+
+**Produção — pós-deploy manual via SSH (15:25–15:26, ver Seção 3):**
+
+| Checagem | Resultado |
+|---|---|
+| `deploy/healthcheck.sh` | ✅ todas as 6 checagens passaram |
+| `GET /health` | ✅ 200 |
+| `GET /auth/me` (sem cookie) | ✅ 401 (inalterado) |
+| `GET /auth/google/login` | ✅ 302, `Location` para `accounts.google.com` com PKCE/state corretos, cookie de handshake `HttpOnly; Secure; SameSite=Lax` |
+| Header `X-Request-Id` | ✅ presente em `/auth/google/login` |
+| Commit publicado na VPS == HEAD de `main` | ✅ `c076b15` nos dois lados |
+| PM2 | ✅ `status=online`; `restart_time` é cumulativo desde o primeiro `pm2 start` (não usado isoladamente como sinal — ver Observações da SESSÃO 1), mas o processo respondeu de forma consistente em todas as checagens desta rodada, sem indício de crash-loop |
+| Headers de segurança/rate-limit | ✅ presentes e inalterados (amostra: `strict-transport-security`, `x-frame-options` em `/health`) |
+| **`GET /auth/google/callback` com cookie de handshake corrompido (teste direto, não sintético em código — só um cookie inválido de verdade)** | ✅ resposta **400 inalterada** *e* **linha de log real capturada ao vivo** em `portal-backend/logs/portal-backend.error.log`: `[oidc-handshake-invalido] timestamp=2026-08-06T18:26:33.585Z requestId=fbc6e703-… mensagem="Unexpected token…"` — `requestId` do log confere com o header `x-request-id` da resposta HTTP (fbc6e703-49d3-4670-b1ad-f536331ec5e1), fechando a lacuna de evidência "ao vivo" deixada em aberto na SESSÃO 1 (Seção 7, item 4 original) |
+
+**Nenhuma regressão encontrada** nesta rodada: os mesmos endpoints/headers/cookies validados
+na SESSÃO 1 permanecem idênticos após o deploy de `c076b15`.
+
 ## 7. Riscos remanescentes
 
-1. **Ponto cego real ainda não corrigido (achado do Subagente 1, novo, mais importante desta
-   rodada): `portal-backend/src/modules/identidade/auth.routes.ts:121`.** O
-   `catch { res.status(401).json(...) }` do `GET /auth/google/callback` engole qualquer erro
-   do fluxo de troca de código/validação de claims/`resolverOuCriarIdentidade` **sem nenhum
-   log** — nem `console.error`, nem `logErro`. Mesmo já com `f0cb58d` em produção, um erro
-   real *nesta rota específica* nunca chega ao `errorHandler.ts` (é capturado antes) e
-   continua invisível — é a mesma família de bug que causou todo este incidente, só que uma
-   etapa adiante do fluxo (callback, não o discovery inicial de `/google/login`, que não tem
-   try/catch e por isso passou a ser coberto pelo fix). Menor, mesmo padrão:
-   `auth.routes.ts:70` (`catch {}` no parse do cookie de handshake). **Não corrigido nesta
-   sessão** — está fora do escopo da pendência "corrigir observabilidade" (que era
-   especificamente o handler global), registrado aqui como próximo item natural, não como
-   bug ainda ativo/urgente (o resto de `portal-backend/src` foi varrido por `isProduction`/
-   catches vazios e não tem outro ponto cego — os únicos `catch` genéricos restantes já usam
-   `logErro`/`logAviso` estruturados de `shared/storage/log.ts`).
-2. **CI da `main` está com histórico vermelho** — os runs `31120506716` e `31122222830`
-   concluíram `failure` (cancelados pelo outage confirmado, não por regressão real — ver
-   Seção 3). Fica assim até uma execução bem-sucedida depois que o outage passar.
+1. ~~Ponto cego real ainda não corrigido: `auth.routes.ts:121`/`:70`~~ — **✅ resolvido na
+   SESSÃO 2, commit `c076b15`, deployado e validado ao vivo em produção (Seção 6).** Mantido
+   aqui riscado por rastreabilidade histórica.
+2. **CI da `main` está com histórico vermelho** — os runs `31120506716`, `31122222830` e o
+   novo `31125335300` (push do commit `c076b15`, SESSÃO 2) seguem afetados pelo outage
+   confirmado do GitHub (ver item 3). Fica assim até uma execução bem-sucedida depois que o
+   outage passar; nenhum deles reflete regressão real de lint/typecheck/build/teste.
 3. **Outage do GitHub (Actions + Pages) é uma dependência externa sem ETA conhecido** —
-   confirmado como incidente oficial do GitHub (não hipótese), continua bloqueando o
-   pipeline oficial (CI→Deploy) enquanto durar.
-4. **Confirmação com erro real ainda pendente** — o mecanismo de log foi validado por
-   código+config+analogia (Seção 6), não por um `[erro-nao-tratado]` observado ao vivo. Sem
-   urgência (a stack está corretamente instrumentada), mas é o último passo de evidência que
-   falta.
+   reconfirmado ainda ativo na SESSÃO 2 (`githubstatus.com`: `major_outage`, mesmo incidente
+   `qcvjkzcs7j74` aberto às 15:22:49Z, ainda em `investigating` às 18:11:41Z). Continua
+   bloqueando o pipeline oficial (CI→Deploy) enquanto durar; `git push`/`git pull` (protocolo
+   Git puro) não são afetados — só Actions/Pages/webhooks, confirmado de novo nesta sessão
+   (push aceito normalmente, mas o run do CI nem chegou a aparecer em `gh run list` na hora).
+4. ~~Confirmação com erro real ainda pendente~~ — **✅ resolvido na SESSÃO 2**: linha de log
+   `[oidc-handshake-invalido]` capturada ao vivo em produção, com `requestId` correlacionado
+   ao header HTTP da mesma requisição (Seção 6). Mecanismo de log agora comprovado por evento
+   real, não só por código+config+analogia.
 5. **Gatilho de primeira ordem do incidente original não identificado com certeza** — não se
    sabe exatamente qual evento causou a falha transitória de discovery. Não bloqueia o fix
    (robusto a qualquer causa transitória), só significa que o mesmo gatilho externo pode se
    repetir — agora o sistema se recupera sozinho em vez de travar permanentemente.
 6. **Falta de alerta automático** — não existe mecanismo que notifique um humano quando
-   `[erro-nao-tratado]` aparecer no log; a descoberta continua dependendo de alguém olhar.
-   Fora do escopo pedido (só log, não alerta).
+   `[erro-nao-tratado]`/`[oidc-callback-falhou]`/`[oidc-handshake-invalido]`/
+   `[sessao-cookie-invalido]` aparecerem no log; a descoberta continua dependendo de alguém
+   olhar. Fora do escopo pedido em ambas as sessões (só log, não alerta).
+7. **(Novo, SESSÃO 2) Ausência de handler global de processo no backend** —
+   `portal-backend/src/server.ts` não registra `process.on("uncaughtException")` nem
+   `process.on("unhandledRejection")`. Hoje mitigado porque o Express 5 encaminha rejeições de
+   handlers assíncronos para `tratarErroGlobal`, mas um erro fora do ciclo de requisição
+   (timer, listener de baixo nível) derruba o processo sem log algum. Decidir a política de
+   resposta (logar e continuar vs. logar e reiniciar supervisionado) é decisão de
+   arquitetura/operação — **não implementado, apenas documentado**, não corrigido
+   automaticamente por ser fora do escopo de "correção simples e de baixo risco".
+8. **(Novo, SESSÃO 2) Observabilidade de erro no frontend é só via UI, nunca console/telemetria**
+   — ~30 blocos `catch (erroCapturado) { setErro(...) }`/`.catch((erroCapturado) => setErro(...))`
+   espalhados por quase todas as telas Admin*/Financeiro/Pendencias/Perfil/Cadastro/experimentos
+   mostram o erro ao usuário (não é um "erro perdido" na acepção estrita do pedido), mas nenhum
+   deles loga a exceção original — hoje a única forma de saber que algo falhou em produção é o
+   usuário reportar o que viu na tela. Corrigir isso da forma certa é um ponto único de
+   observabilidade (ex.: dentro de `apiFetch`/`ApiError`), não 15 edições espalhadas — decisão
+   de arquitetura de observabilidade do frontend, **não implementado, apenas documentado**.
 
 ## 8. Plano de rollback
 
@@ -198,11 +252,16 @@ headers de segurança/cookies permanecem exatamente como antes do deploy (tabela
   for lida e precisar reverter: `git revert f0cb58d` — mudança é aditiva e isolada (2 arquivos
   novos de middleware + 2 alterações pequenas em `app.ts`/`express.d.ts`, sem schema, sem
   migração, sem dependência nova), reversível em minutos.
-- **Mecanismo de deploy de emergência (usado nesta sessão, disponível para qualquer
+- **Mecanismo de deploy de emergência (usado nas duas sessões, disponível para qualquer
   rollback futuro se o CI oficial estiver indisponível):**
   ```
   ssh dodo "sudo -u dodo -i bash -c 'cd /opt/dodo-portal && git checkout <commit> && ./deploy/deploy.sh && ./deploy/healthcheck.sh portal.criativododo.com.br'"
   ```
+- **`c076b15` (fix do ponto cego do callback OIDC, SESSÃO 2, já em produção):** rollback não é
+  recomendado — reverteria para os `catch` silenciosos originais. Mudança é puramente aditiva
+  (só `console.error`, nenhuma resposta HTTP/UI mudou), sem schema, sem migração, sem
+  dependência nova. Se necessário: `git revert c076b15`, push, redeploy manual (mesmo comando
+  acima) ou via CI quando o outage passar.
 
 ## 9. Estado final
 
@@ -212,15 +271,23 @@ headers de segurança/cookies permanecem exatamente como antes do deploy (tabela
 - **Observabilidade (causa raiz secundária, handler global):** ✅ corrigida em código **e**
   ✅ **deployada e validada em produção** (commit `02097c3`, header `X-Request-Id` confirmado
   ao vivo).
-- **Ponto cego adjacente (`auth.routes.ts:121`/`:70`):** ⏳ identificado, não corrigido —
-  registrado como próximo passo (Seção 7, item 1), fora do escopo desta pendência específica.
-- **CI oficial:** ⏳ bloqueado por incidente global confirmado do GitHub ("Incident with
-  Actions", `critical`, aberto 15:22:49Z) — causa externa, investigada e comprovada por
-  evidência de primeira mão (não suposição), todas as hipóteses locais (auth, remote,
-  workflow desabilitado, branch protection, concorrência) descartadas com evidência própria.
-- **Bloqueio para a próxima sessão:** nenhum bloqueio técnico no Portal em si — depende só da
-  recuperação do GitHub Actions (externa, fora de controle) para o pipeline oficial voltar a
-  ficar verde. Nenhuma ação local pode acelerar isso.
+- **Ponto cego adjacente (`auth.routes.ts:121`/`:70`) + parse do cookie de sessão
+  (`session.ts`) + `.catch` silencioso do frontend (`Admin.tsx`):** ✅ **corrigidos, commitados
+  (`c076b15`), deployados e validados em produção na SESSÃO 2** — inclusive com uma linha de
+  log real capturada ao vivo (Seção 6), fechando também a última milha de evidência que a
+  SESSÃO 1 tinha deixado em aberto.
+- **CI oficial:** ⏳ ainda bloqueado por incidente global confirmado do GitHub ("Incident with
+  Actions", `critical`, aberto 15:22:49Z, reconfirmado ativo às 18:11:41Z na SESSÃO 2) — causa
+  externa, investigada e comprovada por evidência de primeira mão (não suposição); todas as
+  hipóteses locais descartadas com evidência própria nas duas sessões.
+- **Bloqueio para a próxima sessão:** nenhum bloqueio técnico no Portal em si. Este incidente
+  específico (login Google OIDC + observabilidade + ponto cego adjacente) está **fechado**:
+  não há mais nenhum item de código pendente ligado a ele. Os dois riscos novos documentados
+  na Seção 7 (itens 7 e 8 — handler global de processo ausente; observabilidade de erro no
+  frontend só via UI) são achados de uma revisão preventiva mais ampla, não deste incidente, e
+  requerem decisão de arquitetura antes de virar código — não bloqueiam nada, só aguardam
+  priorização. Fora isso, resta só a recuperação do GitHub Actions (externa, fora de controle)
+  para o pipeline oficial voltar a ficar verde.
 
 ## 10. Checklist
 
@@ -236,6 +303,9 @@ headers de segurança/cookies permanecem exatamente como antes do deploy (tabela
 - [x] Regressão do `requestId`/`errorHandler` verificada — em teste local **e** em produção pós-deploy, sem achados
 - [x] Investigação formal do outage do GitHub Actions concluída, com evidência de primeira mão (incidente oficial), não suposição
 - [x] Este handoff produzido e atualizado com o fechamento
-- [ ] `auth.routes.ts:121`/`:70` — ponto cego de observabilidade no callback OIDC, identificado nesta sessão, não corrigido (próximo passo natural, ver Seção 7)
-- [ ] Confirmação com um `[erro-nao-tratado]` real observado ao vivo em produção (mecanismo validado, evento real ainda não ocorreu)
-- [ ] CI da `main` com execução verde — pendente, bloqueado pelo outage do GitHub, sem ação local possível
+- [x] **(SESSÃO 2)** `auth.routes.ts:121`/`:70` — ponto cego de observabilidade no callback OIDC, corrigido, commitado (`c076b15`), deployado e validado em produção
+- [x] **(SESSÃO 2)** Confirmação com um erro real observado ao vivo em produção (`[oidc-handshake-invalido]`, `requestId` correlacionado ao header HTTP) — mecanismo comprovado por evento real, não só por análise de código
+- [x] **(SESSÃO 2)** Achados adjacentes corrigidos no mesmo commit: `session.ts` (parse do cookie de sessão) e `Admin.tsx` (único `.catch` silencioso do frontend)
+- [ ] CI da `main` com execução verde — pendente, bloqueado pelo outage do GitHub, sem ação local possível (reconfirmado ainda ativo ao final da SESSÃO 2)
+- [ ] **(Novo, SESSÃO 2, fora do escopo deste incidente)** Handler global de processo (`uncaughtException`/`unhandledRejection`) no backend — decisão de arquitetura pendente, ver Seção 7 item 7
+- [ ] **(Novo, SESSÃO 2, fora do escopo deste incidente)** Observabilidade centralizada de erro no frontend (hoje só UI, sem log/telemetria) — decisão de arquitetura pendente, ver Seção 7 item 8
