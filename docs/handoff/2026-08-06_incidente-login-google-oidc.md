@@ -54,8 +54,10 @@ de produção.
 | 2026-08-06 ~13:53–14:07 | CI `31120506716` eventualmente conclui `failure` (cancelado após ~15min preso — outage, não regressão do fix) |
 | 2026-08-06 14:08:10 | Commit `f0cb58d` (fix de observabilidade) criado — 398 testes locais, lint/typecheck/build verdes |
 | 2026-08-06 14:08:24 | Push para `main` — novo CI `31122222830` disparado (cobre os dois commits) |
-| 2026-08-06 14:08–14:21 | Outage do GitHub **ainda ativo** — CI `31122222830` segue `queued`. Monitor em segundo plano ativo, vai reexecutar automaticamente quando `githubstatus.com` reportar Actions `operational` |
+| 2026-08-06 14:08–14:21 | Outage do GitHub **ainda ativo** — CI `31122222830` segue `queued` |
 | 2026-08-06 14:20:52–14:21:07 | Revalidação final desta sessão: produção estável em `52bfe81`, healthcheck/login/headers/cookies OK (Seção 6); suíte local (398/398), typecheck, build e lint revalidados para `f0cb58d` (ainda não deployado) |
+| 2026-08-06 14:23:28 | CI `31122222830` conclui `failure` — **confirmado como cancelamento por outage, não regressão real**: os 3 jobs (`landing`, `portal-backend`, `portal-frontend`) foram `cancelled` com `steps: []` (nenhum passo chegou a rodar — não é falha de lint/typecheck/build/teste) |
+| 2026-08-06 14:23:28 (checagem seguinte) | `githubstatus.com` ainda reporta Actions/Pages em `major_outage` — nova rodada de monitoramento em segundo plano iniciada para reexecutar assim que normalizar |
 
 ## 4. Commits
 
@@ -176,11 +178,13 @@ a linha `[erro-nao-tratado] ...` no log (`pm2 logs portal-backend` ou
   em produção ainda.
 - **CI oficial:** ⏳ bloqueado por outage externo do GitHub (Actions + Pages,
   `major_outage` confirmado por `githubstatus.com` na última checagem desta sessão).
-- **Monitor em segundo plano ativo** (task `bdskatn95` desta sessão): aguarda
-  `githubstatus.com` reportar Actions `operational`, então reporta a conclusão do CI
-  `31122222830` automaticamente. Se esta sessão encerrar antes do outage passar, a próxima
-  sessão deve checar `gh run view 31122222830` e, se ainda `queued`/outage ativo, decidir
-  entre aguardar ou repetir o deploy manual (Seção 8) para `f0cb58d`.
+- **CI `31122222830` concluiu `failure` por cancelamento do outage** (todos os jobs
+  `cancelled`, `steps: []` — confirmado que não é regressão de código, ver linha do tempo).
+  Novo monitor em segundo plano ativo nesta sessão: aguarda `githubstatus.com` reportar
+  Actions `operational` e então reexecuta o run automaticamente. Se esta sessão encerrar
+  antes do outage passar, a próxima sessão deve checar `gh run list --branch main --limit 3`
+  e, se o outage ainda estiver ativo, decidir entre continuar aguardando ou repetir o deploy
+  manual (Seção 8) para publicar `f0cb58d`.
 - **Bloqueio para a próxima sessão:** nenhum bloqueio técnico — só depende da recuperação do
   GitHub Actions (externa) para fechar o pipeline oficial, ou de uma nova decisão explícita
   de deploy manual para `f0cb58d`.
