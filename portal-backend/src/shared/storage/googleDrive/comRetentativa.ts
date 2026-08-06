@@ -7,7 +7,7 @@ import {
   LimiteDeRequisicaoExcedido,
   RecursoDeArmazenamentoNaoEncontrado,
 } from "../erros.js";
-import { logAviso, logErro } from "../log.js";
+import { logAviso, logErro } from "../../log.js";
 
 const CONTEXTO_LOG = "ProvedorDeArmazenamentoGoogleDrive";
 

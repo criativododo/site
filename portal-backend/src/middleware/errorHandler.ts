@@ -1,4 +1,5 @@
 import type { NextFunction, Request, Response } from "express";
+import { env } from "../config/env.js";
 
 /**
  * Handler global de erros (último `app.use`, identificado pelo Express via aridade 4). Loga
@@ -17,7 +18,8 @@ export function tratarErroGlobal(
 
 	console.error(
 		`[erro-nao-tratado] timestamp=${new Date().toISOString()} requestId=${req.requestId ?? "-"} ` +
-			`method=${req.method} rota=${req.originalUrl} status=500 mensagem=${JSON.stringify(erro.message)}`,
+			`method=${req.method} rota=${req.originalUrl} status=500 versao=${env.versao} ` +
+			`mensagem=${JSON.stringify(erro.message)}`,
 	);
 	if (erro.stack) {
 		console.error(erro.stack);

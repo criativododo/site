@@ -1,3 +1,4 @@
+import { logAviso, logEvento } from "../log.js";
 import { CepCache } from "./cache.js";
 import { normalizarCep, normalizarEndereco } from "./normalizador.js";
 import type { CepProvider, EnderecoPostal } from "./tipos.js";
@@ -30,21 +31,23 @@ export class CepResolver {
       try {
         resultado = await provider.buscar(cep);
       } catch (erro) {
-        console.warn(
-          `[CepResolver] provider=${provider.nome} falhou cep=${cep}: ${erro instanceof Error ? erro.message : String(erro)}`,
-        );
+        logAviso("CepResolver", {
+          provider: provider.nome,
+          cep,
+          mensagem: erro instanceof Error ? erro.message : String(erro),
+        });
         continue;
       }
 
       if (resultado) {
         const normalizado = normalizarEndereco(resultado);
         this.cache.definir(cep, normalizado);
-        console.info(`[CepResolver] cep=${cep} resolvido por provider=${provider.nome}`);
+        logEvento("CepResolver", { cep, resolvidoPor: provider.nome });
         return normalizado;
       }
     }
 
-    console.warn(`[CepResolver] cep=${cep} não resolvido por nenhum provider`);
+    logAviso("CepResolver", { cep, motivo: "não resolvido por nenhum provider" });
     return null;
   }
 }

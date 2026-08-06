@@ -4,6 +4,7 @@ import express from "express";
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
 import { env } from "./config/env.js";
+import { accessLog } from "./middleware/accessLog.js";
 import { tratarErroGlobal } from "./middleware/errorHandler.js";
 import { requestId } from "./middleware/requestId.js";
 import { authRoutes } from "./modules/identidade/auth.routes.js";
@@ -20,6 +21,7 @@ export const app = express();
 app.set("trust proxy", 1);
 
 app.use(requestId);
+app.use(accessLog);
 app.use(helmet());
 app.use(
 	cors({
@@ -31,7 +33,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 app.get("/health", (_req, res) => {
-	res.json({ status: "ok" });
+	res.json({ status: "ok", versao: env.versao });
 });
 
 /** Proteção de infraestrutura contra abuso/força-bruta — não é regra de negócio (RN-17 é N/A para OIDC). */

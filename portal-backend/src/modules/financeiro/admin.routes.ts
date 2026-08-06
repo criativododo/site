@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { logAviso } from "../../shared/log.js";
 import {
   editarValorObrigacao,
   lancarObrigacao,
@@ -59,14 +60,21 @@ obrigacaoAdminRoutes.post("/", async (req, res) => {
   // valor usa `=== undefined` (não a checagem genérica de truthiness) porque 0 é um valor
   // presente-mas-inválido que deve cair no motivo VALOR_INVALIDO do service, não aqui.
   if (!parceiraId || !mesReferencia || valor === undefined || !tipo) {
-    console.error(
-      "POST /obrigacoes: campos obrigatórios ausentes (parceiraId, mesReferencia, valor, tipo)",
-    );
+    logAviso("financeiro-admin", {
+      rota: "POST /obrigacoes",
+      motivo: "campos obrigatórios ausentes (parceiraId, mesReferencia, valor, tipo)",
+      requestId: req.requestId,
+    });
     res.status(400).json({ error: "não foi possível lançar a obrigação." });
     return;
   }
   if (tipo !== "MENSAL" && tipo !== "AVULSO") {
-    console.error(`POST /obrigacoes: tipo inválido recebido (${String(tipo)})`);
+    logAviso("financeiro-admin", {
+      rota: "POST /obrigacoes",
+      motivo: "tipo inválido",
+      tipoRecebido: String(tipo),
+      requestId: req.requestId,
+    });
     res.status(400).json({ error: "não foi possível lançar a obrigação." });
     return;
   }

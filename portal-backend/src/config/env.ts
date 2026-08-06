@@ -1,3 +1,4 @@
+import { execSync } from "node:child_process";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -21,8 +22,25 @@ function obrigatoria(nome: string): string {
 
 const isProduction = process.env.NODE_ENV === "production";
 
+/**
+ * SHA curto do commit em execução — correlaciona erro de produção com o deploy que o causou
+ * (sprint de observabilidade). `GIT_SHA` permite injeção externa (ex.: build futuro fora de um
+ * clone git); na ausência, lê `git rev-parse` do próprio checkout (é como este projeto é
+ * deployado hoje — `deploy/deploy.sh` faz `git pull` direto no diretório servido). Nunca deve
+ * derrubar o boot: falha aqui vira "desconhecida", não exceção.
+ */
+function obterVersao(): string {
+  if (process.env.GIT_SHA) return process.env.GIT_SHA;
+  try {
+    return execSync("git rev-parse --short HEAD", { encoding: "utf8" }).trim();
+  } catch {
+    return "desconhecida";
+  }
+}
+
 export const env = {
   port: Number(process.env.PORT ?? 4000),
+  versao: obterVersao(),
   nodeEnv: process.env.NODE_ENV ?? "development",
   isProduction,
   frontendUrl: process.env.FRONTEND_URL ?? "http://localhost:5173",

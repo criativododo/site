@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { Readable } from "node:stream";
 import type { ReadableStream as WebReadableStream } from "node:stream/web";
 import { comRetentativa, chamarDriveApi, DRIVE_UPLOAD_API } from "./comRetentativa.js";
-import { logEvento } from "../log.js";
+import { logEvento } from "../../log.js";
 import type { ProvedorDeArmazenamento } from "../provedorDeArmazenamento.js";
 import type { PaginaDeRecursos, ParametrosDeEnvio, RecursoDeArmazenamento } from "../tipos.js";
 

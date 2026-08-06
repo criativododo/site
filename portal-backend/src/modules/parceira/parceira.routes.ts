@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { logAviso } from "../../shared/log.js";
 import { mensagemDeCamposObrigatoriosAusentes } from "../../shared/validacaoCampos.js";
 import { obterFichaParceira } from "../dashboard/dashboard.service.js";
 import {
@@ -66,7 +67,12 @@ parceiraRoutes.patch("/:id", async (req, res) => {
 parceiraRoutes.patch("/:id/status", async (req, res) => {
   const { status } = req.body ?? {};
   if (status !== "ATIVA" && status !== "INATIVA") {
-    console.error(`PATCH /parceiras/:id/status: status inválido recebido (${String(status)})`);
+    logAviso("parceira-admin", {
+      rota: "PATCH /parceiras/:id/status",
+      motivo: "status inválido",
+      statusRecebido: String(status),
+      requestId: req.requestId,
+    });
     res.status(400).json({ error: "não foi possível atualizar o status da parceira." });
     return;
   }

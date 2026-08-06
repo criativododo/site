@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import path from "node:path";
 import { ErroDeArmazenamento, ErroTransitorioDeArmazenamento } from "./erros.js";
-import { logErro, logEvento } from "./log.js";
+import { logErro, logEvento } from "../log.js";
 import type { ProvedorDeArmazenamento } from "./provedorDeArmazenamento.js";
 import type { RecursoDeArmazenamento } from "./tipos.js";
 

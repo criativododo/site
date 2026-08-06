@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { parceiraDaSessao } from "../../middleware/isolamento.js";
+import { logAviso } from "../../shared/log.js";
 import { requireAdmin } from "../../middleware/requireAuth.js";
 import { decidirExclusao, listarSolicitacoesPendentes, solicitarExclusao } from "./exclusao.service.js";
 import { exportarDadosDaParceira } from "./exportacao.service.js";
@@ -31,9 +32,11 @@ lgpdAdminRoutes.patch("/exclusao/:id/decidir", async (req, res) => {
   const { aprovada, fundamentoJuridico, responsavelAnalise } = req.body ?? {};
 
   if (typeof aprovada !== "boolean" || !fundamentoJuridico || !responsavelAnalise) {
-    console.error(
-      "PATCH /lgpd/exclusao/:id/decidir: campos obrigatórios ausentes (aprovada, fundamentoJuridico, responsavelAnalise)",
-    );
+    logAviso("lgpd-admin", {
+      rota: "PATCH /lgpd/exclusao/:id/decidir",
+      motivo: "campos obrigatórios ausentes (aprovada, fundamentoJuridico, responsavelAnalise)",
+      requestId: req.requestId,
+    });
     res.status(400).json({ error: "não foi possível registrar a decisão sobre a exclusão." });
     return;
   }

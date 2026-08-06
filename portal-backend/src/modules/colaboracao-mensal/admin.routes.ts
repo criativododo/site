@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { logAviso } from "../../shared/log.js";
 import { mensagemDeCamposObrigatoriosAusentes } from "../../shared/validacaoCampos.js";
 import { buscarColaboracaoMensal, compilarCompetencia, listarColaboracoesDaParceira } from "./colaboracaoMensal.service.js";
 
@@ -42,7 +43,12 @@ colaboracaoMensalAdminRoutes.post("/compilar", async (req, res) => {
 colaboracaoMensalAdminRoutes.get("/", async (req, res) => {
   const parceiraId = typeof req.query.parceiraId === "string" ? req.query.parceiraId : undefined;
   if (!parceiraId) {
-    console.error("GET /colaboracoes-mensais: parâmetro obrigatório ausente (parceiraId)");
+    logAviso("colaboracao-mensal-admin", {
+      rota: "GET /colaboracoes-mensais",
+      motivo: "parâmetro obrigatório ausente",
+      parametro: "parceiraId",
+      requestId: req.requestId,
+    });
     res.status(400).json({ error: "não foi possível carregar o histórico da parceira." });
     return;
   }

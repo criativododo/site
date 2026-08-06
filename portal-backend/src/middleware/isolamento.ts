@@ -1,4 +1,5 @@
 import type { NextFunction, Request, Response } from "express";
+import { logAviso } from "../shared/log.js";
 
 const CHAVES_BLOQUEADAS = ["parceiraId", "parceira_id", "influKey", "INFLU_KEY"];
 
@@ -16,9 +17,11 @@ export function bloquearParceiraIdDeCliente(req: Request, res: Response, next: N
   );
 
   if (tentouEnviar) {
-    console.error(
-      "bloquearParceiraIdDeCliente: tentativa de enviar identificador de Parceira pelo cliente",
-    );
+    logAviso("isolamento", {
+      motivo: "tentativa de enviar identificador de Parceira pelo cliente",
+      rota: req.originalUrl,
+      requestId: req.requestId,
+    });
     res.status(400).json({ error: "não foi possível concluir a operação." });
     return;
   }
