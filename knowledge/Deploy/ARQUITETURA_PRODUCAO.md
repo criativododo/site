@@ -15,7 +15,7 @@ foi feito.
 > **Nota de revisão (2026-07-23):** a restrição soberana de "zero custo
 > recorrente adicional / zero serviço contratado novo" que orienta as
 > decisões abaixo foi **substituída** por uma decisão posterior do
-> responsável do projeto: rebranding "Estúdio Elã" → "Criativo Dodô",
+> responsável do projeto: rebranding "Criativo Dodô" → "Criativo Dodô",
 > novo domínio institucional `criativododo.com.br` (aplicação em
 > `portal.criativododo.com.br`) e migração para **Locaweb Hospedagem II
 > Linux** — ambos contratados em 2026-07-23 (ver

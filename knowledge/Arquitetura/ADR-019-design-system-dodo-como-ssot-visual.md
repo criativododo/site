@@ -10,7 +10,7 @@ gerações de Design System em conflito entre si e com o código real.
 ## Contexto
 
 O projeto teve, em sequência, três gerações de identidade visual desde o
-rebranding "Estúdio Elã" → "criativo Dodô" (`ADR-020`):
+rebranding "Criativo Dodô" → "criativo Dodô" (`ADR-020`):
 
 1. **"TEAR Editorial"** (`docs/design/archive/tear-editorial-legado/`) —
    sistema pré-rebranding, vermelho-vinho, serifado. Sem relação com a

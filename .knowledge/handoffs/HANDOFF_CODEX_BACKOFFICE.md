@@ -776,7 +776,7 @@ revisitar isso a menos que um teste real quebre.
 ## 9. Contexto do projeto
 
 - **Domínio:** Projeto DODÔ, plataforma "Influencia" da marca Criativo
-  Dodô (nomes técnicos legados: "Projeto TEAR", "Estúdio Elã" — não usar
+  Dodô (nomes técnicos legados: "Projeto TEAR", "Criativo Dodô" — não usar
   em código novo, só aparecem em arquivos históricos).
 - **O que o sistema faz:** gestão de marketing de influência entre uma
   marca e parceiras (influenciadoras) — cadastro, aprovação, briefings,

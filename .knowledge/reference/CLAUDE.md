@@ -3,7 +3,7 @@
 ## Projeto
 
 Projeto DODÔ — plataforma **Influencia** da marca **Criativo Dodô** (nome técnico anterior
-do projeto: "Projeto TEAR"; marca comercial anterior: "Estúdio Elã", produto "ELÃ |
+do projeto: "Projeto TEAR"; marca comercial anterior: "Criativo Dodô", produto "ELÃ |
 influência" — ambos nomenclatura legada, `ADR-020` em `knowledge/Arquitetura/`): sistema de
 gestão de marketing de influência entre marcas e parceiras (influenciadoras), cobrindo o
 ciclo de colaboração mensal — cadastro, aprovação, briefings, entrega/upload de materiais,

@@ -18,10 +18,10 @@ fruto de investigação ou inferência do agente.
 | Marca | Criativo Dodô |
 | Domínio principal | criativododo.com.br |
 | Portal | portal.criativododo.com.br |
-| Repositório local atual | `/Users/danielperrut/ela-influencia` |
+| Repositório local atual | `/Users/danielperrut/criativododo` |
 
 **Observação:** o diretório físico ainda possui nomenclatura histórica
-(`ela-influencia`). Isso **não** representa o nome oficial do projeto
+(`criativododo`). Isso **não** representa o nome oficial do projeto
 (ver `ADR-020`).
 
 ## Hospedagem
@@ -162,7 +162,7 @@ referências antigas (ELÃ / TEAR).
 
 ### Observações
 
-- O nome do diretório local (`ela-influencia`) é nomenclatura legada e
+- O nome do diretório local (`criativododo`) é nomenclatura legada e
   não deve ser tomado como nome oficial do projeto.
 - Este documento não fez nenhuma investigação própria — todo o
   conteúdo reflete exatamente as informações fornecidas pelo

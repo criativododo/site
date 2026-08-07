@@ -97,7 +97,7 @@ credencial ou decisão que só o responsável do projeto tem.
   refazer SSL, CORS, `SESSION_DOMAIN` e `SANCTUM_STATEFUL_DOMAINS`.
 - **Decisão vigente (responsável do projeto, 2026-07-23): domínio
   institucional `criativododo.com.br`, aplicação (`tear-v2-app`) em
-  `portal.criativododo.com.br`.** Parte do rebranding "Estúdio Elã" →
+  `portal.criativododo.com.br`.** Parte do rebranding "Criativo Dodô" →
   "Criativo Dodô" e da migração para Locaweb Hospedagem II Linux (ver
   `docs/_workspace/TASK_ROUTER.md` §50, `docs/_workspace/ESTADO_SESSAO.md`).
   Substitui a decisão anterior (2026-07-22, `influencia.estudioela.com`,

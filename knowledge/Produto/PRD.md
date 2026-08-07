@@ -12,7 +12,7 @@ ordenadas por `WORKFLOW.md`.
 ## 1. Visão do Produto
 
 ### 1.1 Propósito
-O TEAR é o sistema de gestão do programa de parcerias com influenciadoras digitais da marca **Jescri** (moda íntima/sleepwear), operado pela agência **Estúdio Elã**. Ele administra o ciclo mensal completo de uma campanha de influência: cadastro da parceira, definição do que ela vai produzir (briefing), acompanhamento da produção de conteúdo, envio de produtos (logística), geração de contrato, pagamento e histórico.
+O TEAR é o sistema de gestão do programa de parcerias com influenciadoras digitais da marca **Jescri** (moda íntima/sleepwear), operado pela agência **Criativo Dodô**. Ele administra o ciclo mensal completo de uma campanha de influência: cadastro da parceira, definição do que ela vai produzir (briefing), acompanhamento da produção de conteúdo, envio de produtos (logística), geração de contrato, pagamento e histórico.
 
 *Fonte: `00_START_HERE.md` (linhas 126-144); mensagens de UI em `Código.js` (ex. "Portal Influenciadoras Jescri", `WebApp.js:142`); domínio de dados em `BASE DE DADOS` (nomes de campo como `INFLUENCIADORA_RAZAO_SOCIAL`, `LOOKS_QTD`).*
 
@@ -35,7 +35,7 @@ Hoje a operação inteira roda sobre uma única planilha Google Sheets com autom
 | Perfil | Responsabilidade no sistema | Necessidade principal |
 |---|---|---|
 | **Influenciadora** (parceira de conteúdo) | Recebe briefing mensal, produz conteúdo (Reel/Carrossel/Stories), envia material, acompanha pagamento e histórico | Saber o que precisa entregar, quando, e ver se já foi pago — sem depender de mensagem manual |
-| **Equipe Jescri/Estúdio Elã** (gestão da marca) | Cadastra e ativa influenciadoras, define quantidades contratadas, escreve o briefing mensal, aprova conteúdo, dispara pagamentos, acompanha logística | Rodar o ciclo mensal inteiro (abrir mês, cobrar, aprovar, arquivar) com o mínimo de passos manuais |
+| **Equipe Jescri/Criativo Dodô** (gestão da marca) | Cadastra e ativa influenciadoras, define quantidades contratadas, escreve o briefing mensal, aprova conteúdo, dispara pagamentos, acompanha logística | Rodar o ciclo mensal inteiro (abrir mês, cobrar, aprovar, arquivar) com o mínimo de passos manuais |
 
 *Fonte: menu do ERP em `Código.js` (linhas 25-76, `onOpen()`) mostra exatamente as ações que a equipe realiza; telas do portal em `Index.html` (login, pendências, briefing, upload, pagamentos, histórico, perfil) mostram o que a influenciadora vê.*
 

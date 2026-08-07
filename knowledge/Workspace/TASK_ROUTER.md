@@ -216,7 +216,7 @@ Toda SPEC deve respeitar, sem reabrir:
 - **Requisitos (PRD):** §6.8, §7 (RN-16, RN-17, RN-18), §9 (RF-026, RF-027), §10 (segurança)
 - ✅ **Implementada (2026-07-16):** slice completo (`Credencial`/`TokenDeSessao`/`JanelaDeBloqueio`/`Sessao`/`Autenticador` → `ParceiraACL.obterAcessoLegado`/`SessaoACL`/`BloqueioACL` → `SessaoRepository`/`BloqueioRepository` → `AcessoPortalService` → `AcessoController` → Portal `entrarNoPortal`/`renovarSessaoDoPortal`/`sairDoPortal`). Abas físicas novas `SESSOES` e `BLOQUEIOS`. Bloqueio 5 falhas → 15 min (RN-02); sessão 6h deslizante (RN-03); erros AC-01/02/03 (§17); credencial/PII fora de log (RN-04); operações de acesso serializadas por trava global (LockService, só no Entrypoint) — primeira superfície multiusuária do sistema.
 - **Dívidas registradas na implementação:** verificação de credencial atrás da porta do Autenticador via **adaptador legado provisório** (`VerificadorDeCredencialLegado`, RN-16: cupom + 5 primeiros dígitos do CNPJ, por decisão do PO em 2026-07-16) — trocar o modelo (Q-07) = trocar só o adaptador; acesso não filtra estado do vínculo (Ativa/Inativa) — regra não consta da SPEC.
-- **UI (FASE 3 pós-SPECs, 2026-07-16; reescrita 2026-07-17 Sprint Portal MVP Online):** `src/ui/login.html` — scaffolding temporário e funcional, sem identidade visual (decisão explícita do responsável do projeto: priorizar funcionamento para homologação; substituição futura pelo Design System oficial do Estúdio Elã não deve alterar a lógica de sessão/navegação). Navegação entre páginas via `window.top.location.href` (iframe sandboxed do HtmlService); token em `sessionStorage`. **Reescrita em 2026-07-17:** o formulário cupom/senha (modelo legado desta SPEC) foi substituído por Google Identity Services, cobrindo o fluxo federado de SPEC-035 (login/vinculação/onboarding) — ver nota em SPEC-035 abaixo. `entrarNoPortal` (backend legado, cupom+CNPJ) permanece implementado e testado, só deixou de ter UI própria.
+- **UI (FASE 3 pós-SPECs, 2026-07-16; reescrita 2026-07-17 Sprint Portal MVP Online):** `src/ui/login.html` — scaffolding temporário e funcional, sem identidade visual (decisão explícita do responsável do projeto: priorizar funcionamento para homologação; substituição futura pelo Design System oficial do Criativo Dodô não deve alterar a lógica de sessão/navegação). Navegação entre páginas via `window.top.location.href` (iframe sandboxed do HtmlService); token em `sessionStorage`. **Reescrita em 2026-07-17:** o formulário cupom/senha (modelo legado desta SPEC) foi substituído por Google Identity Services, cobrindo o fluxo federado de SPEC-035 (login/vinculação/onboarding) — ver nota em SPEC-035 abaixo. `entrarNoPortal` (backend legado, cupom+CNPJ) permanece implementado e testado, só deixou de ter UI própria.
 - 🟠 **Aberto:** ~~P5 / Q-07 (modelo de autenticação definitivo)~~ resolvido por SPEC-035 (2026-07-17): federação Google Identity via novo adaptador, reaproveitando `Sessao`/`TokenDeSessao`/`SessaoRepository`/`AcessoController` desta SPEC sem alteração — ver SPEC-035 §9.2-A · ~~P6 / Q-08 (papéis)~~ resolvido por SPEC-035 para `Administrador`/`Influenciadora` (papel `Marca` permanece aberto, é decisão de escopo de produto, não de arquitetura) · Q-09 (LGPD) segue aberta — tratada como débito herdado por SPEC-027/030/032/035, não bloqueante por precedente já estabelecido, ainda sem solução formal antes de o Portal expor dados
 
 #### `[x]` SPEC-027 · Conteúdo no Portal
@@ -860,10 +860,10 @@ próprio `UsuarioController` protegidas). Fechada para as 5 SPECs de equipe
   para a arquitetura consolidada; a v32 é a primeira versão cujo conteúdo foi
   de fato verificado byte-a-byte contra o git.
 
-## 14. Redesign visual — Design System Estúdio Elã (iniciado 2026-07-19)
+## 14. Redesign visual — Design System Criativo Dodô (iniciado 2026-07-19)
 
 - **Origem:** sessão de auditoria de UI (`src/ui/`) comparando com o Design
-  System Estúdio Elã e o export Stitch (`docs/design/stitch-export/`). Documentos de
+  System Criativo Dodô e o export Stitch (`docs/design/stitch-export/`). Documentos de
   referência (raiz do repo, não em `docs/` por serem artefatos de sessão):
   `UI_AUDIT_REPORT.md`, `UI_DESIGN_SYSTEM_GAP_ANALYSIS.md`,
   `UI_IMPLEMENTATION_ROADMAP.md`, `UI_VISUAL_HANDOFF.md`,
@@ -3504,7 +3504,7 @@ Sessão de continuação direta do §49 (mesmo dia). Sem relação com §46/§47
   futura. **Decisão aceita sem propor reversão — não reabrir a
   discussão de hospedagem durante esta fase.**
 
-- **Rebranding efetivado: "Estúdio Elã" → "Criativo Dodô".** A partir
+- **Rebranding efetivado: "Criativo Dodô" → "Criativo Dodô".** A partir
   desta sessão, todo código/documentação/texto/variável/URL/exemplo
   **novo** deve usar "Dodô"/`criativododo.com.br`. Identidade visual
   (logo, cores, tipografia) **não muda** nesta etapa — só o nome
@@ -3618,7 +3618,7 @@ registrados em §50.
   `docs/_workspace/TASK_ROUTER.md`/`ESTADO_SESSAO*.md` (histórico/
   snapshot); `docs/PRD.md` (URL real do formulário externo do sistema
   legado, ainda em produção); `est-dio-el-design-system/**` (ativo de
-  marca "Estúdio Elã" — identidade visual não muda nesta etapa, por
+  marca "Criativo Dodô" — identidade visual não muda nesta etapa, por
   regra já registrada em §50); `.claude/worktrees/**` (ambientes
   isolados de outras sessões, fora de escopo).
 - **Verificação final:** grep pós-edição confirmou que as únicas
@@ -3703,7 +3703,7 @@ existente como fonte canônica").
   é o único lugar que precisa do valor real.
 - **Achado novo, não corrigido (fora do escopo desta sessão, só
   reportado):** `CLAUDE.md` linha 5 ainda descreve o projeto como
-  "Estúdio Elã, produto 'ELÃ | influência'" — não reconciliado com o
+  "Criativo Dodô, produto 'ELÃ | influência'" — não reconciliado com o
   rebranding institucional "Criativo Dodô" de §50. Decisão de negócio do
   responsável (aplicar retroativamente à descrição do projeto ou manter,
   já que §50 disse "não retroativo"), não decisão técnica — não alterado
@@ -4262,7 +4262,7 @@ e `ADR-019` documenta laranja como cor-assinatura oficial (31%,
 "sempre a maior mancha de cor").
 
 **Responsável confirmou** de forma explícita e deliberada: é decisão de
-rebranding, "a identidade visual do Estúdio Elã deixa de ser a
+rebranding, "a identidade visual do Criativo Dodô deixa de ser a
 referência", "considere o ADR-019 substituído por esta decisão", e
 **dispensou expressamente a criação de um novo ADR antes da
 implementação**. Implementei a pedido, sem alterar o arquivo do
@@ -4436,7 +4436,7 @@ por decisão de aguardar antes de formalizar).
 pessoal do responsável para toda a agência (Meta Ads, outros clientes),
 **fora deste repositório** (untracked, não é o produto Influencia/TEAR).
 `skills-dodo/dodo/SKILL.md` ainda carrega paleta e tipografia da
-identidade antiga "Estúdio Elã" (bege `#f4e9e6`, bordô `#791815`,
+identidade antiga "Criativo Dodô" (bege `#f4e9e6`, bordô `#791815`,
 fonte "Ivy Journal" com itálico decorativo), apenas com o nome trocado
 por find-replace (confirmado pelo próprio `skills-dodo/REINSTALL.md`).
 **Não é o SSOT do produto e não foi alterada** — registrado aqui só
@@ -4497,10 +4497,10 @@ segue sem commit, não tocada por esta sessão.
 
 Mesma sessão do §60, terceira frente. Responsável enviou instrução de
 "atualização obrigatória de contexto" pedindo para tratar "TEAR",
-"Estúdio Elã", "estudioela", "ela-influencia", "elafashionmkt" e domínios
+"Criativo Dodô", "estudioela", "criativododo", "elafashionmkt" e domínios
 antigos como nomenclatura legada, com "DODÔ" exclusivo em conteúdo novo.
 
-**Conflito identificado antes de agir:** a marca comercial (Estúdio Elã →
+**Conflito identificado antes de agir:** a marca comercial (Criativo Dodô →
 Criativo Dodô) já era decisão vigente (`ADR-019`), mas "TEAR" nunca foi a
 marca — é o codinome técnico/interno do projeto, usado em `CLAUDE.md`,
 `docs/history/CONTRATO_SOBERANO.md`, SPECs e em todo o histórico deste
@@ -4516,11 +4516,11 @@ antes de responder).
   o nome oficial do projeto, técnico e comercial.
 - "TEAR" continua correto em documentação histórica/legada — nenhuma
   reescrita retroativa de SPECs, ADRs antigos ou histórico deste roteador.
-- Nenhuma mudança física: diretório `ela-influencia/`, repositório Git,
+- Nenhuma mudança física: diretório `criativododo/`, repositório Git,
   remotes, branches e scripts permanecem inalterados — eventual renomeação
   física é migração técnica separada, futura, fora de escopo.
 - "Influencia" (nome da plataforma) **não** entra nesta aposentadoria — só
-  "TEAR" e "Estúdio Elã"/"ELÃ" viram legado por esta decisão.
+  "TEAR" e "Criativo Dodô"/"ELÃ" viram legado por esta decisão.
 - Documentação nova, ADRs, SPECs, commits e prompts usam exclusivamente
   "DODÔ" daqui em diante.
 
@@ -4530,7 +4530,7 @@ antes de responder).
   formalizando a decisão acima.
 - `CLAUDE.md` — `## Projeto` e `## Papel do agente` atualizados: "Projeto
   TEAR" → "Projeto DODÔ", com nota inline explicando os nomes anteriores
-  (TEAR, Estúdio Elã, "ELÃ | influência") e referência a `ADR-020`. Nenhuma
+  (TEAR, Criativo Dodô, "ELÃ | influência") e referência a `ADR-020`. Nenhuma
   outra ocorrência de "TEAR"/"Elã" em `CLAUDE.md` (checado com grep, só
   essas duas).
 - `docs/governanca/GOVERNANCA_DO_PROJETO.md` — checado, não tinha nenhuma

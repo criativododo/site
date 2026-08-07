@@ -1776,7 +1776,7 @@ Gerado automaticamente em: sáb  1 ago 2026 05:13:25 -03
 - 11. RBAC aplicado às rotas administrativas (fechamento Q-08, 2026-07-17)
 - 12. Consolidação ADR-014 integrada + auditoria de ecossistema externo (2026-07-19)
 - 13. ADR-014 publicada de fato no Apps Script oficial (2026-07-19)
-- 14. Redesign visual — Design System Estúdio Elã (iniciado 2026-07-19)
+- 14. Redesign visual — Design System Criativo Dodô (iniciado 2026-07-19)
 - 15. Implementação paralela `tear-v2-app` (Laravel + React) — achado de governança (2026-07-20)
 - 16. Due diligence do plano estratégico + consolidação de auditorias externas (2026-07-22)
 - 17. Consolidação documental pós-merge — 4 documentos do `worktree-spec-mvp-completa` (2026-07-22)

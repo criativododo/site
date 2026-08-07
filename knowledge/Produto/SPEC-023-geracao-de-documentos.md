@@ -91,11 +91,11 @@ Termos banidos: `Ciclo` (Contrato §2).
 ## 8. Casos de Uso
 
 ### UC-023.01 · Gerar Contrato
-- **Ator:** Operador Estúdio Elã.
+- **Ator:** Operador Criativo Dodô.
 - Gera contrato individual **apenas** para Parceiras Ativas (`STATUS = ON`).
 
 ### UC-023.02 · Gerar Briefing formal
-- **Ator:** Operador Estúdio Elã.
+- **Ator:** Operador Criativo Dodô.
 - Gera briefing formal **apenas** para Parceiras sinalizadas (`SIM`).
 
 ---

@@ -79,7 +79,7 @@ onde o código já decidiu algo, este livro documenta a decisão e explica o por
 
 ### 02 · História e posicionamento
 
-**de estúdio elã a criativo dodô.** o projeto nasceu com o nome técnico "TEAR" e a marca comercial "Estúdio Elã", operando o produto "ELÃ | influência". em 2026, o responsável decidiu aposentar os dois — codinome técnico e marca comercial — e unificar tudo sob um único nome: **Criativo Dodô** (ADR formal, definitiva; "TEAR" e "Estúdio Elã" só aparecem descrevendo histórico).
+**de estúdio elã a criativo dodô.** o projeto nasceu com o nome técnico "TEAR" e a marca comercial "Criativo Dodô", operando o produto "ELÃ | influência". em 2026, o responsável decidiu aposentar os dois — codinome técnico e marca comercial — e unificar tudo sob um único nome: **Criativo Dodô** (ADR formal, definitiva; "TEAR" e "Criativo Dodô" só aparecem descrevendo histórico).
 
 isso é o primeiro princípio prático deste Design System: identidade não é só visual, é também consistência de nomeação. um projeto que se chama uma coisa no código e outra na conversa com o cliente já começou fragmentado.
 
@@ -149,7 +149,7 @@ a lição não é sobre cor — é sobre processo: **documentar identidade sem c
 
 **erros comuns já cometidos, com honestidade:**
 - uma classe CSS chamada `.acumin-bold` aplica peso 800 em texto hoje renderizado em Elms Sans — o nome referencia uma fonte ("Acumin") fora do sistema atual, resquício provável de ferramenta de design anterior.
-- o vídeo e a imagem estática do hero são, por comentário literal do próprio script de setup, um *"placeholder, origem Estúdio Elã"* — conteúdo de marca anterior, ainda no ar na peça mais visível do site.
+- o vídeo e a imagem estática do hero são, por comentário literal do próprio script de setup, um *"placeholder, origem Criativo Dodô"* — conteúdo de marca anterior, ainda no ar na peça mais visível do site.
 - no Portal, os botões e campos de formulário das telas administrativas (`AdminEntregas`, `AdminBriefings`, `AdminObrigacoes`, `AdminParceiras`, `Perfil`) são objetos de estilo inline (`estiloInput`, `estiloBotaoOutlineCherry` etc.) **copiados e colados** em cinco arquivos diferentes, quase idênticos, com pequenas divergências de detalhe entre eles — exatamente o tipo de duplicação que um Design System existe para eliminar. ver [botões](#16--botões) e [formulários](#17--formulários).
 
 | nunca fazemos | sempre fazemos |
@@ -543,7 +543,7 @@ dois projetos independentes, sem workspace compartilhado, cada um com seu própr
 
 ### 34 · Pendências encontradas
 
-1. **o hero da Landing mostra um placeholder, não conteúdo original** — vídeo e imagem estática vêm, por comentário literal do script de setup, de "origem Estúdio Elã". a peça mais visível do site ainda carrega placeholder herdado.
+1. **o hero da Landing mostra um placeholder, não conteúdo original** — vídeo e imagem estática vêm, por comentário literal do script de setup, de "origem Criativo Dodô". a peça mais visível do site ainda carrega placeholder herdado.
 2. **ADR de paleta antiga, sem revogação formal na série antiga de ADRs** — uma ADR do "Sistema B" nomeia laranja/roxo como fonte de verdade visual; o código implementa Cherry Red/Cotton/Maroon/Noir Black. a série de governança vigente (`ARCHITECTURAL_DECISIONS.md`) já resolve isso para fins práticos, mas a ADR antiga em si nunca foi formalmente revogada.
 3. **marca secundária e emblema noir sem aplicação definida** fora do favicon e da marca d'água do login.
 4. **tipografia e espaçamento não são tokens, são literais**, em ambos os produtos — diferente da cor, que é variável CSS e se propaga de verdade entre Landing e Portal.

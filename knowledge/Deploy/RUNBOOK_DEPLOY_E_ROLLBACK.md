@@ -10,7 +10,7 @@ autorização em `docs/release/GATE_FINAL_GO_LIVE.md`.
 
 - Produção usa PostgreSQL gerenciado e uma origem única:
   `https://portal.criativododo.com.br` (domínio atualizado em 2026-07-23 —
-  rebranding "Estúdio Elã" → "Criativo Dodô" + migração para Locaweb
+  rebranding "Criativo Dodô" → "Criativo Dodô" + migração para Locaweb
   Hospedagem II; substitui `influencia.estudioela.com`).
 - O build React está em `backend/public/build`.
 - Cada release deve estar em `releases/<release-id>` e `current` deve apontar

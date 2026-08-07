@@ -34,7 +34,7 @@ Os dados confirmados pelo PRD para a entidade são: nome/chave, cupom, e-mail, C
 
 ### RF-002 — Ativação e inativação
 
-O sistema deve permitir à equipe Jescri/Estúdio Elã alterar manualmente o status da influenciadora entre `ON` e `OFF`.
+O sistema deve permitir à equipe Jescri/Criativo Dodô alterar manualmente o status da influenciadora entre `ON` e `OFF`.
 
 ### RF-003 — Endereço por CEP
 
@@ -91,7 +91,7 @@ Não existe no PRD regra para o que ocorre quando uma influenciadora é inativad
 ## 6. Premissas
 
 - O TEAR V2 continua atendendo uma única marca, Jescri.
-- A equipe Jescri/Estúdio Elã é tratada como um único operador de gestão; o PRD não define papéis internos distintos.
+- A equipe Jescri/Criativo Dodô é tratada como um único operador de gestão; o PRD não define papéis internos distintos.
 - A integração de endereço depende de um serviço externo de CEP.
 - A planilha e o Apps Script V1 são fontes de comportamento de negócio; esta entrega não os modifica.
 - Dados pessoais, bancários e comerciais da influenciadora são necessários para os módulos definidos no PRD, mas o PRD não estabelece política de proteção, retenção ou expurgo.

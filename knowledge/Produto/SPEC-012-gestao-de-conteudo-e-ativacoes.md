@@ -109,7 +109,7 @@ Termos banidos: `Ciclo` (Contrato §2).
 - **Pós-condição:** `ConteudoEnviado` publicado.
 
 ### UC-012.03 · Aprovar e publicar
-- **Ator:** Operador Estúdio Elã.
+- **Ator:** Operador Criativo Dodô.
 - **Fluxo:** revisa → `Aprovado`; ao publicar → `Publicado` (arquiva automaticamente).
 - **Pós-condição:** `ConteudoAprovado`; ao publicar, item movido ao histórico.
 

@@ -20,7 +20,7 @@ Sim, com uma ressalva central.
 
 Concordo com: evoluir por uso real, mínimo de código, legado como referência morta, IA só depois de produto sólido, versões que existem para resolver problemas de produção. Isso é a estratégia correta para um fundador solo.
 
-A ressalva: o plano, como está, valida um sistema interno, não um SaaS. Usar diariamente com a Jescri prova que o produto serve para o Estúdio Elã. Não prova que serve para uma empresa que não é você. "Maduro para começar a jornada comercial" em 15/01/2027 exige pelo menos um piloto externo concluído antes dessa data. Sem isso, o lançamento é uma aposta, não uma constatação.
+A ressalva: o plano, como está, valida um sistema interno, não um SaaS. Usar diariamente com a Jescri prova que o produto serve para o Criativo Dodô. Não prova que serve para uma empresa que não é você. "Maduro para começar a jornada comercial" em 15/01/2027 exige pelo menos um piloto externo concluído antes dessa data. Sem isso, o lançamento é uma aposta, não uma constatação.
 
 ## 2. O que está excelente
 
@@ -81,7 +81,7 @@ A ressalva: o plano, como está, valida um sistema interno, não um SaaS. Usar d
 
 - **Adoção pelas influenciadoras.** O concorrente do portal não é outro SaaS, é o WhatsApp. Se o portal for 10% mais difícil que mandar mensagem, elas não vão usar, e você passa a operar dois canais em vez de um. A régua de UX do portal é "mais fácil que o WhatsApp", e isso precisa ser medido, não suposto.
 - **Suporte é um produto novo dentro do produto.** Cada cliente externo cria carga permanente (dúvidas, incidentes, expectativas de SLA). Um fundador solo precisa decidir quanto suporte cabe na agenda antes de vender a segunda licença.
-- **Fiscal e societário.** SaaS gera receita recorrente sobre o mesmo CNPJ da agência. Limite do MEI, emissão de nota de software (ISS), e a pergunta "quem vende o produto: o Estúdio Elã ou uma empresa nova?" precisam de resposta antes da primeira cobrança. Lacuna de dados: não tenho seu faturamento atual nem regime alvo; isso é decisão sua com contador.
+- **Fiscal e societário.** SaaS gera receita recorrente sobre o mesmo CNPJ da agência. Limite do MEI, emissão de nota de software (ISS), e a pergunta "quem vende o produto: o Criativo Dodô ou uma empresa nova?" precisam de resposta antes da primeira cobrança. Lacuna de dados: não tenho seu faturamento atual nem regime alvo; isso é decisão sua com contador.
 - **Marca.** "ELÃ | influência" mistura o nome da agência com o nome do produto. Se o produto for vendido para outras agências (concorrentes suas), o nome da sua agência no produto pode ser atrito comercial. E: registro no INPI da marca do produto, classe de software, antes do lançamento público. Lacuna: não sei o status de registro atual.
 - **Confiança entre concorrentes.** Dados da Jescri e de uma marca piloto no mesmo banco, operados pela agência que atende a Jescri. Cliente externo vai perguntar. A resposta (isolamento técnico + contrato) precisa existir por escrito.
 - **Google Drive como storage de terceiros.** Quota, service account e termos de uso ficam desconfortáveis quando o arquivo é de um cliente externo. Aceitável no piloto, revisar antes de escalar.

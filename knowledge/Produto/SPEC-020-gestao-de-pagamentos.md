@@ -103,11 +103,11 @@ Termos banidos: `Ciclo` (Contrato §2). PII (`PIX`) nunca em log (Contrato §5).
 - Cria uma Obrigação Financeira `EmAberto` por Parceira Ativa, com valor e PIX do cadastro.
 
 ### UC-020.02 · Lançar pagamento avulso
-- **Ator:** Operador Estúdio Elã.
+- **Ator:** Operador Criativo Dodô.
 - Lança valor extra/UGC para qualquer Parceira e período.
 
 ### UC-020.03 · Gerar cobrança e liberar
-- **Ator:** Operador Estúdio Elã.
+- **Ator:** Operador Criativo Dodô.
 - Gera mensagem de cobrança/PIX; libera (`Aprovado`); ao pagar → `Pago` (arquiva).
 - **Pós-condição:** `PagamentoLiberado`, depois `PagamentoConfirmado`.
 

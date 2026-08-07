@@ -107,7 +107,7 @@ Termos banidos: `Ciclo`, `Fechamento` (Contrato §2 / ADR-Linguagem §4).
 ## 8. Casos de Uso
 
 ### UC-034.01 · Arquivamento manual em lote
-- **Ator:** Operador Estúdio Elã.
+- **Ator:** Operador Criativo Dodô.
 - Dispara rotina de arquivamento geral de itens concluídos, com carimbo de data.
 
 ### UC-034.02 · Selar competência

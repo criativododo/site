@@ -204,7 +204,7 @@ Objetivo e limites: Entrega 2, Fase E. Subfases:
 - Checklist final: segurança (headers, rate limit, permissões), restore, uptime, revisão dos textos públicos.
 - Changelog público e roadmap público curto (3 a 5 itens honestos).
 - G5 em 05/01: go/no-go do anúncio.
-- 15/01: publicação da landing, anúncio nos canais do Estúdio Elã, abertura de pipeline (lista de interessados, demo agendável).
+- 15/01: publicação da landing, anúncio nos canais do Criativo Dodô, abertura de pipeline (lista de interessados, demo agendável).
 
 ---
 

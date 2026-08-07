@@ -6,12 +6,12 @@
 **Resolve:** a dualidade entre o nome técnico interno do projeto ("Projeto
 TEAR", usado em `CLAUDE.md`, ADRs, SPECs e em todo o histórico de
 `docs/_workspace/TASK_ROUTER.md` desde o início) e o rebranding institucional
-da marca comercial ("Estúdio Elã" → "Criativo Dodô", `ADR-019`), que até esta
+da marca comercial ("Criativo Dodô" → "Criativo Dodô", `ADR-019`), que até esta
 decisão cobria só a marca, não o codinome técnico do projeto.
 
 ## Contexto
 
-- O rebranding comercial já estava formalizado: "Estúdio Elã" → "Criativo
+- O rebranding comercial já estava formalizado: "Criativo Dodô" → "Criativo
   Dodô" (anunciado e registrado em `TASK_ROUTER.md` §49/§50, consolidado no
   Design System v2.0 via `ADR-019`, §59/§60).
 - "TEAR" nunca foi o nome da marca — é o codinome técnico/interno do
@@ -23,7 +23,7 @@ decisão cobria só a marca, não o codinome técnico do projeto.
   eliminando a dualidade TEAR (interno) / Dodô (comercial).
 - "Influencia" (nome da plataforma, `plataforma **Influencia**` em
   `CLAUDE.md`) **não** foi incluída nesta aposentadoria — só o codinome
-  "TEAR" e a marca "Estúdio Elã"/"ELÃ" são tratados como legado por esta
+  "TEAR" e a marca "Criativo Dodô"/"ELÃ" são tratados como legado por esta
   decisão.
 
 ## Decisão
@@ -39,9 +39,9 @@ decisão cobria só a marca, não o codinome técnico do projeto.
    como registro histórico.
 3. **Toda documentação, ADRs, SPECs, commits, prompts e arquivos novos daqui
    em diante usam exclusivamente "DODÔ"** como nome do projeto — nunca
-   "TEAR" ou "Estúdio Elã" em conteúdo novo (exceto ao descrever histórico).
+   "TEAR" ou "Criativo Dodô" em conteúdo novo (exceto ao descrever histórico).
 4. **Nenhuma mudança técnica/física é feita por esta ADR.** O diretório
-   físico do repositório (`ela-influencia/`), o repositório Git, remotes,
+   físico do repositório (`criativododo/`), o repositório Git, remotes,
    branches, scripts e demais identificadores técnicos permanecem
    inalterados. Uma eventual migração física será tratada como iniciativa
    própria, em momento futuro, fora do escopo desta decisão.
@@ -57,7 +57,7 @@ decisão cobria só a marca, não o codinome técnico do projeto.
 - Nenhum SPEC, ADR anterior, ou entrada histórica de `TASK_ROUTER.md`
   precisa ser reescrita — "TEAR" continua correto nesses contextos.
 - Referências futuras ao projeto (em novas SPECs, ADRs, commits,
-  documentação, prompts) devem usar "DODÔ", nunca "TEAR" ou "Estúdio Elã"
+  documentação, prompts) devem usar "DODÔ", nunca "TEAR" ou "Criativo Dodô"
   (exceto ao descrever histórico ou migração).
 - Nenhuma rota, controller, model, variável de ambiente ou infraestrutura é
   afetada — esta ADR é estritamente sobre nomenclatura/identidade do

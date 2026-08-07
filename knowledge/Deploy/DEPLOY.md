@@ -26,7 +26,7 @@
 > `docs/deployment/PLANO_DE_IMPLANTACAO.md` Etapa 5.
 >
 > **Nota de revisão (2026-07-23):** domínio e hospedagem mudaram desde que
-> este runbook foi escrito — rebranding "Estúdio Elã" → "Criativo Dodô",
+> este runbook foi escrito — rebranding "Criativo Dodô" → "Criativo Dodô",
 > domínio institucional `criativododo.com.br`, aplicação em
 > `portal.criativododo.com.br`, hospedagem **Locaweb Hospedagem II Linux**
 > (substitui o plano "Hospedagem Linux" original e o domínio

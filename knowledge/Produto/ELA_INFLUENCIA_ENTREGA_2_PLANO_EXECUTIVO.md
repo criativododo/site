@@ -182,7 +182,7 @@ Mapa de versões proposto (substitui a escada 0.1→0.9 por versões amarradas a
 - Política comercial publicada: preço, o que inclui, canal de suporte, SLA honesto de fundador solo.
 - Changelog público, roadmap público curto.
 - Checklist final de segurança e restore.
-- Anúncio (canais próprios do Estúdio Elã primeiro).
+- Anúncio (canais próprios do Criativo Dodô primeiro).
 
 **O que NÃO deve acontecer:** feature de última hora; promessa de roadmap que contradiz a filosofia de simplicidade; meta de vendas agressiva no dia 1 (maturidade comercial, como você definiu, não volume).
 

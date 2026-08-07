@@ -107,14 +107,14 @@ O Briefing é **recriado a cada compilação** (reage a `MesCompilado`).
 ## 8. Casos de Uso
 
 ### UC-009.01 · Preencher Briefing
-- **Ator:** Operador Estúdio Elã.
+- **Ator:** Operador Criativo Dodô.
 - **Pré-condições:** existe Colaboração Mensal compilada para a competência.
 - **Fluxo:** para cada bloco de formato, informa look, data de entrega, data de
   postagem e orientação → sistema calcula a data de aprovação interna (RN-04).
 - **Pós-condição:** `BriefingPublicado` publicado.
 
 ### UC-009.02 · Importar Looks
-- **Ator:** Operador Estúdio Elã.
+- **Ator:** Operador Criativo Dodô.
 - Importa os looks definidos em planilha externa por Parceira para dentro do briefing.
 
 ---

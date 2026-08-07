@@ -142,17 +142,17 @@ O sistema limita o controlo de acesso e a definição de contextos a três atore
 
 #### 4.1 Administrador
 
-* **Perfil:** Equipa interna de gestão do Estúdio Elã.
+* **Perfil:** Equipa interna de gestão do Criativo Dodô.
 * **Contexto de Acesso:** Possui privilégios globais de leitura e escrita em todo o ecossistema TEAR V2.
 * **Responsabilidade no Módulo:** Atua como a autoridade moderadora do fluxo de acesso, sendo o único papel com permissão para aprovar, rejeitar, ativar ou inativar contas de Marcas e Influenciadoras.
 
 #### 4.2 Marca
 
-* **Perfil:** Empresas parceiras comerciais e clientes do Estúdio Elã.
+* **Perfil:** Empresas parceiras comerciais e clientes do Criativo Dodô.
 * **Contexto de Acesso:** Restrito estritamente aos dados, campanhas, briefings e orçamentos vinculados à sua própria organização. Não possui visibilidade sobre operações de outras marcas.
 * **Responsabilidade no Módulo:** Concluir o onboarding corporativo e manter atualizados os dados de perfil da empresa após a libertação do acesso pela administração.
 
-> 🟠 **Escopo de implementação (revisão SPEC-035, 2026-07-17):** `docs/PRD.md` declara que o sistema opera hoje para uma única marca (Jescri) — na prática, o ator descrito no PRD como "Equipe Jescri/Estúdio Elã" já corresponde ao papel `Administrador` desta SPEC, não a um tenant externo. O ator `Marca`, como cliente externo com onboarding e isolamento de dados próprios, é escopo de negócio novo (suporte a múltiplos clientes/tenants), não inferível de nenhum documento existente — decisão real de produto, não de arquitetura. Esta é a única pendência desta SPEC que permanece bloqueada: **a implementação desta unidade de trabalho cobre os papéis `Administrador` e `Influenciadora`; o ator `Marca` (§4.2, `BASE_MARCAS` em §10.2.3, enum `MARCA` em §10.2.1) fica definido no documento mas não implementado, até validação explícita do responsável do projeto.**
+> 🟠 **Escopo de implementação (revisão SPEC-035, 2026-07-17):** `docs/PRD.md` declara que o sistema opera hoje para uma única marca (Jescri) — na prática, o ator descrito no PRD como "Equipe Jescri/Criativo Dodô" já corresponde ao papel `Administrador` desta SPEC, não a um tenant externo. O ator `Marca`, como cliente externo com onboarding e isolamento de dados próprios, é escopo de negócio novo (suporte a múltiplos clientes/tenants), não inferível de nenhum documento existente — decisão real de produto, não de arquitetura. Esta é a única pendência desta SPEC que permanece bloqueada: **a implementação desta unidade de trabalho cobre os papéis `Administrador` e `Influenciadora`; o ator `Marca` (§4.2, `BASE_MARCAS` em §10.2.3, enum `MARCA` em §10.2.1) fica definido no documento mas não implementado, até validação explícita do responsável do projeto.**
 
 > ✅ **Q-08 resolvida para este escopo (revisão SPEC-035, 2026-07-17):** O modelo de papéis para `Administrador` e `Influenciadora` é inferível diretamente do PRD (§ "Quem usa o sistema": equipe Jescri/Elã e influenciadora já são os dois atores reais do sistema hoje) — não é uma regra de negócio inédita. Registrado como resolução de Q-08 para esses dois papéis em `TASK_ROUTER.md`. `Marca` permanece fora de Q-08 até a decisão de escopo acima.
 
@@ -430,7 +430,7 @@ Esta aba armazena exclusivamente as credenciais de federação e o estado lógic
 
 ##### 10.2.2 Aba: `BASE_ADMINISTRADORES`
 
-Armazena os dados complementares dos utilizadores que possuem o papel de administração interna do Estúdio Elã.
+Armazena os dados complementares dos utilizadores que possuem o papel de administração interna do Criativo Dodô.
 
 | Nome da Coluna (Cabeçalho) | Tipo de Dado | Restrição | Descrição |
 | --- | --- | --- | --- |
@@ -554,7 +554,7 @@ Este fluxo descreve o comportamento do ecossistema quando um novo utilizador ten
 
 #### 12.3 Fluxo de Aprovação Administrativa
 
-Este fluxo descreve a ação de moderação executada pela equipa interna do Estúdio Elã:
+Este fluxo descreve a ação de moderação executada pela equipa interna do Criativo Dodô:
 
 1. **Frontend → Entrypoint:** Um utilizador com papel `ADMINISTRADOR` aciona o comando de aprovação para um registo pendente.
 2. **Entrypoint → Controller → Service:** O pedido é intercetado pela guarda de segurança, que valida os privilégios do administrador antes de encaminhar o identificador do utilizador a ser aprovado.

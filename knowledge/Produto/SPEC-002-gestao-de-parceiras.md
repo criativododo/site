@@ -58,7 +58,7 @@ Termos banidos: `Ciclo`, `Plano de Colaboração` (Contrato §2).
 ## 5. Visão Geral
 
 ```
-   Operador Estúdio Elã
+   Operador Criativo Dodô
           │ consultar / editar / alterar status
           ▼
    ┌────────────────────┐
@@ -103,16 +103,16 @@ Termos banidos: `Ciclo`, `Plano de Colaboração` (Contrato §2).
 ## 8. Casos de Uso
 
 ### UC-002.01 · Alterar vínculo
-- **Ator:** Operador Estúdio Elã.
+- **Ator:** Operador Criativo Dodô.
 - **Fluxo:** operador seleciona Parceira → define `Ativa` ou `Inativa`.
 - **Pós-condição:** status persistido; inativar **não** exclui o registro.
 
 ### UC-002.02 · Editar Condição Comercial
-- **Ator:** Operador Estúdio Elã.
+- **Ator:** Operador Criativo Dodô.
 - **Fluxo:** edita valor, entregáveis, prazo e canais de uso.
 
 ### UC-002.03 · Consultar base
-- **Ator:** Operador Estúdio Elã.
+- **Ator:** Operador Criativo Dodô.
 - Consulta Parceiras `Ativa`/`Inativa` para localizar e manter.
 
 ---

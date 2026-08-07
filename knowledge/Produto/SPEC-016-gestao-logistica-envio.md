@@ -100,11 +100,11 @@ Duas máquinas **independentes** (ADR-001 §2.4).
 ## 8. Casos de Uso
 
 ### UC-016.01 · Confirmar endereço
-- **Ator:** Operador Estúdio Elã.
+- **Ator:** Operador Criativo Dodô.
 - Gera mensagem de confirmação de endereço e PIX para envio manual.
 
 ### UC-016.02 · Registrar rastreio
-- **Ator:** Operador Estúdio Elã.
+- **Ator:** Operador Criativo Dodô.
 - **Fluxo:** registra código de rastreio → data de envio preenchida automaticamente se vazia.
 - **Pós-condição:** `ProdutoDespachado` publicado.
 

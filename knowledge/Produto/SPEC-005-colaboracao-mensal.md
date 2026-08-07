@@ -76,7 +76,7 @@ deve ser rejeitado no Gate Arquitetural.
 ## 5. Visão Geral
 
 ```
-   Operador Estúdio Elã
+   Operador Criativo Dodô
             │
             │ compilarMes(MesReferencia)
             ▼
@@ -158,7 +158,7 @@ publica `MesCompilado` para que reajam.
 ## 8. Casos de Uso
 
 ### UC-005.01 · Compilar Mês
-- **Ator:** Operador Estúdio Elã.
+- **Ator:** Operador Criativo Dodô.
 - **Pré-condições:** existe ≥ 1 Parceira ativa; não existe
   `Colaboração Mensal` para essa `MesReferencia`.
 - **Fluxo:**
@@ -262,7 +262,7 @@ Regras:
 
 ## 13. Papéis e Permissões
 
-| Operação | Administrador | Operador Estúdio Elã | Parceira |
+| Operação | Administrador | Operador Criativo Dodô | Parceira |
 |---|---|---|---|
 | Compilar Mês | ✅ | ✅ | ❌ |
 | Arquivar Competência | ✅ | ❌ | ❌ |
