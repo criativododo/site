@@ -1748,6 +1748,144 @@ pertencem ao próprio Design System em construção, não a este registro.
 
 ---
 
+## ADR-026 — Claude Design como ambiente nativo/operacional do Design System Criativo Dodô; Markdown passa a artefato de apoio
+
+- **Status:** Aceito.
+- **Data:** 2026-08-07.
+- **Autor da decisão:** responsável do projeto (diretriz explícita em sessão dedicada).
+- **Relaciona-se com:** `ADR-025` (acima), `BRIEFING-FINAL-CLAUDE-CODE.md` §2.2 (formatos de
+  entrega, parcialmente substituída por esta ADR), `knowledge/PROJECT_SOURCE_OF_TRUTH.md` §8,
+  ferramenta `DesignSync` (MCP de leitura/escrita de projetos `claude.ai/design`).
+
+### Contexto
+
+`ADR-025` declarou o Design System Criativo Dodô ativo independente, com
+`criativododo-interno/MATERIAL PARA DESIGN SYSTEM FINAL/` como fonte de trabalho provisória, e
+deixou registrado como bloqueio a migração para uma conta institucional dedicada ao Design
+System (pendência presente em `/inicio` desde 06/08/2026).
+
+O `BRIEFING-FINAL-CLAUDE-CODE.md` (documento de descoberta, não arquitetural), em sua §2.2,
+propôs o Markdown como "fonte única de verdade", com HTML, PDF e Figma "gerados a partir dele e
+nunca editados diretamente". Essa proposta foi feita antes de existir a conta institucional
+definitiva do Claude Design, sem poder testar a ferramenta real de sincronização.
+
+Nesta sessão (07/08/2026), o responsável do projeto confirma que a conta institucional atual é
+a conta definitiva do Design System Criativo Dodô, e determina que o Claude Design passa a ser
+o ambiente nativo do projeto — invertendo a hierarquia de formatos proposta no briefing.
+
+Verificação técnica feita nesta sessão via `DesignSync`:
+
+- `list_projects` na conta atual retornou zero projetos — nenhum Design System existe ainda
+  nesta conta, precisa ser criado.
+- O modelo de sincronização da ferramenta é push explícito, em três passos obrigatórios:
+  listar/ler → `finalize_plan` (define exatamente o que será escrito/apagado, com aprovação do
+  usuário) → `write_files`/`delete_files`. **Não existe edição ao vivo dentro do Claude Design
+  que se propague automaticamente de volta para os arquivos locais** — quem edita é sempre a
+  sessão local (Markdown/HTML/CSS), que depois empurra para o Claude Design.
+- O projeto legado (`5724e6f6-f23e-47fd-b827-ada036276ee7`, citado nas skills `tom-dodo` e
+  `planilhas-dodo`, arquivado em
+  `docs/design/archive/design-system-legado-laranja-roxo/.design-sync/config.json`) mostra que o
+  formato nativo do Claude Design combina três coisas: um pacote CSS (tokens + classes de
+  componente), páginas de "guidelines" carregadas de arquivos Markdown locais (campo
+  `guidelinesGlob`), e cards de preview HTML por componente (marcador `@dsCard`). Ou seja, tanto
+  tokens/componentes quanto o texto narrativo do manual (hoje em Markdown) têm lugar nativo
+  dentro do Claude Design — não é só um catálogo de componentes.
+
+### Decisão
+
+1. **O Claude Design passa a ser o ambiente operacional nativo do Design System Criativo Dodô.**
+   Toda estrutura que possa existir nativamente lá (tokens de cor/tipografia/espaço como
+   variáveis CSS, componentes como cards com preview, páginas de guideline a partir de Markdown)
+   deve ser modelada preferencialmente para esse destino.
+2. **O Markdown deixa de ser "fonte única de verdade" e passa a artefato de apoio**, com papel
+   explícito e limitado a: registrar decisões, documentar regras, facilitar auditoria, preservar
+   histórico, apoiar exportações (PDF e outros formatos estáticos que o Claude Design não
+   produz). Isso substitui a regra de sincronia do briefing §2.2 ("Markdown é a fonte; HTML, PDF
+   e Figma nunca editados diretamente") apenas na direção Markdown → Claude Design; a regra de
+   que artefatos derivados nunca são editados manualmente continua valendo para HTML e PDF
+   gerados.
+3. **Fluxo de sincronização.** Autoria acontece localmente (Markdown para guidelines, HTML+CSS
+   para tokens/componentes/preview); a atualização do Claude Design é um passo explícito de push
+   (`DesignSync`: listar → `finalize_plan` aprovado pelo usuário → `write_files`). O Claude
+   Design não é editado diretamente como fonte primária nesta arquitetura — é o destino
+   operacional, não o editor.
+4. **Figma (briefing §2.1, pendência A09) permanece decisão separada**, não resolvida por esta
+   ADR. Continua bloqueada pela ausência de autorização do conector remoto do Figma.
+5. **PDF estático (briefing §15.3) continua sendo gerado a partir do Markdown**, porque o Claude
+   Design não produz esse formato. Essa é uma das funções explícitas que o Markdown mantém como
+   artefato de apoio (item 2).
+6. Esta ADR não define a localização física definitiva do Design System Criativo Dodô no
+   repositório (permanece pendência de `ADR-025` item 7, resolvida quando a primeira entrega for
+   publicada) — trata exclusivamente de qual ambiente é operacionalmente central durante a
+   construção.
+
+### Consequências
+
+- O plano de construção da Fase 2 em diante prioriza produzir tokens e componentes já no formato
+  nativo do Claude Design (CSS + preview HTML com marcador `@dsCard`), com as páginas de
+  guideline (texto de marca, regras de uso) escritas em Markdown e sincronizadas via
+  `guidelinesGlob`, em vez de produzir primeiro um manual Markdown monolítico e só depois
+  derivar o Claude Design.
+- Cada entrega de conteúdo para o Claude Design exige um `finalize_plan` explícito, aprovado
+  pelo usuário, antes de qualquer escrita — não há atalho de escrita direta.
+- O projeto Claude Design legado (`5724e6f6-...`) permanece arquivado, apenas consulta pontual,
+  nunca reaproveitado como base.
+- HTML e PDF continuam existindo como formatos derivados do Markdown (briefing §2.2), não do
+  Claude Design — o Claude Design não substitui a função desses dois formatos.
+
+---
+
+## ADR-027 — Núcleo do Design System Criativo Dodô (Fundação, Tokens, Componentes) congelado como versão 1.0
+
+- **Status:** Aceito.
+- **Data:** 2026-08-07.
+- **Autor da decisão:** responsável do projeto (diretriz explícita em sessão dedicada).
+- **Relaciona-se com:** `ADR-025` (Design System como ativo independente), `ADR-026` (Claude
+  Design como ambiente nativo), projeto Claude Design `d7120c51-f816-43ee-87fa-092906548e99`
+  ("Design System — Criativo Dodô").
+
+### Contexto
+
+Ao longo desta sessão (07/08/2026), as três camadas fundamentais do Design System Criativo Dodô
+foram construídas por ciclos incrementais, sempre com aprovação do responsável do projeto ao
+final de cada etapa: Fundação (identidade, princípios, tipografia, espaçamento, grid), Tokens
+(cor, tipografia, espaçamento, raio, sombra, movimento, estrutura) e Componentes (13 famílias,
+18 componentes reais catalogados). Uma auditoria cruzada de consistência foi executada entre as
+três camadas, seguida de um ciclo de consolidação que corrigiu os erros encontrados, e uma
+segunda auditoria confirmou ausência de referências quebradas, componentes órfãos, tokens
+órfãos, páginas duplicadas ou conceitos documentados em mais de um lugar.
+
+Com o núcleo auditado e consolidado, o responsável do projeto determina que essas três camadas
+passam a um regime de estabilidade, para que a construção das camadas seguintes (Padrões,
+Templates, Aplicações) consuma o núcleo já construído em vez de reabri-lo continuamente.
+
+### Decisão
+
+1. **Fundação, Tokens e Componentes do Design System Criativo Dodô são congelados como versão
+   1.0 do núcleo**, a partir de 07/08/2026.
+2. **Alteração de qualquer conteúdo dessas três camadas só é permitida por um destes motivos:**
+   correção de erro comprovado (não opinião ou preferência), evolução arquitetural do próprio
+   Design System, ou decisão explícita do responsável do projeto. Refatoração espontânea ou
+   melhoria incremental contínua, sem um desses três motivos, não é permitida.
+3. **Padrões, Templates e Aplicações consomem o núcleo, nunca o reconstroem.** Inconsistência
+   encontrada durante a construção dessas camadas é registrada normalmente (mesma disciplina de
+   classificação de pendências já em uso: bloqueante, importante, editorial, futura). Só cabe
+   propor alteração do núcleo quando a inconsistência impedir estruturalmente a evolução do
+   sistema — o caso comum é registrar e seguir usando o núcleo como está.
+4. Esta ADR não impede a criação de tokens ou componentes genuinamente novos nas camadas
+   seguintes, quando um padrão realmente novo e reutilizável surgir — impede é a reabertura ou
+   reavaliação do que já foi construído e auditado no núcleo, sem um dos três motivos do item 2.
+
+### Consequências
+
+- Decisões já registradas como "divergência exige decisão humana" (raio médio, nomenclatura da
+  camada z-index, `texto-terciario`) continuam abertas exatamente como estão — resolvê-las é uma
+  decisão explícita do responsável do projeto (item 2), não uma tarefa automática desta ADR.
+- Um novo ADR ou decisão explícita registrada é o único caminho para reabrir o núcleo; não é
+  reaberto por interpretação de conveniência durante Padrões, Templates ou Aplicações.
+
+---
+
 ## Como usar este documento
 
 Toda decisão arquitetural nova e permanente deste projeto (que não seja um detalhe de

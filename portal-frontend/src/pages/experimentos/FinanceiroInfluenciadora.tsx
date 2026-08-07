@@ -1,71 +1,50 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { ApiError, apiFetch } from "../../lib/api";
 import { useSession } from "../../lib/session";
-import { formatarMoedaPartes } from "../../lib/formatters";
+import { formatarCompetencia, formatarData, formatarMoedaPartes, mesReferenciaCorrente } from "../../lib/formatters";
 import imagemCampanha from "../../assets/mocks/campanha-essencia-labial.jpg";
 import "./FinanceiroInfluenciadora.css";
 
 /**
  * Financeiro (proposta: "reconhecimento") — sétima tela da família, continuação direta de
- * Publicacao.tsx: o rodapé daquela tela promete "essa entrega fecha um capítulo da colaboração
- * de agosto" sem nunca linkar para cá porque a tela não existia. Esta tela cumpre essa promessa
- * e completa o fio já aberto por HojeInfluenciadora.tsx (faixa "pagamento · R$2.480 pendente").
+ * Publicacao.tsx.
  *
- * Direção (sessão de aprovação editorial, aprovação do responsável do projeto):
- * 1. Mudança de metáfora oficial (substitui "extrato" de MELHORIAS_PRODUTO.md §5.3): esta tela
- *    não é onde a parceira confere um saldo, é onde ela é lembrada de que o trabalho foi
- *    reconhecido. O valor é a prova, nunca o assunto — por isso um único bloco de reconhecimento
- *    (frase + valor), nunca uma grade de cards de KPI (o padrão do Financeiro.tsx legado em
- *    pages/, que esta tela deliberadamente não segue).
- * 2. Frase de abertura escalável (ajuste pós-aprovação): não depende de texto por campanha/
- *    formato — funciona para qualquer competência, sem exigir copy nova a cada mês.
- * 3. Fotografia reduzida a lembrança (ajuste pós-aprovação): mesmo arquivo de
- *    `assets/mocks/campanha-essencia-labial.jpg` de todas as telas anteriores — regra
- *    permanente do projeto, uma única fotografia editorial por campanha, reaproveitada em toda
- *    a jornada, nunca trocada entre telas. Aqui ela é a menor de toda a família (a mesma
- *    disciplina de Aprovacao.tsx→thumb utilitário levada adiante): um círculo pequeno, decorativo
- *    (`alt=""`), sem legenda — uma lembrança, não mais um conteúdo a descrever. O conteúdo já
- *    teve seu momento de protagonismo em Publicação; aqui o protagonista é a frase de
- *    reconhecimento.
- * 4. Valor nunca anunciado como "você recebeu" (ajuste pós-aprovação): rótulo acima do número diz
- *    o que ele significa ("o reconhecimento por esta colaboração"), não um recibo de conta
- *    corrente.
- * 5. "Ver comprovante" sai do bloco principal e vira ação secundária abaixo da timeline (ajuste
- *    pós-aprovação) — consulta, não parte da mensagem de reconhecimento. Sem visualizador real
- *    nesta sessão (o "visualizador de comprovante" é componente futuro declarado em
- *    MELHORIAS_PRODUTO.md §16, fora do escopo desta tela): o botão existe para validar a
- *    hierarquia visual, a ação em si fica para quando o endpoint existir.
- * 6. Timeline cobre só território novo (fechamento → pagamento), sem repetir os passos de
- *    entrega já contados em Aprovação/Publicação — mesmo princípio que descartou o checklist em
- *    Publicação. Mesma espinha dorsal de Aprovacao.css/Publicacao.css (MELHORIAS_PRODUTO.md §7,
- *    "mesmo motor, mesma linguagem, públicos diferentes"); extração para componente
- *    compartilhado seguue adiada (seria a 3ª tela consumidora), não bloqueia esta tela.
- * 7. Divergência (§14.6) como microlink de baixa ênfase no rodapé, nunca ação primária — é
- *    exceção documentada, não a narrativa da tela.
- * 8. Sem seletor de competência: navegar entre meses passados é função da futura tela Histórico
- *    ("arquivo pessoal"), não desta. Incluir aqui reintroduziria o padrão extrato.
+ * Wiring real (DOC SPRINT #2, sessão de implementação): consome
+ * `GET /api/portal/financeiro/:mesReferencia/historico` (mesmo endpoint que alimenta o
+ * `/financeiro` legado, `pages/Financeiro.tsx`) — `obrigacoes: ObrigacaoFinanceira[]` real,
+ * com `estado`/`dataCriacao`/`dataAtualizacao`/`dataArquivamento`.
  *
- * Lacuna declarada (ADR-003, não presumida): existe hoje uma rota `/financeiro` em produção
- * (pages/Financeiro.tsx, dentro do PortalLayout) com padrão de KPIs/tabela — conflita com a
- * diretriz desta sessão. Esta tela usa `/reconhecimento` para não colidir; reconciliar as duas
- * fica para decisão futura, fora do escopo desta tarefa.
+ * A timeline fixture tinha 4 degraus (fechada/aprovado/enviado/pago); `EstadoObrigacao` só
+ * tem 3 (`EM_ABERTO`→`APROVADO`→`PAGO`, sem transição "enviado" documentada) — o degrau
+ * "enviado" não tem contrapartida real e foi removido (não inventar transição de estado,
+ * ADR-003). Estrutura/CSS da timeline (`reconhecimento-timeline-passo is-X`) preservados.
+ *
+ * Lacuna declarada, ainda de pé: existe hoje uma rota `/financeiro` em produção
+ * (pages/Financeiro.tsx, padrão de KPIs/tabela) — conflita com a diretriz desta tela.
+ * `/reconhecimento` continua não colidindo; reconciliar as duas rotas fica para decisão
+ * futura, fora do escopo desta sessão (mesma pendência já registrada antes desta sessão).
+ *
+ * "Ver comprovante": sem visualizador real (componente futuro, MELHORIAS_PRODUTO.md §16) —
+ * botão preservado sem handler, mesma lacuna declarada da versão fixture.
  */
 
-type EstadoReconhecimento = "pago" | "processando";
+type EstadoObrigacao = "EM_ABERTO" | "APROVADO" | "PAGO";
 
-const ESTADO_ATUAL: EstadoReconhecimento = "pago";
+interface ObrigacaoFinanceira {
+	id: string;
+	mesReferencia: string;
+	valor: number;
+	estado: EstadoObrigacao;
+	tipo: "MENSAL" | "AVULSO";
+	dataCriacao: string;
+	dataAtualizacao: string;
+	dataArquivamento: string | null;
+}
 
-const contexto = {
-	campanha: "colaboração de agosto · essência labial",
-	entregavel: {
-		foco: "center 22%",
-	},
-	valor: 2480,
-	fechadoEm: "4 de agosto, 14h32",
-	aprovadoEm: "4 de setembro, 09h10",
-	enviadoEm: "5 de setembro, 08h00",
-	pagoEm: "5 de setembro, 14h32",
-	proximoBriefing: "setembro",
-};
+interface ItemDeHistorico {
+	obrigacoes: ObrigacaoFinanceira[];
+}
 
 interface DegrauTimeline {
 	id: string;
@@ -74,37 +53,67 @@ interface DegrauTimeline {
 	condicao: "concluido" | "atual" | "futuro";
 }
 
-function construirTimeline(estado: EstadoReconhecimento): DegrauTimeline[] {
+function construirTimeline(obrigacao: ObrigacaoFinanceira): DegrauTimeline[] {
 	return [
 		{
-			id: "fechada",
-			titulo: "colaboração de agosto fechada",
-			detalhe: contexto.fechadoEm,
+			id: "lancada",
+			titulo: "obrigação lançada",
+			detalhe: formatarData(obrigacao.dataCriacao),
 			condicao: "concluido",
 		},
 		{
 			id: "aprovado",
-			titulo: "pagamento aprovado",
-			detalhe: contexto.aprovadoEm,
-			condicao: "concluido",
-		},
-		{
-			id: "enviado",
-			titulo: "pagamento enviado",
-			detalhe: contexto.enviadoEm,
-			condicao: estado === "pago" ? "concluido" : "atual",
+			titulo: "aprovado para pagamento",
+			detalhe: obrigacao.estado === "APROVADO" ? formatarData(obrigacao.dataAtualizacao) : undefined,
+			condicao:
+				obrigacao.estado === "APROVADO" || obrigacao.estado === "PAGO" ? "concluido" : "atual",
 		},
 		{
 			id: "pago",
 			titulo: "pago",
-			detalhe: estado === "pago" ? contexto.pagoEm : undefined,
-			condicao: estado === "pago" ? "atual" : "futuro",
+			detalhe:
+				obrigacao.estado === "PAGO" && obrigacao.dataArquivamento
+					? formatarData(obrigacao.dataArquivamento)
+					: undefined,
+			condicao:
+				obrigacao.estado === "PAGO" ? "concluido" : obrigacao.estado === "APROVADO" ? "atual" : "futuro",
 		},
 	];
 }
 
 export function FinanceiroInfluenciadoraPage() {
 	const { sessao } = useSession();
+	const [historico, setHistorico] = useState<ItemDeHistorico | null>(null);
+	const [mesReferencia, setMesReferencia] = useState(mesReferenciaCorrente());
+	const [erro, setErro] = useState<string | null>(null);
+	const [carregando, setCarregando] = useState(true);
+
+	useEffect(() => {
+		if (sessao?.papelAtor !== "INFLUENCIADORA") return;
+		let ativo = true;
+		const mes = mesReferenciaCorrente();
+		apiFetch<ItemDeHistorico>(`/api/portal/financeiro/${mes}/historico`)
+			.then((dados) => {
+				if (!ativo) return;
+				setHistorico(dados);
+				setMesReferencia(mes);
+			})
+			.catch((erroCapturado) => {
+				if (!ativo) return;
+				if (erroCapturado instanceof ApiError && erroCapturado.status === 404) {
+					setHistorico({ obrigacoes: [] });
+					setMesReferencia(mes);
+					return;
+				}
+				setErro(
+					erroCapturado instanceof ApiError ? erroCapturado.message : "não foi possível carregar.",
+				);
+			})
+			.finally(() => ativo && setCarregando(false));
+		return () => {
+			ativo = false;
+		};
+	}, [sessao?.papelAtor]);
 
 	if (sessao?.papelAtor !== "INFLUENCIADORA") {
 		return (
@@ -114,9 +123,49 @@ export function FinanceiroInfluenciadoraPage() {
 		);
 	}
 
-	const estado = ESTADO_ATUAL;
-	const timeline = construirTimeline(estado);
-	const { reais, centavos } = formatarMoedaPartes(contexto.valor);
+	if (carregando) {
+		return (
+			<section className="reconhecimento-tela">
+				<p style={{ padding: 32 }}>carregando</p>
+			</section>
+		);
+	}
+
+	if (erro || !historico) {
+		return (
+			<section className="reconhecimento-tela">
+				<p style={{ padding: 32 }}>{erro ?? "não foi possível carregar."}</p>
+			</section>
+		);
+	}
+
+	if (historico.obrigacoes.length === 0) {
+		return (
+			<div className="reconhecimento-tela">
+				<header className="reconhecimento-nav">
+					<span className="reconhecimento-nav-marca">criativo dodô</span>
+					<Link to="/hoje" className="reconhecimento-nav-link">
+						voltar à sua mesa
+					</Link>
+				</header>
+				<div className="reconhecimento-contexto">
+					<p className="reconhecimento-eyebrow">
+						colaboração de {formatarCompetencia(mesReferencia)}
+					</p>
+					<h1 className="reconhecimento-frase">
+						nenhuma obrigação financeira registrada este mês ainda.
+					</h1>
+				</div>
+			</div>
+		);
+	}
+
+	const obrigacaoPrincipal =
+		historico.obrigacoes.find((obrigacao) => obrigacao.tipo === "MENSAL") ?? historico.obrigacoes[0];
+	const valorTotal = historico.obrigacoes.reduce((total, obrigacao) => total + obrigacao.valor, 0);
+	const todasPagas = historico.obrigacoes.every((obrigacao) => obrigacao.estado === "PAGO");
+	const timeline = construirTimeline(obrigacaoPrincipal);
+	const { reais, centavos } = formatarMoedaPartes(valorTotal);
 
 	return (
 		<div className="reconhecimento-tela">
@@ -129,23 +178,16 @@ export function FinanceiroInfluenciadoraPage() {
 
 			<div className="reconhecimento-contexto">
 				<div className="reconhecimento-memoria" aria-hidden="true">
-					<img
-						src={imagemCampanha}
-						alt=""
-						style={{ objectPosition: contexto.entregavel.foco }}
-					/>
+					<img src={imagemCampanha} alt="" style={{ objectPosition: "center 22%" }} />
 				</div>
-				<p className="reconhecimento-eyebrow">{contexto.campanha}</p>
-				<h1 className="reconhecimento-frase">
-					sua colaboração deste mês foi reconhecida.
-				</h1>
+				<p className="reconhecimento-eyebrow">
+					colaboração de {formatarCompetencia(mesReferencia)}
+				</p>
+				<h1 className="reconhecimento-frase">sua colaboração deste mês foi reconhecida.</h1>
 			</div>
 
 			<div className="reconhecimento-corpo">
-				<section
-					className="reconhecimento-valor"
-					aria-labelledby="reconhecimento-valor-titulo"
-				>
+				<section className="reconhecimento-valor" aria-labelledby="reconhecimento-valor-titulo">
 					<p id="reconhecimento-valor-titulo" className="reconhecimento-valor-label">
 						o reconhecimento por esta colaboração
 					</p>
@@ -154,8 +196,8 @@ export function FinanceiroInfluenciadoraPage() {
 						<span className="reconhecimento-valor-centavos">{centavos}</span>
 					</p>
 					<p className="reconhecimento-valor-estado">
-						{estado === "pago"
-							? `consolidado em ${contexto.pagoEm}`
+						{todasPagas && obrigacaoPrincipal.dataArquivamento
+							? `consolidado em ${formatarData(obrigacaoPrincipal.dataArquivamento)}`
 							: "a caminho — você será avisada assim que for concluído"}
 					</p>
 				</section>
@@ -166,10 +208,7 @@ export function FinanceiroInfluenciadoraPage() {
 					</p>
 					<ol className="reconhecimento-timeline">
 						{timeline.map((passo) => (
-							<li
-								key={passo.id}
-								className={`reconhecimento-timeline-passo is-${passo.condicao}`}
-							>
+							<li key={passo.id} className={`reconhecimento-timeline-passo is-${passo.condicao}`}>
 								<span className="reconhecimento-timeline-marcador" aria-hidden="true" />
 								<div className="reconhecimento-timeline-conteudo">
 									<span className="reconhecimento-timeline-titulo">{passo.titulo}</span>
@@ -181,7 +220,7 @@ export function FinanceiroInfluenciadoraPage() {
 						))}
 					</ol>
 
-					{estado === "pago" && (
+					{todasPagas && (
 						<button type="button" className="reconhecimento-acao-secundaria">
 							ver comprovante
 						</button>
@@ -191,8 +230,8 @@ export function FinanceiroInfluenciadoraPage() {
 
 			<section className="reconhecimento-rodape" aria-label="fechamento">
 				<p className="reconhecimento-rodape-nota">
-					a colaboração deste mês está completa. quando o briefing de{" "}
-					{contexto.proximoBriefing} chegar, você vê por aqui.
+					a colaboração deste mês está completa. quando a próxima competência for aberta,
+					você vê por aqui.
 				</p>
 				<button type="button" className="reconhecimento-divergencia">
 					algo parece errado? avisar a agência

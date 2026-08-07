@@ -93,10 +93,29 @@ visual. O conteúdo anterior de `design-system/` (paleta laranja/roxo) e qualque
 Dodô — não pertence ao Portal, à Landing, nem a qualquer produto específico. Portal, Landing e
 produtos futuros o consomem; nenhum deles o define (`ADR-025` item 2).
 
+**Localização física definitiva (registrada em 07/08/2026, primeira entrega publicada, `ADR-025`
+item 7 e `ADR-026`):** projeto Claude Design **"Design System — Criativo Dodô"**
+(`projectId d7120c51-f816-43ee-87fa-092906548e99`), ambiente operacional nativo do Design System
+(`ADR-026`). Estrutura vigente (atualizada em 07/08/2026, ver nota de núcleo congelado abaixo):
+`.design-sync/config.json` (metadados do pacote, `guidelinesGlob`), `guidelines/documento-mestre.md`
+(índice único por capítulos, briefing §14) e `guidelines/00-como-usar.md` (índice técnico por
+camada) como pontos de entrada. Camadas completas: Fundação (identidade, princípios, tipografia,
+espaçamento, grid), Tokens (cor, tipografia, espaçamento, raio, sombra, movimento, estrutura),
+Componentes (13 famílias, 19 componentes) — as três formam o núcleo, versão 1.0, congelado
+(`ADR-027`). Padrões, Templates e Aplicações já construídos sobre o núcleo. Documento mestre
+consolidado (capa, como usar, Parte 1 a marca, Parte 2 o manual, Parte 3 o sistema, anexos), com
+lacunas assinaladas e aceitas (capítulo de imagem, download de arquivos, changelog — dependem de
+Publicação, não construída ainda).
+
 **Fonte de trabalho durante a construção:** `criativododo-interno/MATERIAL PARA DESIGN SYSTEM
 FINAL/` (externa ao repositório git, mesmo padrão de `PLANO_MESTRE_IMPLEMENTACAO_PORTAL_
-DODO.md`, ver §5). A localização física definitiva do Design System Criativo Dodô será
-registrada aqui quando a primeira entrega for publicada (`ADR-025` item 7).
+DODO.md`, ver §5). Continua sendo insumo de leitura direcionada por ciclo, nunca a localização
+oficial nem algo a copiar por inteiro (`ADR-025` item 3, `ADR-026`).
+
+**Núcleo congelado (07/08/2026, `ADR-027`):** Fundação, Tokens e Componentes são a versão 1.0 do
+núcleo do Design System, estáveis. Alteração só por correção de erro comprovado, evolução
+arquitetural, ou decisão explícita do responsável do projeto — nunca por refatoração espontânea.
+Padrões, Templates e Aplicações consomem o núcleo, não o reconstroem.
 
 **Este item não altera o §1 abaixo** (identidade visual da Landing, `app/`) — essa migração,
 se e quando decidida, exige decisão de Produto e UX dedicada, separada de `ADR-025`, e só pode

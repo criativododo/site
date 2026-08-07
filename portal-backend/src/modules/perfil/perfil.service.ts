@@ -1,10 +1,38 @@
+import { parceiraRepositorio } from "../parceira/parceira.repository.js";
 import { resolvedorDeCep, type DadosDeEndereco } from "./cep.resolver.js";
 import { perfilRepositorio } from "./perfil.repository.js";
 import type { Endereco, PerfilParceira } from "./perfil.types.js";
 
+/**
+ * Recorte de leitura de `Parceira` (SPEC-002 §6.2) exposto ao próprio Portal — nunca editável
+ * por aqui (`CAMPOS_CONTATO_PERMITIDOS` abaixo continua sendo só pix/email). Fecha a lacuna
+ * declarada em `PerfilInfluenciadoraPage`: "chave"/data de início já existem em `Parceira`,
+ * só não eram expostas ao Portal.
+ */
+export interface PerfilComIdentidade extends PerfilParceira {
+  chave: string;
+  parceiraDesde: string;
+}
+
 /** UC-032.01 · Ver perfil (RN-03: só o próprio perfil — garantido por `parceiraId` vir da sessão). */
-export async function obterPerfil(parceiraId: string): Promise<PerfilParceira | null> {
-  return perfilRepositorio.buscarPorParceira(parceiraId);
+export async function obterPerfil(parceiraId: string): Promise<PerfilComIdentidade | null> {
+  const [perfil, parceira] = await Promise.all([
+    perfilRepositorio.buscarPorParceira(parceiraId),
+    parceiraRepositorio.buscarPorId(parceiraId),
+  ]);
+
+  if (!parceira) {
+    return null;
+  }
+
+  // Perfil (pix/email/endereço) só nasce no primeiro PATCH (ver `atualizarContato`) — uma
+  // Parceira real recém-cadastrada não tem Perfil ainda, mas já tem `chave`/`dataCriacao`.
+  // Antes desta correção, a ausência de Perfil derrubava a leitura inteira (404), incluindo
+  // "chave"/"parceira desde" que não dependem dele — mesma semântica de fallback já usada em
+  // `atualizarContato`/`atualizarEndereco` abaixo.
+  const perfilBase = perfil ?? { parceiraId, pix: "", email: "", endereco: null };
+
+  return { ...perfilBase, chave: parceira.chave, parceiraDesde: parceira.dataCriacao };
 }
 
 /**

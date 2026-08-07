@@ -1,7 +1,0 @@
-{
-  "name": "@criativododo/design-system",
-  "version": "3.1.0",
-  "private": true,
-  "main": "dist/components/index.js",
-  "types": "dist/components/index.d.ts"
-}

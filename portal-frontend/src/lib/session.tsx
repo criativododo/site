@@ -6,6 +6,7 @@ import {
 	useState,
 } from "react";
 import { ApiError, apiFetch } from "./api";
+import { relatarErroFrontend } from "./errorReporting";
 
 const API_BASE_URL =
 	import.meta.env.VITE_API_BASE_URL ?? "http://localhost:4000";
@@ -65,7 +66,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 			if (erro instanceof ApiError && erro.status === 401) {
 				setSessao(null);
 			} else {
-				throw erro;
+				relatarErroFrontend("sessao-carregar", erro);
 			}
 		} finally {
 			setCarregando(false);
@@ -87,8 +88,19 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 	}
 
 	async function logout() {
-		await apiFetch("/auth/logout", { method: "POST" });
-		setSessao(null);
+		try {
+			await apiFetch("/auth/logout", { method: "POST" });
+			setSessao(null);
+		} catch (erro) {
+			if (erro instanceof ApiError && erro.status === 401) {
+				// Sessão já não existia no backend (cookie expirado/inválido) — reflete o mesmo
+				// estado localmente em vez de manter a interface presa numa sessão "ativa" que
+				// já não é válida (mesmo tratamento de 401 já usado em carregarSessao()).
+				setSessao(null);
+			} else {
+				relatarErroFrontend("sessao-logout", erro);
+			}
+		}
 	}
 
 	return (

@@ -29,14 +29,29 @@ export function formatarMoedaPartes(valor: number): {
 }
 
 /**
- * NOTA: usa `new Date(dataIso)`, que interpreta uma data pura "AAAA-MM-DD" como meia-noite
- * UTC — em fusos negativos (ex. America/Sao_Paulo, UTC-3) `toLocaleDateString` pode exibir o
- * dia anterior. `Pendencias.tsx` tem seu próprio `formatarData` que evita isso fazendo split
- * manual da string; esta função replica o comportamento pré-existente das páginas Admin*
- * sem alterá-lo (potencial bug de fuso horário, fora do escopo desta limpeza).
+ * Usada tanto com data pura "AAAA-MM-DD" (`dataEntrega`, `dataPostagem`,
+ * `dataAprovacaoInterna`) quanto com timestamp ISO completo ("AAAA-MM-DDTHH:mm:ss.sssZ",
+ * ex. `dataCriacao`/`dataArquivamento`/`criadoEm`/`geradoEm`) — os dois formatos convivem nas
+ * páginas Admin* que chamam esta função. Bug corrigido (sprint de hardening, 2026-08-06): para
+ * data pura, `new Date(dataIso)` interpretava-a como meia-noite UTC e, em fusos negativos (ex.
+ * America/Sao_Paulo, UTC-3, o fuso real de operação do Portal), `toLocaleDateString` exibia o
+ * dia anterior — reproduzido: `new Date("2026-08-06").toLocaleDateString("pt-BR")` ⇒
+ * "05/08/2026" sob TZ=America/Sao_Paulo. Causa raiz: ausência de componente de hora faz o
+ * `Date` nascer em UTC, mas a formatação usa o fuso local do navegador. Correção: para data
+ * pura (sem "T"), split manual + `Date.UTC` + `timeZone: "UTC"` na formatação — mesma técnica
+ * já usada por `formatarDiaMes`/`formatarDiaSemana` abaixo, que nunca tiveram este bug. Para
+ * timestamp completo, mantido `new Date(dataIso).toLocaleDateString("pt-BR")` inalterado: aí o
+ * fuso local do navegador é o comportamento correto (a data exibida é a data-calendário local
+ * do instante real em que o evento ocorreu, não uma data pura sem fuso).
  */
 export function formatarData(dataIso: string): string {
-	return new Date(dataIso).toLocaleDateString("pt-BR");
+	if (dataIso.includes("T")) {
+		return new Date(dataIso).toLocaleDateString("pt-BR");
+	}
+	const [ano, mes, dia] = dataIso.split("-").map(Number);
+	return new Date(Date.UTC(ano, mes - 1, dia)).toLocaleDateString("pt-BR", {
+		timeZone: "UTC",
+	});
 }
 
 /**

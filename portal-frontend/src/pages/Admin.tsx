@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { ApiError, apiFetch } from "../lib/api";
+import { relatarErroFrontend } from "../lib/errorReporting";
 import { useSession } from "../lib/session";
 
 interface ContaPendente {
@@ -25,19 +26,30 @@ interface Convite {
 }
 
 /** ADR-011 · Gera links de convite pré-aprovado: quem se cadastra por eles pula a moderação. */
-function GerarConvite() {
+export function GerarConvite() {
 	const [convites, setConvites] = useState<Convite[] | null>(null);
+	const [carregando, setCarregando] = useState(true);
 	const [gerando, setGerando] = useState(false);
 	const [copiado, setCopiado] = useState<string | null>(null);
 	const [erro, setErro] = useState<string | null>(null);
 
 	function carregar() {
+		setCarregando(true);
 		apiFetch<{ itens: Convite[] }>("/api/admin/convites")
-			.then((dados) => setConvites(dados.itens))
+			.then((dados) => {
+				setConvites(dados.itens);
+				setErro(null);
+			})
 			.catch((erroCapturado) => {
-				console.error("falha ao carregar convites:", erroCapturado);
+				relatarErroFrontend("admin-convites-carregar", erroCapturado);
+				setErro(
+					erroCapturado instanceof ApiError
+						? erroCapturado.message
+						: "não foi possível carregar os links de convite.",
+				);
 				setConvites([]);
-			});
+			})
+			.finally(() => setCarregando(false));
 	}
 
 	useEffect(() => {
@@ -62,9 +74,14 @@ function GerarConvite() {
 	}
 
 	async function copiar(url: string) {
-		await navigator.clipboard.writeText(url);
-		setCopiado(url);
-		setTimeout(() => setCopiado(null), 2000);
+		try {
+			await navigator.clipboard.writeText(url);
+			setCopiado(url);
+			setTimeout(() => setCopiado(null), 2000);
+		} catch (erroCapturado) {
+			relatarErroFrontend("admin-convites-copiar", erroCapturado);
+			setErro("não foi possível copiar o link — copie manualmente.");
+		}
 	}
 
 	return (
@@ -84,9 +101,10 @@ function GerarConvite() {
 				{gerando ? "gerando" : "gerar novo link"}
 			</button>
 
+			{carregando && <p className="portal-page-feedback">carregando</p>}
 			{erro && <p className="portal-page-feedback is-error">{erro}</p>}
 
-			{convites && convites.length > 0 && (
+			{!carregando && convites && convites.length > 0 && (
 				<ul className="portal-list is-spaced">
 					{convites.map((convite) => (
 						<li key={convite.token} className="portal-list-row">
@@ -132,7 +150,10 @@ function FilaDeExclusao({
 		apiFetch<{ itens: SolicitacaoExclusao[] }>(
 			"/api/admin/lgpd/exclusao/pendentes",
 		)
-			.then((dados) => setPendentes(dados.itens))
+			.then((dados) => {
+				setPendentes(dados.itens);
+				setErro(null);
+			})
 			.catch((erroCapturado) => {
 				setErro(
 					erroCapturado instanceof ApiError
@@ -156,6 +177,7 @@ function FilaDeExclusao({
 		if (!fundamentoJuridico) return;
 
 		setEmAcao(id);
+		setErro(null);
 		try {
 			await apiFetch(`/api/admin/lgpd/exclusao/${id}/decidir`, {
 				method: "PATCH",
@@ -243,7 +265,10 @@ export function AdminPage() {
 	function carregar() {
 		setCarregando(true);
 		apiFetch<{ itens: ContaPendente[] }>("/api/admin/identidades/pendentes")
-			.then((dados) => setPendentes(dados.itens))
+			.then((dados) => {
+				setPendentes(dados.itens);
+				setErro(null);
+			})
 			.catch((erroCapturado) => {
 				setErro(
 					erroCapturado instanceof ApiError
@@ -260,6 +285,7 @@ export function AdminPage() {
 
 	async function decidir(subProvider: string, decisao: "aprovar" | "rejeitar") {
 		setEmAcao(subProvider);
+		setErro(null);
 		try {
 			await apiFetch(`/api/admin/identidades/${subProvider}/${decisao}`, {
 				method: "PATCH",

@@ -1,6 +1,8 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { ApiError, apiFetch } from "../../lib/api";
 import { useSession } from "../../lib/session";
-import imagemCampanha from "../../assets/mocks/campanha-essencia-labial.jpg";
+import { formatarCompetencia } from "../../lib/formatters";
 import "./PerfilInfluenciadora.css";
 
 /**
@@ -31,41 +33,24 @@ import "./PerfilInfluenciadora.css";
  *    `logout()` de `useSession` sem navegação manual — `RotaProtegida` já redireciona para
  *    `/login` assim que a sessão fica nula.
  *
- * Lacuna declarada (ADR-003, não presumida): "chave"/nome artístico, data de início da parceria e
- * o resumo de colaborações concluídas não existem em `SessaoParceira` hoje — fixture nesta sessão,
- * como em todas as telas anteriores da família. O nome em si vem da sessão real (`sessao.nome`).
+ * Wiring real (DOC SPRINT #2, sessão de implementação): "chave" e "parceira desde" já
+ * existiam em `Parceira` (SPEC-002 §6.2) e agora são expostos por
+ * `GET /api/portal/perfil` (`PerfilComIdentidade`, additivo — `PATCH` continua só
+ * pix/email, RN-04). Vêm da mesma rota que `pages/Perfil.tsx` já consome.
+ *
+ * Lacuna declarada (ADR-003, não presumida, ainda de pé): não existe endpoint que agregue
+ * "colaborações concluídas" no tempo — `listarPendencias` só cobre a competência corrente.
+ * A seção "sua jornada até aqui" fica como estado vazio explícito, nunca dado inventado.
  *
  * Rota própria (`/identidade`, não `/perfil`) porque `/perfil` já é servida por `pages/Perfil.tsx`
  * (formulário operacional de PIX/endereço, dentro do PortalLayout) — mesmo padrão de desambiguação
  * já usado para `/reconhecimento` vs. `/financeiro` legado.
  */
 
-interface EntradaJornada {
-	id: string;
-	titulo: string;
-	detalhe: string;
-	foco: string;
+interface PerfilComIdentidade {
+	chave: string;
+	parceiraDesde: string;
 }
-
-const contexto = {
-	chave: "Bia Lima",
-	parceiraDesde: "março de 2026",
-	colaboracoesConcluidas: 3,
-	jornada: [
-		{
-			id: "agosto",
-			titulo: "colaboração de agosto · essência labial",
-			detalhe: "publicada · reconhecida",
-			foco: "center 22%",
-		},
-		{
-			id: "julho",
-			titulo: "carrossel de julho",
-			detalhe: "publicado",
-			foco: "center 22%",
-		},
-	] satisfies EntradaJornada[],
-};
 
 function obterIniciais(nome: string): string {
 	const partes = nome.trim().split(/\s+/).filter(Boolean);
@@ -79,6 +64,26 @@ function obterIniciais(nome: string): string {
 
 export function PerfilInfluenciadoraPage() {
 	const { sessao, logout } = useSession();
+	const [identidade, setIdentidade] = useState<PerfilComIdentidade | null>(null);
+	const [erro, setErro] = useState<string | null>(null);
+	const [carregando, setCarregando] = useState(true);
+
+	useEffect(() => {
+		if (sessao?.papelAtor !== "INFLUENCIADORA") return;
+		let ativo = true;
+		apiFetch<PerfilComIdentidade>("/api/portal/perfil")
+			.then((dados) => ativo && setIdentidade(dados))
+			.catch((erroCapturado) => {
+				if (!ativo) return;
+				setErro(
+					erroCapturado instanceof ApiError ? erroCapturado.message : "não foi possível carregar.",
+				);
+			})
+			.finally(() => ativo && setCarregando(false));
+		return () => {
+			ativo = false;
+		};
+	}, [sessao?.papelAtor]);
 
 	if (sessao?.papelAtor !== "INFLUENCIADORA") {
 		return (
@@ -105,10 +110,19 @@ export function PerfilInfluenciadoraPage() {
 				</div>
 				<p className="identidade-eyebrow">seu perfil</p>
 				<h1 className="identidade-nome">{sessao.nome}</h1>
-				<p className="identidade-assinatura">assina como "{contexto.chave}"</p>
-				<p className="identidade-vinculo">
-					parceira da criativo dodô desde {contexto.parceiraDesde}
-				</p>
+				{carregando ? (
+					<p className="identidade-assinatura">carregando</p>
+				) : erro || !identidade ? (
+					<p className="identidade-assinatura">{erro ?? "não foi possível carregar."}</p>
+				) : (
+					<>
+						<p className="identidade-assinatura">assina como "{identidade.chave}"</p>
+						<p className="identidade-vinculo">
+							parceira da criativo dodô desde{" "}
+							{formatarCompetencia(identidade.parceiraDesde.slice(0, 7))}
+						</p>
+					</>
+				)}
 			</div>
 
 			<div className="identidade-corpo">
@@ -117,29 +131,9 @@ export function PerfilInfluenciadoraPage() {
 						sua jornada até aqui
 					</p>
 					<p className="identidade-jornada-resumo">
-						{contexto.colaboracoesConcluidas} colaborações concluídas desde que você
-						chegou.
+						histórico consolidado de colaborações concluídas ainda não tem endpoint —
+						lacuna declarada, ver relatório da sessão.
 					</p>
-					<ul className="identidade-jornada-lista">
-						{contexto.jornada.map((entrada) => (
-							<li key={entrada.id} className="identidade-jornada-item">
-								<div className="identidade-jornada-foto" aria-hidden="true">
-									<img
-										src={imagemCampanha}
-										alt=""
-										style={{ objectPosition: entrada.foco }}
-									/>
-								</div>
-								<div className="identidade-jornada-conteudo">
-									<span className="identidade-jornada-titulo">{entrada.titulo}</span>
-									<span className="identidade-jornada-detalhe">{entrada.detalhe}</span>
-								</div>
-							</li>
-						))}
-					</ul>
-					<button type="button" className="identidade-acao-secundaria">
-						ver todo o histórico
-					</button>
 				</section>
 			</div>
 
