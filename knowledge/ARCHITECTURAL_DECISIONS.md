@@ -1983,6 +1983,72 @@ adicional (`CLAUDE.md` — "alterar arquitetura sem ADR" é uma regra permanente
 
 ---
 
+## ADR-029 — Projeto D: Drive migra de Service Account para OAuth2 Refresh Token (revisa ADR-028 item 3)
+
+- **Status:** Aceito.
+- **Data:** 2026-08-08.
+- **Autor da decisão:** responsável do projeto, em sessão com Claude Code, motivado por falha
+  técnica real reproduzida ao vivo (não por preferência).
+- **Relaciona-se com:** revisa parcialmente `ADR-028` item 3 (Sheets permanece inalterado);
+  reaproveita o padrão de `ADR-017`/`ADR-019`/`ADR-020` (OAuth do Google Drive no Portal atual),
+  que o próprio `ADR-028` item 3 havia deliberadamente descartado.
+
+### Contexto
+
+Ao implementar a Tarefa 5 do Projeto D (upload direto pro Drive), o fluxo completo foi testado
+ao vivo: sessão resumable criada pelo backend, `PUT` binário disparado pelo navegador. Depois de
+corrigir um problema de CORS (a chamada que inicia a sessão resumable precisa repassar a
+`Origin` real do navegador para o Drive liberar CORS na `uploadUrl`), o `PUT` falhou com
+`403`:
+
+> `"Service Accounts do not have storage quota. Leverage shared drives... or use OAuth
+> delegation instead."` (`reason: storageQuotaExceeded`)
+
+Este é um limite duro da própria API do Google, não uma configuração local: Service Accounts têm
+cota de armazenamento própria igual a zero e só conseguem criar arquivos em Shared Drives
+(recurso exclusivo de Google Workspace) ou mediante delegação OAuth de um usuário real. A conta
+do projeto é `@gmail.com` (pessoal) — Shared Drives não é uma opção disponível. A ressalva do
+próprio `ADR-028` item 3 ("não reabrir esta escolha sem motivo técnico novo — divergência de
+recomendação de terceiro não é, por si só, um motivo") deixa de se aplicar aqui: isto não é
+divergência de recomendação, é impossibilidade técnica objetiva reproduzida e documentada.
+
+### Decisão
+
+1. **Sheets:** inalterado. Continua Service Account dedicada
+   (`projeto-d-backend@criativo-dodo.iam.gserviceaccount.com`) com JWT via `jose`, exatamente
+   como decidido no `ADR-028` item 3 — o Sheets não tem essa restrição de cota e a integração já
+   foi validada em produção.
+2. **Drive:** passa a usar OAuth2 com Refresh Token de longa duração, sobre uma **conta única
+   administrada** (`criativododo@gmail.com`), replicando o padrão já validado no Portal atual
+   (`ADR-017`/`ADR-019`/`ADR-020`):
+   - Client OAuth dedicado ao Drive (distinto do client de login OIDC do frontend) — variáveis
+     `GOOGLE_DRIVE_CLIENT_ID`/`GOOGLE_DRIVE_CLIENT_SECRET`/`GOOGLE_DRIVE_REFRESH_TOKEN`, mesma
+     nomenclatura já em uso no `portal-backend` (`portal-backend/.env.example:20-22`), para não
+     criar uma segunda convenção de nomes para o mesmo conceito.
+   - Escopo `https://www.googleapis.com/auth/drive.file` (`ADR-019`) — o Projeto D só acessa
+     arquivos que ele próprio cria.
+   - `fetch` nativo do Node.js para a troca `refresh_token` → `access_token`
+     (`https://oauth2.googleapis.com/token`, `grant_type=refresh_token`) — sem SDK
+     `googleapis`/`google-auth-library`, mantendo a restrição do `ADR-028` item 2.
+   - Consentimento único via Device Authorization Grant (RFC 8628): o escopo `drive.file` está
+     na lista de escopos permitidos pelo Google para esse fluxo (diferente do escopo `drive`
+     completo usado pela série legada Laravel, que exigia Authorization Code + loopback local).
+3. **Pasta raiz:** `GOOGLE_DRIVE_ROOT_FOLDER_ID` continua controlando o destino dos uploads
+   (`ADR-028` item 3 original) — só a forma de autenticação muda, não o modelo de pasta única por
+   ambiente (`ADR-020`).
+
+### Consequências
+
+- Revisa **apenas** a parte de Drive da Decisão item 3 do `ADR-028`; Sheets, modelagem de dados,
+  ator Marca e demais itens 1-8 permanecem exatamente como estavam.
+- Nova pendência de execução: criar o client OAuth dedicado no Google Cloud Console, rodar o
+  consentimento único (Device Flow) e gravar `GOOGLE_DRIVE_REFRESH_TOKEN` no `.env` local
+  (`criativododo-interno/0. PROJETO D/.env`, fora do Drive sincronizado — nunca no repositório).
+- A Service Account deixa de ser necessária para escrita no Drive; permanece necessária apenas
+  para o Sheets.
+
+---
+
 ## Como usar este documento
 
 Toda decisão arquitetural nova e permanente deste projeto (que não seja um detalhe de
