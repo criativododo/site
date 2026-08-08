@@ -146,6 +146,25 @@ por `.ai/`. Enquanto os arquivos permanecerem vazios, ignorar `.ai/` ao consulta
 verdade; ele só volta a ser válido se for populado oficialmente (com ADR associada) ou
 removido do projeto.
 
+## 12. Projeto D (Portal DODÔ v3.0) — iniciativa paralela, fora deste repositório
+
+**Fonte oficial da arquitetura: `ADR-028` (`knowledge/ARCHITECTURAL_DECISIONS.md`).**
+
+O Projeto D substitui o uso ativo do Portal atual a partir de 01/09/2026 (cutover em
+31/08/2026), com escopo deliberadamente mais enxuto (Google Sheets como banco via REST,
+Google Drive como storage, sem ORM). Não é governado pelas fontes de verdade §1-§11 acima —
+tem sua própria documentação, física e fora deste repositório:
+
+- Código e segredos locais: `criativododo-interno/0. PROJETO D` (`.env`, `.env.example`).
+- Documentação e código-fonte sincronizado: `0. SISTEMA D` no Google Drive
+  (`docs/README.md` define a ordem canônica de leitura; `docs/SPEC.md` é a especificação
+  técnica original; `docs/projeto-d-revisao-e-perguntas-ai-studio.md` registra a arquitetura
+  final consolidada que `ADR-028` formaliza).
+
+`ADR-028` não resolve nem substitui a pendência de reconciliação do ator Marca do Portal
+atual (`ADR-008` vs `ADR-022` vs `SPEC-035` §4.2) — declara apenas que ela não se aplica ao
+Projeto D, cujo ator Marca é um conceito novo e independente.
+
 ---
 
 ## Resumo em uma tabela
@@ -164,3 +183,4 @@ removido do projeto.
 | 9a | Estado físico e histórico local | `docs/business/PORTAL_BRIEFING.md` §0 / `docs/guides/START_HERE_NEXT_SESSION.md` (legado) |
 | 10 | Decisões arquiteturais permanentes | `knowledge/ARCHITECTURAL_DECISIONS.md` |
 | 11 | `.ai/` | **Não é Fonte da Verdade** — vazio, não utilizar |
+| 12 | Projeto D (Portal DODÔ v3.0) | `ADR-028` — documentação física fora deste repositório |

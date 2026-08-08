@@ -1886,6 +1886,103 @@ Templates, Aplicações) consuma o núcleo já construído em vez de reabri-lo c
 
 ---
 
+## ADR-028 — Projeto D (Portal DODÔ v3.0): substituição enxuta do Portal atual sobre Google Sheets/Drive, cutover em 31/08/2026
+
+- **Status:** Aceito.
+- **Data:** 2026-08-08.
+- **Autor da decisão:** responsável do projeto (arquitetura discutida em sessão com o Google
+  AI Studio/Gemini, ratificada em sessão com Claude Code).
+- **Relaciona-se com:** `ADR-008`/`ADR-022` (ator Marca no Portal atual — não se aplica ao
+  Projeto D), `ADR-017`/`ADR-019`/`ADR-020` (padrão OAuth do Google Drive no Portal atual —
+  Projeto D usa um mecanismo próprio, ver item 3).
+
+### Contexto
+
+O **Projeto D** é uma iniciativa paralela do responsável do projeto, fisicamente fora deste
+repositório git (`criativododo-interno/0. PROJETO D` para código e segredos locais;
+`0. SISTEMA D` no Google Drive para documentação e para o próprio código-fonte, que roda de
+dentro dessa pasta sincronizada). Não recria 1:1 o Portal atual (Financeiro, LGPD, Dashboard
+Administrativo, Colaboração Mensal completa, ator Marca do MVP) — é deliberadamente **mais
+enxuto**: um sistema pessoal para o responsável gerir marketing de influência e marcas,
+priorizando ferramentas nativas do Google Workspace por serem mais simples de configurar e
+manter, e para reduzir o consumo de sessões do Claude Code. O Projeto D **substitui** o uso
+ativo do Portal atual (não é um satélite rodando ao lado dele), por decisão consciente do
+responsável, não por desconhecimento do que já existe e está homologado no Portal (Fases 1-4
+do Plano Mestre, persistência PostgreSQL, integração real com Drive, 268 testes).
+
+A arquitetura foi discutida em 3 blocos de perguntas/respostas com o Google AI Studio
+(registrados em `0. SISTEMA D/docs/projeto-d-revisao-e-perguntas-ai-studio.md`) e revisada
+pelo Claude Code contra o estado real do repositório antes de ser aceita. Este ADR formaliza
+o resultado, conforme exigido pela governança deste projeto antes de qualquer código
+adicional (`CLAUDE.md` — "alterar arquitetura sem ADR" é uma regra permanente proibida).
+
+### Decisão
+
+1. **Escopo e relação com o Portal atual:** cutover em **31/08/2026**. A partir de
+   **01/09/2026**, tudo nasce no Projeto D. Entregas em voo no Postgres legado
+   (`AguardandoMaterial`/`EmRevisao`/`Aprovado`, não pagas) **não migram** — o Portal atual
+   continua rodando em paralelo só até fechar o ciclo de agosto. A desativação final da
+   infraestrutura do Portal atual (dump do banco, checklist de desativação) só ocorre depois
+   do último pagamento de agosto quitado. O cadastro mestre de parceiras migra do Postgres
+   atual para a `BASE DE DADOS` do Projeto D; histórico e entregas em voo não migram.
+2. **Persistência:** Google Sheets (API v4 REST) como banco de dados oficial e exclusivo;
+   Google Drive (API v3 REST) como storage de mídia. Proibido ORM, banco relacional, e SDKs
+   `googleapis`/`google-auth-library` — toda chamada usa `fetch` nativo do Node.js.
+3. **Autenticação Sheets + Drive:** Service Account dedicada
+   (`projeto-d-backend@criativo-dodo.iam.gserviceaccount.com`) com JWT assinado via lib leve
+   `jose`, com permissão de Editor na planilha mestre e na pasta raiz do Drive. Esta decisão
+   **diverge deliberadamente** da recomendação registrada nas respostas do Google AI Studio
+   (que sugeria reaproveitar o padrão de Refresh Token OAuth2 já validado para o Drive no
+   Portal atual, ver `ADR-017`): a Service Account já estava provisionada e compartilhada como
+   Editor, foi testada ao vivo contra a planilha e a pasta reais em 08/08/2026 (leitura de
+   metadados e cabeçalhos das 6 abas, com sucesso), e elimina a necessidade de um segundo
+   fluxo de consent OAuth2 manual só para o Sheets. Não reabrir esta escolha sem motivo
+   técnico novo — divergência de recomendação de terceiro (AI Studio) não é, por si só, um
+   motivo.
+4. **Autenticação de sessão do usuário final:** Google OIDC no frontend; o ID Token é validado
+   no backend via JWKS público do Google (lib `jose`); cookie `HttpOnly`/`Secure`/
+   `SameSite=Lax` assinado (HS256), validade de 6 horas.
+5. **Modelagem de dados:** 6 abas na planilha mestre — `BASE DE DADOS`, `ATIVACOES`, `MARCAS`,
+   `LOOKS`, `LOG` (auditoria append-only: toda escrita sensível grava no domínio e faz um
+   `append` na `LOG`), `CONFIGURACOES` (parâmetros operacionais chave/valor, ex. SLA de 7 dias,
+   validade de sessão, lista de termos do Look Beautifier). **Nunca cachear o índice físico de
+   linha entre requisições** — toda escrita cirúrgica em notação A1 resolve a posição pela
+   chave (`ID`/`INFLU_KEY`/`EMAIL`) a cada chamada, para tolerar o responsável editando a
+   planilha manualmente (inserindo/removendo linha) enquanto o backend está em uso.
+6. **Ator "Marca":** conceito novo e independente do ator Marca do Portal atual (`ADR-022`) —
+   sem herança nem necessidade de reconciliação entre os dois; a pendência de reconciliação
+   arquitetural do ator Marca do Portal atual (`ADR-008` vs `ADR-022` vs `SPEC-035` §4.2)
+   permanece exatamente como está, valendo só para o Portal atual. Acesso ao painel da Marca
+   exclusivamente via login OIDC + papel `MARCA` — link privado sem autenticação foi descartado
+   por risco de vazamento de dados financeiros/comerciais. Autorização por e-mail: coluna
+   `EMAIL_AUTORIZADO` na aba `MARCAS`, aceitando múltiplos e-mails separados por vírgula (mais
+   de uma pessoa da marca pode precisar de acesso).
+7. **Escopo da Fase 1 de construção (atual):** 5 rotas centrais —
+   `POST /api/auth/google`, `GET /api/me`, `PATCH /api/perfil`,
+   `POST /api/storage/upload-session`, `POST /api/entrega/completar`. Rastreamento logístico
+   (`GET /api/rastreio`) e seleção de looks (`POST /api/looks/selecionar`) — presentes na
+   especificação técnica original de 8 endpoints — ficam **fora do escopo desta fase**;
+   retomados numa Fase 1.5, após o fluxo principal (auth, upload, aprovação) estar validado
+   em produção com dados reais.
+8. **Fora do Vercel/deste backend:** geração de documentos em lote (contratos/briefings via
+   Autocrat), lembretes por time-driven trigger, e auditoria de edições manuais diretas na
+   planilha (gatilho `onEdit`) rodam em **Google Apps Script** vinculado à planilha mestre —
+   não fazem parte do código deste backend serverless nem deste repositório.
+
+### Consequências
+
+- Este ADR não altera nem substitui nenhuma decisão do Portal atual (`ADR-005` a `ADR-024`) —
+  os dois sistemas coexistem até o cutover de 31/08/2026, quando o Portal atual entra em
+  desativação.
+- `PROJECT_SOURCE_OF_TRUTH.md` recebe uma entrada nova apontando para este ADR e para a
+  documentação física do Projeto D, fora deste repositório.
+- Toda decisão futura de arquitetura do Projeto D que altere qualquer um dos pontos 1-8 acima
+  exige um novo ADR nesta mesma série — nunca decisão em conversa avulsa não registrada.
+- A coluna `EMAIL_AUTORIZADO` ainda precisa ser criada fisicamente na aba `MARCAS` da planilha
+  mestre — este ADR formaliza o schema, a criação da coluna é uma tarefa de execução separada.
+
+---
+
 ## Como usar este documento
 
 Toda decisão arquitetural nova e permanente deste projeto (que não seja um detalhe de
